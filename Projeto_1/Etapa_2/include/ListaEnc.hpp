@@ -212,7 +212,7 @@ T* ListaEnc<T>::posicaoMem(const T& dado) const {
     int i;
     Elemento<T> *temporario = this->head;
     for (i = 0; i < this->size; i++) {
-        if (temporario->getInfo() == dado) {
+        if (igual(temporario->getInfo(), dado)) {
             return temporario->getInfoPointer();
         }
         temporario = temporario->getProximo();

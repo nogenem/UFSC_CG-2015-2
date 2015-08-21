@@ -4,15 +4,15 @@
 #include <ctime>
 #include "Window.hpp"
 #include "Objects.hpp"
-#include "DisplayFile.hpp"
+#include "World.hpp"
 
 #define PI 3.1415926535897932384626433832795
 
 class Viewport
 {
     public:
-        Viewport(double width, double height, DisplayFile *objs):
-            _width(width), _height(height), _objs(objs), _window(width,height),
+        Viewport(double width, double height, World *world):
+            _width(width), _height(height), _world(world), _window(width,height),
             _border(new Border(width,height)) {}
         virtual ~Viewport() {}
 
@@ -22,10 +22,12 @@ class Viewport
         void zoom(double step){_window.zoom(step);}
         void move(double x, double y){_window.move(x,y);}
         void drawObjs(cairo_t* cr);
+
+        Coordinate center();
     protected:
     private:
         double _width, _height;
-        DisplayFile *_objs;
+        World *_world;
         Window _window;
 
         cairo_t* _cairo;
@@ -53,6 +55,10 @@ Viewport::Border::Border(int width, int height) :
     addCoordinate(0, height);
 }
 
+Coordinate Viewport::center(){
+    return Coordinate(_width/2, _height/2);
+}
+
 Coordinate Viewport::transformCoordinate(const Coordinate& c) const {
     const Coordinate wmin = _window.wMin();
     const Coordinate wmax = _window.wMax();
@@ -74,8 +80,8 @@ void Viewport::drawObjs(cairo_t* cr){
     //clock_t time = clock();
 
     _cairo = cr;
-    for(int i = 0; i < _objs->size(); i++){
-        Object *obj = _objs->getObj(i);
+    for(int i = 0; i < _world->numObjs(); i++){
+        Object *obj = _world->getObj(i);
         this->drawObj(obj);
     }
     this->drawObj(_border);

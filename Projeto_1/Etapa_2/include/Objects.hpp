@@ -1,49 +1,48 @@
 #ifndef OBJECTS_H
 #define OBJECTS_H
 
+#include <iostream>
 #include <string>
 #include <vector>
+#include "Transformation.hpp"
+
+class Transformation;
 
 class Coordinate
 {
     public:
         Coordinate() :
-            x(0), y(0){}
+            x(0), y(0), z(1){}
         Coordinate(double cx, double cy) :
-            x(cx), y(cy){}
+            x(cx), y(cy), z(1){}
         virtual ~Coordinate(){};
 
-        Coordinate& operator+=(double step){
-            this->x += step;
-            this->y += step;
-            return *this;
-        }
-        Coordinate& operator-=(double step){
-            this->x -= step;
-            this->y -= step;
-            return *this;
-        }
+        Coordinate& operator+=(double step);
+        Coordinate& operator-=(double step);
+        Coordinate& operator*=(const Transformation& t);
         bool operator==(const Coordinate& c){
             return (this->x==c.x && this->y==c.y);
         }
 
-        double x,y;
+        double x,y,z;
     protected:
     private:
 };
 
 typedef std::vector<Coordinate> Coordinates;
-enum ObjType { OBJECT, POINT, LINE, POLYGON };
+enum class ObjType { OBJECT, POINT, LINE, POLYGON };
 
 class Object
 {
     public:
+        Object(){}
         Object(const std::string name) :
             _name(name) {}
         virtual ~Object() {}
 
         std::string getName(){ return _name; }
         const std::string getName() const { return _name; }
+        void setName(const std::string name){ _name = name; }
 
         virtual ObjType type() const { return ObjType::OBJECT; }
 		virtual std::string typeName() const { return "Object"; }
@@ -52,6 +51,9 @@ class Object
 		const Coordinates& getCoords() const {return _coords;}
         Coordinate& getCoord(int index) { return _coords[index]; }
         const Coordinate& getCoord(int index) const { return _coords[index]; }
+
+        Coordinate center() const;
+        void transform(const Transformation& t);
 
         bool operator==(const Object& other){
             return this->getName() == other.getName();
@@ -76,6 +78,8 @@ class Point : public Object
             Object(name) {}
 		Point(std::string name, double x, double y) :
             Object(name) { addCoordinate(x,y); }
+        Point(std::string name, const Coordinate& p) :
+            Object(name) { addCoordinate(p); }
         virtual ~Point() {}
 
         virtual ObjType type() const { return ObjType::POINT; }
@@ -113,5 +117,4 @@ class Polygon : public Object
     private:
         bool _filled;
 };
-
 #endif // OBJECTS_H

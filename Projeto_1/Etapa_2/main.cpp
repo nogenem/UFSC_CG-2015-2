@@ -27,8 +27,9 @@ extern "C"{
     }
     void main_btns_event(GtkWidget *button, MainWindow* window){
         int btnId = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "ID"));
+        Buttons b = (Buttons)btnId;
 
-        switch(btnId){
+        switch(b){
         case Buttons::ZOOM_OUT:
         case Buttons::ZOOM_IN:
             window->zoom((Buttons)btnId);
@@ -79,6 +80,15 @@ extern "C"{
     }
     void remove_obj_event(GtkMenuItem *menuitem, MainWindow* window){
         window->removeSelectedObj();
+    }
+    void translate_obj_event(GtkMenuItem *menuitem, MainWindow* window){
+        window->translateSelectedObj(builder);
+    }
+    void scale_obj_event(GtkMenuItem *menuitem, MainWindow* window){
+        window->scaleSelectedObj(builder);
+    }
+    void rotate_obj_event(GtkMenuItem *menuitem, MainWindow* window){
+        window->rotateSelectedObj(builder);
     }
     void add_poly_x_cell_edited (GtkCellRendererText *cell,
              const gchar *path_string,

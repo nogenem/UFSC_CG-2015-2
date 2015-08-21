@@ -10,10 +10,12 @@ class DisplayFile : public ListaEnc<Object*>
         DisplayFile(){}
         virtual ~DisplayFile() {}
 
-        void addObj(Object* obj);
         Object* getObj(int pos){ return getFromPos(pos); }
+        Object* getObj(Object *obj);
+
+        void addObj(Object *obj);
+        void removeObj(Object *obj){ delete retiraEspecifico(obj); }
         int size(){ return getSize(); }
-        void removeObj(Object* obj){ delete retiraEspecifico(obj); }
     protected:
     private:
 };
@@ -26,6 +28,10 @@ void DisplayFile::addObj(Object* obj){
         adiciona(obj);
     }else
         throw "Ja existe um objeto com este mesmo nome.\n";
+}
+
+Object* DisplayFile::getObj(Object *obj){
+    return *posicaoMem(obj);
 }
 
 #endif // DISPLAYFILE_HPP
