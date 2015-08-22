@@ -7,16 +7,16 @@ Transformation::Transformation(const double x[M_SIZE][M_SIZE]){
 }
 
 Transformation Transformation::newTranslation(double dx, double dy){
-    double m[3][3] = {  {1,  0,  0},
-                        {0,  1,  0},
-                        {dx, dy, 1}  };
+    Matrix m = {{  {1,  0,  0},
+                   {0,  1,  0},
+                   {dx, dy, 1}  }};
     return Transformation(m);
 }
 
 Transformation Transformation::newScaling(double sx, double sy){
-    double m[3][3] = {  {sx,  0,  0},
-                        {0,  sy,  0},
-                        {0,   0,  1}  };
+    Matrix m = {{  {sx,  0,  0},
+                   {0,  sy,  0},
+                   {0,   0,  1}  }};
     return Transformation(m);
 }
 
@@ -25,10 +25,10 @@ Transformation Transformation::newScalingAroundObjCenter(double sx, double sy, c
 }
 
 Transformation Transformation::newRotation(double theta){
-    theta = toRadians(theta);
-    double m[3][3] = {  {cos(theta), -sin(theta), 0},
-                        {sin(theta),  cos(theta), 0},
-                        {0,                    0, 1}  };
+    double rad = -toRadians(theta);// ta invertido
+    Matrix m = {{  {cos(rad), -sin(rad), 0},
+                   {sin(rad),  cos(rad), 0},
+                   {       0,         0, 1}  }};
     return Transformation(m);
 }
 
@@ -54,10 +54,13 @@ Transformation operator*(Transformation t1, const Transformation& t2){
     return t1;
 }
 
-std::ostream& operator<<(std::ostream& os, const Transformation& rhs){
-    for(int i=0; i<4; i++){
-        for(int j=0; j<4; j++)
-            os << rhs.getM()[i][j] << " ";
+std::ostream& operator<<(std::ostream& os, const Transformation& t){
+    const auto &m = t.getM();
+    for(int i=0; i<M_SIZE; i++){
+        for(int j=0; j<M_SIZE; j++){
+            os.width(10);
+            os << m[i][j] << " ";
+        }
         os << std::endl;
     }
     return os;

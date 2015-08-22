@@ -11,8 +11,7 @@ class Window
 {
     public:
         Window(double vWidth, double vHeight):
-            _wmin(0,0), _wmax(vWidth,vHeight),
-            _initWidth(vWidth), _initHeight(vHeight) {}
+            _wmin(0,0), _wmax(vWidth,vHeight) {}
         virtual ~Window() {}
 
         Coordinate wMin() const { return _wmin; }
@@ -22,7 +21,6 @@ class Window
     protected:
     private:
         Coordinate _wmin, _wmax;
-        double _initWidth, _initHeight;
 
         double getWidth(){return _wmax.x-_wmin.x;}
         double getHeight(){return _wmax.y-_wmin.y;}

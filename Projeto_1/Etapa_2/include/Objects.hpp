@@ -35,17 +35,15 @@ enum class ObjType { OBJECT, POINT, LINE, POLYGON };
 class Object
 {
     public:
-        Object(){}
         Object(const std::string name) :
             _name(name) {}
         virtual ~Object() {}
 
         std::string getName(){ return _name; }
         const std::string getName() const { return _name; }
-        void setName(const std::string name){ _name = name; }
 
-        virtual ObjType type() const { return ObjType::OBJECT; }
-		virtual std::string typeName() const { return "Object"; }
+        virtual ObjType getType() const { return ObjType::OBJECT; }
+		virtual std::string getTypeName() const { return "Object"; }
 
         Coordinates& getCoords() {return _coords;}
 		const Coordinates& getCoords() const {return _coords;}
@@ -80,10 +78,9 @@ class Point : public Object
             Object(name) { addCoordinate(x,y); }
         Point(std::string name, const Coordinate& p) :
             Object(name) { addCoordinate(p); }
-        virtual ~Point() {}
 
-        virtual ObjType type() const { return ObjType::POINT; }
-		virtual std::string typeName() const { return "Point"; }
+        virtual ObjType getType() const { return ObjType::POINT; }
+		virtual std::string getTypeName() const { return "Point"; }
 };
 
 class Line : public Object
@@ -93,10 +90,9 @@ class Line : public Object
             Object(name) {}
 		Line(std::string name, const Coordinates& coords) :
             Object(name) { addCoordinate(coords); }
-        virtual ~Line() {}
 
-        virtual ObjType type() const { return ObjType::LINE; }
-		virtual std::string typeName() const { return "Line"; }
+        virtual ObjType getType() const { return ObjType::LINE; }
+		virtual std::string getTypeName() const { return "Line"; }
 };
 
 class Polygon : public Object
@@ -106,10 +102,9 @@ class Polygon : public Object
             Object(name) { _filled = false; }
 		Polygon(std::string name, const Coordinates& coords) :
             Object(name) { _filled = false; addCoordinate(coords); }
-        virtual ~Polygon() {}
 
-        virtual ObjType type() const { return ObjType::POLYGON; }
-		virtual std::string typeName() const { return "Polygon"; }
+        virtual ObjType getType() const { return ObjType::POLYGON; }
+		virtual std::string getTypeName() const { return "Polygon"; }
 
         bool filled(){ return _filled; }
         bool filled() const { return _filled; }

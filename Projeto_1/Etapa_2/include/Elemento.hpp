@@ -25,7 +25,7 @@ public:
 		return *info;
 	}
 
-    // Necessaria para a posicaoMem
+    // Necessaria para o posicaoMem
 	T* getInfoPointer() const
 	{
 		return info;

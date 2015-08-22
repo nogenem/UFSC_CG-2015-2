@@ -112,7 +112,9 @@ ScaleDialog::ScaleDialog(GtkBuilder* builder){
 
     _dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_scale" ) );
     _entrySX = GTK_WIDGET( gtk_builder_get_object( builder, "entry_sx" ) );
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(_entrySX), 1.0);
     _entrySY = GTK_WIDGET( gtk_builder_get_object( builder, "entry_sy" ) );
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(_entrySY), 1.0);
 }
 
 RotateDialog::RotateDialog(GtkBuilder* builder){

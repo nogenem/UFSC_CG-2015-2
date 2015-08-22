@@ -17,7 +17,7 @@ class MainWindow
 {
     public:
         MainWindow(GtkBuilder* builder);
-        virtual ~MainWindow() {}
+        virtual ~MainWindow() { delete _world; delete _viewport; }
         // Events
         void addPoint(GtkBuilder* builder);
         void addLine(GtkBuilder* builder);
@@ -150,7 +150,6 @@ void MainWindow::addObjOnListStore(const std::string name, const char* type){
     gtk_list_store_set(liststore, &iter, 0, name.c_str(), 1, type, -1);
 }
 
-
 void MainWindow::addPoint(GtkBuilder* builder){
     PointDialog dialog(GTK_BUILDER(builder));
     bool finish = false;
@@ -201,6 +200,7 @@ void MainWindow::addLine(GtkBuilder* builder){
 void MainWindow::addPolygon(GtkBuilder* builder){
     PolygonDialog dialog(GTK_BUILDER(builder));
     bool finish = false;
+
     while(!finish){
         if(dialog.run() == 1){
             try{
@@ -312,13 +312,8 @@ void MainWindow::translateSelectedObj(GtkBuilder* builder){
     while(!finish){
         if(dialog.run() == 1){
             try{
-                std::string name;
-                GtkTreeIter iter;
-
-                if(getSelectedObjName(name, &iter)){
-                    _world->translateObj(name, dialog.getDX(), dialog.getDY());
-                    log("Objeto transladado.\n");
-                }
+                _world->translateObj(name, dialog.getDX(), dialog.getDY());
+                log("Objeto transladado.\n");
                 finish = true;
             }catch(const char* msg){
                 log(msg);
@@ -333,15 +328,17 @@ void MainWindow::scaleSelectedObj(GtkBuilder* builder){
     ScaleDialog dialog(GTK_BUILDER(builder));
     bool finish = false;
 
+    std::string name;
+    GtkTreeIter iter;
+
+    if(!getSelectedObjName(name, &iter))
+        return;
+
     while(!finish){
         if(dialog.run() == 1){
-            std::string name;
-            GtkTreeIter iter;
             try{
-                if(getSelectedObjName(name, &iter)){
-                    _world->scaleObj(name, dialog.getSX(), dialog.getSY());
-                    log("Objeto escalonado.\n");
-                }
+                _world->scaleObj(name, dialog.getSX(), dialog.getSY());
+                log("Objeto escalonado.\n");
                 finish = true;
             }catch(const char* msg){
                 log(msg);
@@ -356,28 +353,18 @@ void MainWindow::rotateSelectedObj(GtkBuilder* builder){
     RotateDialog dialog(GTK_BUILDER(builder));
     bool finish = false;
 
+    std::string name;
+    GtkTreeIter iter;
+
+    if(!getSelectedObjName(name, &iter))
+        return;
+
     while(!finish){
         if(dialog.run() == 1){
             try{
-                std::string name;
-                GtkTreeIter iter;
-                if(getSelectedObjName(name, &iter)){
-                    Coordinate *center = NULL;
-                    rotateType type = dialog.getRotateType();
-                    switch(type){
-                    case rotateType::OBJECT:
-                        break;
-                    case rotateType::WORLD:{
-                        Coordinate tmp1(0,0);
-                        center = &tmp1;
-                        break;
-                    }case rotateType::POINT:{
-                        Coordinate tmp2(dialog.getCX(), dialog.getCY());
-                        center = &tmp2;
-                        break;
-                    }}
-                    _world->rotateObj(name,dialog.getAngulo(),center);
-                }
+                _world->rotateObj(name, dialog.getAngulo(),
+                                  Coordinate(dialog.getCX(), dialog.getCY()),
+                                  dialog.getRotateType());
                 finish = true;
             }catch(const char* msg){
                 log(msg);

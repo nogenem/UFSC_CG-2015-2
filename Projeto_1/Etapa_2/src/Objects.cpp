@@ -36,6 +36,7 @@ Coordinate Object::center() const{
 }
 
 void Object::transform(const Transformation& t){
+    //std::cout << t << "\n";
     for(auto &p : _coords)
-        p *= t;
+        p *= (t);
 }

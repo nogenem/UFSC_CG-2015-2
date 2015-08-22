@@ -2,7 +2,8 @@
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
   <object class="GtkAdjustment" id="adj_angulo">
-    <property name="upper">100</property>
+    <property name="lower">-50000</property>
+    <property name="upper">50000</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -130,7 +131,6 @@
                     <property name="adjustment">adj_x1</property>
                     <property name="climb_rate">1</property>
                     <property name="digits">2</property>
-                    <property name="snap_to_ticks">True</property>
                     <property name="numeric">True</property>
                     <property name="update_policy">if-valid</property>
                   </object>
@@ -163,7 +163,6 @@
                     <property name="adjustment">adj_y1</property>
                     <property name="climb_rate">1</property>
                     <property name="digits">2</property>
-                    <property name="snap_to_ticks">True</property>
                     <property name="numeric">True</property>
                     <property name="update_policy">if-valid</property>
                   </object>
@@ -210,7 +209,6 @@
                     <property name="adjustment">adj_x2</property>
                     <property name="climb_rate">1</property>
                     <property name="digits">2</property>
-                    <property name="snap_to_ticks">True</property>
                     <property name="numeric">True</property>
                     <property name="update_policy">if-valid</property>
                   </object>
@@ -243,7 +241,6 @@
                     <property name="adjustment">adj_y2</property>
                     <property name="climb_rate">1</property>
                     <property name="digits">2</property>
-                    <property name="snap_to_ticks">True</property>
                     <property name="numeric">True</property>
                     <property name="update_policy">if-valid</property>
                   </object>
@@ -405,7 +402,6 @@
                     <property name="adjustment">adj_x1</property>
                     <property name="climb_rate">1</property>
                     <property name="digits">2</property>
-                    <property name="snap_to_ticks">True</property>
                     <property name="numeric">True</property>
                     <property name="update_policy">if-valid</property>
                   </object>
@@ -438,7 +434,6 @@
                     <property name="adjustment">adj_y1</property>
                     <property name="climb_rate">1</property>
                     <property name="digits">2</property>
-                    <property name="snap_to_ticks">True</property>
                     <property name="numeric">True</property>
                     <property name="update_policy">if-valid</property>
                   </object>
@@ -706,7 +701,6 @@
                     <property name="adjustment">adj_x1</property>
                     <property name="climb_rate">1</property>
                     <property name="digits">2</property>
-                    <property name="snap_to_ticks">True</property>
                     <property name="numeric">True</property>
                     <property name="update_policy">if-valid</property>
                   </object>
@@ -737,7 +731,6 @@
                     <property name="adjustment">adj_y1</property>
                     <property name="climb_rate">1</property>
                     <property name="digits">2</property>
-                    <property name="snap_to_ticks">True</property>
                     <property name="numeric">True</property>
                     <property name="update_policy">if-valid</property>
                   </object>
@@ -909,7 +902,6 @@
                     <property name="xalign">1</property>
                     <property name="adjustment">adj_angulo</property>
                     <property name="climb_rate">1</property>
-                    <property name="snap_to_ticks">True</property>
                     <property name="numeric">True</property>
                     <property name="update_policy">if-valid</property>
                   </object>
@@ -1021,7 +1013,6 @@
                                 <property name="adjustment">adj_x1</property>
                                 <property name="climb_rate">1</property>
                                 <property name="digits">2</property>
-                                <property name="snap_to_ticks">True</property>
                                 <property name="numeric">True</property>
                                 <property name="update_policy">if-valid</property>
                               </object>
@@ -1052,7 +1043,6 @@
                                 <property name="adjustment">adj_y1</property>
                                 <property name="climb_rate">1</property>
                                 <property name="digits">2</property>
-                                <property name="snap_to_ticks">True</property>
                                 <property name="numeric">True</property>
                                 <property name="update_policy">if-valid</property>
                               </object>
@@ -1183,7 +1173,6 @@
                 <property name="adjustment">adj_x1</property>
                 <property name="climb_rate">1</property>
                 <property name="digits">2</property>
-                <property name="snap_to_ticks">True</property>
                 <property name="numeric">True</property>
                 <property name="update_policy">if-valid</property>
               </object>
@@ -1215,7 +1204,6 @@
                 <property name="adjustment">adj_y1</property>
                 <property name="climb_rate">1</property>
                 <property name="digits">2</property>
-                <property name="snap_to_ticks">True</property>
                 <property name="numeric">True</property>
                 <property name="update_policy">if-valid</property>
               </object>
@@ -1319,7 +1307,6 @@
                 <property name="adjustment">adj_x1</property>
                 <property name="climb_rate">1</property>
                 <property name="digits">2</property>
-                <property name="snap_to_ticks">True</property>
                 <property name="numeric">True</property>
                 <property name="update_policy">if-valid</property>
               </object>
@@ -1350,7 +1337,6 @@
                 <property name="adjustment">adj_y1</property>
                 <property name="climb_rate">1</property>
                 <property name="digits">2</property>
-                <property name="snap_to_ticks">True</property>
                 <property name="numeric">True</property>
                 <property name="update_policy">if-valid</property>
               </object>

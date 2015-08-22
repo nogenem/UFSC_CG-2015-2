@@ -2,6 +2,7 @@
 #define WORLD_HPP
 
 #include "DisplayFile.hpp"
+#include "Dialogs.hpp"
 
 class World
 {
@@ -19,7 +20,8 @@ class World
 
         void translateObj(std::string name, double dx, double dy);
         void scaleObj(std::string name, double sx, double sy);
-        void rotateObj(std::string name, double angle, Coordinate *center);
+        void rotateObj(std::string name, double angle, const Coordinate& p,
+                       rotateType type);
     protected:
     private:
         DisplayFile _objs;
@@ -58,14 +60,22 @@ void World::scaleObj(std::string name, double sx, double sy){
     obj->transform(Transformation::newScalingAroundObjCenter(sx,sy,obj->center()));
 }
 
-void World::rotateObj(std::string name, double angle, Coordinate *center){
+void World::rotateObj(std::string name, double angle, const Coordinate& p,
+                       rotateType type){
     Object tmp(name);
     Object *obj = _objs.getObj(&tmp);
-    if(center == NULL){
-        Coordinate tmp2 = obj->center();
-        center = &tmp2;
+
+    switch(type){
+    case rotateType::OBJECT:
+        obj->transform(Transformation::newRotationAroundPoint(angle, obj->center()));
+        break;
+    case rotateType::WORLD:
+        obj->transform(Transformation::newRotationAroundPoint(angle, Coordinate(0,0)));
+        break;
+    case rotateType::POINT:
+        obj->transform(Transformation::newRotationAroundPoint(angle, p));
+        break;
     }
-    obj->transform(Transformation::newRotationAroundPoint(angle,*center));
 }
 
 #endif // WORLD_HPP

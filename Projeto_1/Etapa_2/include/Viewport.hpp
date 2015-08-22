@@ -14,7 +14,7 @@ class Viewport
         Viewport(double width, double height, World *world):
             _width(width), _height(height), _world(world), _window(width,height),
             _border(new Border(width,height)) {}
-        virtual ~Viewport() {}
+        virtual ~Viewport(){ delete _border; }
 
         Coordinate transformCoordinate(const Coordinate& c) const;
         Coordinates transformCoordinates(const Coordinates& coords) const;
@@ -77,22 +77,16 @@ Coordinates Viewport::transformCoordinates(const Coordinates& coords) const{
 }
 
 void Viewport::drawObjs(cairo_t* cr){
-    //clock_t time = clock();
-
     _cairo = cr;
     for(int i = 0; i < _world->numObjs(); i++){
         Object *obj = _world->getObj(i);
         this->drawObj(obj);
     }
     this->drawObj(_border);
-
-    /*time = clock() - time;
-    std::cout << "Took me " << time << " clock ticks ("<< ((float)time)/CLOCKS_PER_SEC << " seconds) at "
-			<<  CLOCKS_PER_SEC << "Hz to draw all clipped objects" << std::endl;*/
 }
 
 void Viewport::drawObj(Object* obj){
-    switch(obj->type()){
+    switch(obj->getType()){
     case ObjType::OBJECT:
         break;
     case ObjType::POINT:
