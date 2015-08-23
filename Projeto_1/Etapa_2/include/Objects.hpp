@@ -19,6 +19,8 @@ class Coordinate
 
         Coordinate& operator+=(double step);
         Coordinate& operator-=(double step);
+        Coordinate& operator+=(const Coordinate& c);
+        Coordinate& operator-=(const Coordinate& c);
         Coordinate& operator*=(const Transformation& t);
         bool operator==(const Coordinate& c){
             return (this->x==c.x && this->y==c.y);

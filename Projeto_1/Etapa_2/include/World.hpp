@@ -17,6 +17,7 @@ class World
         void removeObj(std::string name);
         int numObjs(){ return _objs.size(); }
         Object* getObj(int pos){ return _objs.getObj(pos); }
+        Object* getObj(std::string name);
 
         void translateObj(std::string name, double dx, double dy);
         void scaleObj(std::string name, double sx, double sy);
@@ -46,6 +47,11 @@ void World::addPolygon(std::string name, bool filled, const Coordinates& c){
 void World::removeObj(std::string name){
     Object obj(name);
     _objs.removeObj(&obj);
+}
+
+Object* World::getObj(std::string name){
+    Object tmp(name);
+    return _objs.getObj(&tmp);
 }
 
 void World::translateObj(std::string name, double dx, double dy){

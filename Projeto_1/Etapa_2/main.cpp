@@ -78,6 +78,9 @@ extern "C"{
 
         return false;
     }
+    void goto_obj_event(GtkMenuItem *menuitem, MainWindow* window){
+        window->gotoSelectedObj();
+    }
     void remove_obj_event(GtkMenuItem *menuitem, MainWindow* window){
         window->removeSelectedObj();
     }

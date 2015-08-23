@@ -12,6 +12,18 @@ Coordinate& Coordinate::operator-=(double step){
     return *this;
 }
 
+Coordinate& Coordinate::operator+=(const Coordinate& c){
+    this->x += c.x;
+    this->y += c.y;
+    return *this;
+}
+
+Coordinate& Coordinate::operator-=(const Coordinate& c){
+    this->x -= c.x;
+    this->y -= c.y;
+    return *this;
+}
+
 Coordinate& Coordinate::operator*=(const Transformation& t){
     const auto &m = t.getM();
     double x = this->x, y = this->y, z = this->z;

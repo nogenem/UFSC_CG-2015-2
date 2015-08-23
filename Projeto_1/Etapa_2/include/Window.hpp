@@ -19,6 +19,7 @@ class Window
         void zoom(double step);
         void moveX(double v){ _wmin.x += v; _wmax.x += v;}
         void moveY(double v){ _wmin.y += v; _wmax.y += v;}
+        void moveTo(Coordinate center);
     protected:
     private:
         Coordinate _wmin, _wmax;
@@ -42,6 +43,13 @@ void Window::zoom(double step){
         _wmax += step;
         throw "Zoom minimo alcancado.\n";
     }
+}
+
+void Window::moveTo(Coordinate center){
+    this->_wmin = center;
+    this->_wmin -= 200;
+    this->_wmax = center;
+    this->_wmax += 200;
 }
 
 #endif // WINDOW_HPP

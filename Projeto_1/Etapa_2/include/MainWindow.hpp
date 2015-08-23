@@ -26,6 +26,7 @@ class MainWindow
         void move(Buttons id);
         void onDraw(cairo_t* cr);
         void showPopUp(GdkEvent *event);
+        void gotoSelectedObj();
         void removeSelectedObj();
         void translateSelectedObj(GtkBuilder* builder);
         void scaleSelectedObj(GtkBuilder* builder);
@@ -284,6 +285,17 @@ bool MainWindow::getSelectedObjName(std::string &name, GtkTreeIter *iter){
         return true;
     }else
         return false;
+}
+
+void MainWindow::gotoSelectedObj(){
+    GtkTreeIter iter;
+    std::string name;
+
+    if(!getSelectedObjName(name, &iter))
+        return;
+
+    _viewport->gotoObj(name);
+    gtk_widget_queue_draw(_mainWindow);
 }
 
 void MainWindow::removeSelectedObj(){

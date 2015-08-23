@@ -1372,37 +1372,60 @@
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <child>
-      <object class="GtkMenuItem" id="pop_up_transl">
+      <object class="GtkMenuItem" id="pop_up_transf">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Transladar...</property>
+        <property name="label" translatable="yes">Transformações</property>
         <property name="use_underline">True</property>
-        <signal name="activate" handler="translate_obj_event" swapped="no"/>
+        <child type="submenu">
+          <object class="GtkMenu" id="menu4">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkMenuItem" id="pop_up_transl">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Transladar</property>
+                <property name="use_underline">True</property>
+                <signal name="activate" handler="translate_obj_event" swapped="no"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="pop_up_escal">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Escalonar</property>
+                <property name="use_underline">True</property>
+                <signal name="activate" handler="scale_obj_event" swapped="no"/>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="pop_up_rot">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Rotacionar</property>
+                <property name="use_underline">True</property>
+                <signal name="activate" handler="rotate_obj_event" swapped="no"/>
+              </object>
+            </child>
+          </object>
+        </child>
       </object>
     </child>
     <child>
-      <object class="GtkMenuItem" id="pop_up_escal">
+      <object class="GtkMenuItem" id="pop_up_goto">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Escalonar...</property>
+        <property name="label" translatable="yes">Goto</property>
         <property name="use_underline">True</property>
-        <signal name="activate" handler="scale_obj_event" swapped="no"/>
-      </object>
-    </child>
-    <child>
-      <object class="GtkMenuItem" id="pop_up_rot">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Rotacionar...</property>
-        <property name="use_underline">True</property>
-        <signal name="activate" handler="rotate_obj_event" swapped="no"/>
+        <signal name="activate" handler="goto_obj_event" swapped="no"/>
       </object>
     </child>
     <child>
       <object class="GtkMenuItem" id="pop_up_remove">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Remover...</property>
+        <property name="label" translatable="yes">Remover</property>
         <property name="use_underline">True</property>
         <signal name="activate" handler="remove_obj_event" swapped="no"/>
       </object>

@@ -19,6 +19,7 @@ class Viewport
         Coordinate transformCoordinate(const Coordinate& c) const;
         Coordinates transformCoordinates(const Coordinates& coords) const;
 
+        void gotoObj(std::string objName);
         void zoom(double step){_window.zoom(step);}
         void moveX(double value){_window.moveX(value);}
         void moveY(double value){_window.moveY(value);}
@@ -58,6 +59,11 @@ Viewport::Border::Border(int width, int height) :
 
 Coordinate Viewport::center(){
     return Coordinate(_width/2, _height/2);
+}
+
+void Viewport::gotoObj(std::string objName){
+    Object *obj = _world->getObj(objName);
+    _window.moveTo(obj->center());
 }
 
 Coordinate Viewport::transformCoordinate(const Coordinate& c) const {
