@@ -17,7 +17,7 @@ class MainWindow
 {
     public:
         MainWindow(GtkBuilder* builder);
-        virtual ~MainWindow() {}
+        virtual ~MainWindow() { delete _viewport; delete _objs; }
         // Events
         void addPoint(GtkBuilder* builder);
         void addLine(GtkBuilder* builder);
@@ -147,7 +147,7 @@ void MainWindow::addObjOnListStore(const std::string name, const char* type){
 
 void MainWindow::addObj(Object* obj){
     _objs->addObj(obj);
-    addObjOnListStore(obj->getName(), obj->typeName().c_str());
+    addObjOnListStore(obj->getName(), obj->getTypeName().c_str());
     //gtk_widget_queue_draw(_mainWindow); //janela ja se atualiza sozinha por causa do dialog
 }
 
@@ -240,16 +240,16 @@ void MainWindow::move(Buttons id){
     double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(_step));
     switch(id){
     case Buttons::UP:
-        _viewport->move(0,value);
+        _viewport->moveY(value);
         break;
     case Buttons::RIGHT:
-        _viewport->move(value,0);
+        _viewport->moveX(value);
         break;
     case Buttons::DOWN:
-        _viewport->move(0,-value);
+        _viewport->moveY(-value);
         break;
     case Buttons::LEFT:
-        _viewport->move(-value,0);
+        _viewport->moveX(-value);
         break;
     default:
         break;
@@ -284,6 +284,7 @@ void MainWindow::removeSelectedObj(){
         gtk_list_store_remove(GTK_LIST_STORE(_mainModel), &iter);
 
         delete name;
+        delete obj;
 
         gtk_widget_queue_draw(_mainWindow);
         log("Objeto removido.\n");

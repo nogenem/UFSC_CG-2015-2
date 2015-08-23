@@ -14,13 +14,14 @@ class Viewport
         Viewport(double width, double height, DisplayFile *objs):
             _width(width), _height(height), _objs(objs), _window(width,height),
             _border(new Border(width,height)) {}
-        virtual ~Viewport() {}
+        virtual ~Viewport() { delete _border; }
 
         Coordinate transformCoordinate(const Coordinate& c) const;
         Coordinates transformCoordinates(const Coordinates& coords) const;
 
         void zoom(double step){_window.zoom(step);}
-        void move(double x, double y){_window.move(x,y);}
+        void moveX(double value){_window.moveX(value);}
+        void moveY(double value){_window.moveY(value);}
         void drawObjs(cairo_t* cr);
     protected:
     private:
@@ -71,7 +72,6 @@ Coordinates Viewport::transformCoordinates(const Coordinates& coords) const{
 }
 
 void Viewport::drawObjs(cairo_t* cr){
-    //clock_t time = clock();
 
     _cairo = cr;
     for(int i = 0; i < _objs->size(); i++){
@@ -79,14 +79,10 @@ void Viewport::drawObjs(cairo_t* cr){
         this->drawObj(obj);
     }
     this->drawObj(_border);
-
-    /*time = clock() - time;
-    std::cout << "Took me " << time << " clock ticks ("<< ((float)time)/CLOCKS_PER_SEC << " seconds) at "
-			<<  CLOCKS_PER_SEC << "Hz to draw all clipped objects" << std::endl;*/
 }
 
 void Viewport::drawObj(Object* obj){
-    switch(obj->type()){
+    switch(obj->getType()){
     case ObjType::OBJECT:
         break;
     case ObjType::POINT:

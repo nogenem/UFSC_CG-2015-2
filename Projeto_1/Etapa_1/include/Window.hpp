@@ -11,18 +11,17 @@ class Window
 {
     public:
         Window(double vWidth, double vHeight):
-            _wmin(0,0), _wmax(vWidth,vHeight),
-            _initWidth(vWidth), _initHeight(vHeight) {}
+            _wmin(0,0), _wmax(vWidth,vHeight){}
         virtual ~Window() {}
 
         Coordinate wMin() const { return _wmin; }
         Coordinate wMax() const { return _wmax; }
         void zoom(double step);
-        void move(double x, double y);
+        void moveX(double v){ _wmin.x += v; _wmax.x += v; }
+        void moveY(double v){ _wmin.y += v; _wmax.y += v; }
     protected:
     private:
         Coordinate _wmin, _wmax;
-        double _initWidth, _initHeight;
 
         double getWidth(){return _wmax.x-_wmin.x;}
         double getHeight(){return _wmax.y-_wmin.y;}
@@ -43,13 +42,6 @@ void Window::zoom(double step){
         _wmax += step;
         throw "Zoom minimo alcancado.\n";
     }
-}
-
-void Window::move(double x, double y){
-    _wmin.x += x;
-    _wmin.y += y;
-    _wmax.x += x;
-    _wmax.y += y;
 }
 
 #endif // WINDOW_HPP
