@@ -1375,7 +1375,7 @@
       <object class="GtkMenuItem" id="pop_up_transl">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Translação...</property>
+        <property name="label" translatable="yes">Transladar...</property>
         <property name="use_underline">True</property>
         <signal name="activate" handler="translate_obj_event" swapped="no"/>
       </object>
@@ -1384,7 +1384,7 @@
       <object class="GtkMenuItem" id="pop_up_escal">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Escalonamento...</property>
+        <property name="label" translatable="yes">Escalonar...</property>
         <property name="use_underline">True</property>
         <signal name="activate" handler="scale_obj_event" swapped="no"/>
       </object>
@@ -1393,7 +1393,7 @@
       <object class="GtkMenuItem" id="pop_up_rot">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Rotação...</property>
+        <property name="label" translatable="yes">Rotacionar...</property>
         <property name="use_underline">True</property>
         <signal name="activate" handler="rotate_obj_event" swapped="no"/>
       </object>
@@ -1402,7 +1402,7 @@
       <object class="GtkMenuItem" id="pop_up_remove">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Remove...</property>
+        <property name="label" translatable="yes">Remover...</property>
         <property name="use_underline">True</property>
         <signal name="activate" handler="remove_obj_event" swapped="no"/>
       </object>

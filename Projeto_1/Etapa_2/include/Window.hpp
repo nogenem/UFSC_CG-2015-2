@@ -17,7 +17,8 @@ class Window
         Coordinate wMin() const { return _wmin; }
         Coordinate wMax() const { return _wmax; }
         void zoom(double step);
-        void move(double x, double y);
+        void moveX(double v){ _wmin.x += v; _wmax.x += v;}
+        void moveY(double v){ _wmin.y += v; _wmax.y += v;}
     protected:
     private:
         Coordinate _wmin, _wmax;
@@ -41,13 +42,6 @@ void Window::zoom(double step){
         _wmax += step;
         throw "Zoom minimo alcancado.\n";
     }
-}
-
-void Window::move(double x, double y){
-    _wmin.x += x;
-    _wmin.y += y;
-    _wmax.x += x;
-    _wmax.y += y;
 }
 
 #endif // WINDOW_HPP

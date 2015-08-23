@@ -24,16 +24,16 @@ Transformation Transformation::newScalingAroundObjCenter(double sx, double sy, c
     return newTranslation(-center.x, -center.y) * newScaling(sx, sy) * newTranslation(center.x, center.y);
 }
 
-Transformation Transformation::newRotation(double theta){
-    double rad = -toRadians(theta);// ta invertido
+Transformation Transformation::newRotation(double graus){
+    double rad = -toRadians(graus);// ta invertido
     Matrix m = {{  {cos(rad), -sin(rad), 0},
                    {sin(rad),  cos(rad), 0},
                    {       0,         0, 1}  }};
     return Transformation(m);
 }
 
-Transformation Transformation::newRotationAroundPoint(double theta, const Coordinate& p){
-    return newTranslation(-p.x, -p.y) * newRotation(theta) * newTranslation(p.x, p.y);
+Transformation Transformation::newRotationAroundPoint(double graus, const Coordinate& p){
+    return newTranslation(-p.x, -p.y) * newRotation(graus) * newTranslation(p.x, p.y);
 }
 
 Transformation& Transformation::operator*=(const Transformation& t2){

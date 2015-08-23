@@ -24,7 +24,7 @@ class Transformation
         Matrix& getM() {return _m;}
 
         static Transformation newTranslation(double dx, double dy);
-		static Transformation newRotationAroundPoint(double theta, const Coordinate& p);
+		static Transformation newRotationAroundPoint(double graus, const Coordinate& p);
 		static Transformation newScalingAroundObjCenter(double sx, double sy, const Coordinate& center);
 
         static double toRadians(double degrees){ return (PI/180) * degrees;  }
@@ -35,7 +35,7 @@ class Transformation
         Matrix _m;
 
         static Transformation newScaling(double sx, double sy);
-        static Transformation newRotation(double theta);
+        static Transformation newRotation(double graus);
 };
 
 Transformation operator*(Transformation t1, const Transformation& t2);

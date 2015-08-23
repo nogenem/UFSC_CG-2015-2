@@ -20,7 +20,8 @@ class Viewport
         Coordinates transformCoordinates(const Coordinates& coords) const;
 
         void zoom(double step){_window.zoom(step);}
-        void move(double x, double y){_window.move(x,y);}
+        void moveX(double value){_window.moveX(value);}
+        void moveY(double value){_window.moveY(value);}
         void drawObjs(cairo_t* cr);
 
         Coordinate center();

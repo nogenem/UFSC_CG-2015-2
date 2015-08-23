@@ -245,16 +245,16 @@ void MainWindow::move(Buttons id){
     double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(_step));
     switch(id){
     case Buttons::UP:
-        _viewport->move(0,value);
+        _viewport->moveY(value);
         break;
     case Buttons::RIGHT:
-        _viewport->move(value,0);
+        _viewport->moveX(value);
         break;
     case Buttons::DOWN:
-        _viewport->move(0,-value);
+        _viewport->moveY(-value);
         break;
     case Buttons::LEFT:
-        _viewport->move(-value,0);
+        _viewport->moveX(-value);
         break;
     default:
         break;
