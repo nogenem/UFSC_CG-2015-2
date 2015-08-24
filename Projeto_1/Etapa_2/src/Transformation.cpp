@@ -1,11 +1,5 @@
 #include "Transformation.hpp"
 
-Transformation::Transformation(const double x[M_SIZE][M_SIZE]){
-     for(int i=0; i<M_SIZE; i++)
-        for(int j=0; j<M_SIZE; j++)
-            _m[i][j] = x[i][j];
-}
-
 Transformation Transformation::newTranslation(double dx, double dy){
     Matrix m = {{  {1,  0,  0},
                    {0,  1,  0},
@@ -25,7 +19,8 @@ Transformation Transformation::newScalingAroundObjCenter(double sx, double sy, c
 }
 
 Transformation Transformation::newRotation(double graus){
-    double rad = -toRadians(graus);// ta invertido
+    // Por algum motivo desconhecido, a rotação esta invertida
+    double rad = -toRadians(graus);
     Matrix m = {{  {cos(rad), -sin(rad), 0},
                    {sin(rad),  cos(rad), 0},
                    {       0,         0, 1}  }};

@@ -19,9 +19,10 @@ class World
         Object* getObj(int pos){ return _objs.getObj(pos); }
         Object* getObj(std::string name);
 
-        void translateObj(std::string name, double dx, double dy);
-        void scaleObj(std::string name, double sx, double sy);
-        void rotateObj(std::string name, double angle, const Coordinate& p,
+        void translateObj(std::string objName, double dx, double dy);
+        void scaleObj(std::string objName, double sx, double sy);
+        // p = ponto central para rodar;
+        void rotateObj(std::string objName, double angle, const Coordinate& p,
                        rotateType type);
     protected:
     private:
@@ -54,21 +55,21 @@ Object* World::getObj(std::string name){
     return _objs.getObj(&tmp);
 }
 
-void World::translateObj(std::string name, double dx, double dy){
-    Object tmp(name);
+void World::translateObj(std::string objName, double dx, double dy){
+    Object tmp(objName);
     Object *obj = _objs.getObj(&tmp);
     obj->transform(Transformation::newTranslation(dx,dy));
 }
 
-void World::scaleObj(std::string name, double sx, double sy){
-    Object tmp(name);
+void World::scaleObj(std::string objName, double sx, double sy){
+    Object tmp(objName);
     Object *obj = _objs.getObj(&tmp);
     obj->transform(Transformation::newScalingAroundObjCenter(sx,sy,obj->center()));
 }
 
-void World::rotateObj(std::string name, double angle, const Coordinate& p,
+void World::rotateObj(std::string objName, double angle, const Coordinate& p,
                        rotateType type){
-    Object tmp(name);
+    Object tmp(objName);
     Object *obj = _objs.getObj(&tmp);
 
     switch(type){

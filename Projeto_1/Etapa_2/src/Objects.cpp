@@ -34,7 +34,7 @@ Coordinate& Coordinate::operator*=(const Transformation& t){
 }
 
 Coordinate Object::center() const{
-    Coordinate c(0, 0);
+    Coordinate c;
     int n = _coords.size();
 
     for(auto &p : _coords){
