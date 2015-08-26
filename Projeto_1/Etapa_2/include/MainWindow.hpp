@@ -274,17 +274,17 @@ void MainWindow::showPopUp(GdkEvent *event){
 }
 
 bool MainWindow::getSelectedObjName(std::string &name, GtkTreeIter *iter){
-    if(gtk_tree_selection_get_selected(GTK_TREE_SELECTION(_treeSelection),
-                                    NULL, iter)){
-        char *_name;
-        gtk_tree_model_get(_mainModel, iter, 0, &_name, -1);
-
-        name = _name;
-        delete _name;
-
-        return true;
-    }else
+    if(!gtk_tree_selection_get_selected(GTK_TREE_SELECTION(_treeSelection),
+                                    NULL, iter))
         return false;
+
+    char *_name;
+    gtk_tree_model_get(_mainModel, iter, 0, &_name, -1);
+
+    name = _name;
+    delete _name;
+
+    return true;
 }
 
 void MainWindow::gotoSelectedObj(){
