@@ -1,5 +1,26 @@
 #include "Dialogs.hpp"
 
+FileDialog::FileDialog(GtkBuilder* builder, bool toSave){
+    GError* error = NULL;
+    // (char*) usado para tirar warnings do compilador
+    char* ids[] = {(char*)"dlog_file",(char*)"obj_filter",NULL};
+
+    if(!gtk_builder_add_objects_from_file (builder, UI_FILE, ids, &error)){
+        g_warning( "%s", error->message );
+        g_free( error );
+        return;
+    }
+
+    _dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_file" ) );
+    if(toSave){
+        gtk_window_set_title (GTK_WINDOW(_dialog), "Salve o arquivo...");
+        gtk_file_chooser_set_action(GTK_FILE_CHOOSER(_dialog), GTK_FILE_CHOOSER_ACTION_SAVE);
+        gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(_dialog), true);
+        gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(_dialog), true);
+        gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER(_dialog), "untitled.obj");
+    }
+}
+
 int Dialog::run(){
     if(_dialog == NULL) return 0;
     return gtk_dialog_run(GTK_DIALOG(_dialog));
@@ -35,6 +56,8 @@ PointDialog::PointDialog(GtkBuilder* builder){
     _entryName = GTK_WIDGET( gtk_builder_get_object( builder, "point_name" ) );
     _entryX = GTK_WIDGET( gtk_builder_get_object( builder, "point_x" ) );
     _entryY = GTK_WIDGET( gtk_builder_get_object( builder, "point_y" ) );
+
+    gtk_builder_connect_signals(builder, this);
 }
 
 LineDialog::LineDialog(GtkBuilder* builder){
@@ -55,6 +78,8 @@ LineDialog::LineDialog(GtkBuilder* builder){
     _entryY1 = GTK_WIDGET( gtk_builder_get_object( builder, "line_y1" ) );
     _entryX2 = GTK_WIDGET( gtk_builder_get_object( builder, "line_x2" ) );
     _entryY2 = GTK_WIDGET( gtk_builder_get_object( builder, "line_y2" ) );
+
+    gtk_builder_connect_signals(builder, this);
 }
 
 PolygonDialog::PolygonDialog(GtkBuilder* builder){

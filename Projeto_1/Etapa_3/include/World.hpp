@@ -10,9 +10,10 @@ class World
         World() {}
         virtual ~World() {}
 
-        void addPoint(std::string name, const Coordinate& p);
-        void addLine(std::string name, const Coordinates& c);
-        void addPolygon(std::string name, bool filled, const Coordinates& c);
+        void addPoint(std::string name, GdkRGBA color, const Coordinate& p);
+        void addLine(std::string name, GdkRGBA color, const Coordinates& c);
+        void addPolygon(std::string name, GdkRGBA color, bool filled, const Coordinates& c);
+        void addObj(Object *obj){ _objs.addObj(obj); }
 
         void removeObj(std::string name);
         int numObjs(){ return _objs.size(); }
@@ -29,18 +30,18 @@ class World
         DisplayFile _objs;
 };
 
-void World::addPoint(std::string name, const Coordinate& p){
-    Point *obj = new Point(name, p);
+void World::addPoint(std::string name, GdkRGBA color, const Coordinate& p){
+    Point *obj = new Point(name, color, p);
     _objs.addObj(obj);
 }
 
-void World::addLine(std::string name, const Coordinates& c){
-    Line *obj = new Line(name, c);
+void World::addLine(std::string name, GdkRGBA color, const Coordinates& c){
+    Line *obj = new Line(name, color, c);
     _objs.addObj(obj);
 }
 
-void World::addPolygon(std::string name, bool filled, const Coordinates& c){
-    Polygon *obj = new Polygon(name, c);
+void World::addPolygon(std::string name, GdkRGBA color, bool filled, const Coordinates& c){
+    Polygon *obj = new Polygon(name, color, c);
     obj->setFilled(filled);
     _objs.addObj(obj);
 }

@@ -94,6 +94,21 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkColorButton" id="line_color">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="always_show_image">True</property>
+                    <property name="rgba">rgb(0,0,0)</property>
+                    <signal name="color-set" handler="color_choose_event" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -364,6 +379,21 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkColorButton" id="point_color">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="always_show_image">True</property>
+                    <property name="rgba">rgb(0,0,0)</property>
+                    <signal name="color-set" handler="color_choose_event" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -594,6 +624,21 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkColorButton" id="poly_color">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="always_show_image">True</property>
+                    <property name="rgba">rgb(0,0,0)</property>
+                    <signal name="color-set" handler="color_choose_event" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -775,6 +820,71 @@
       <action-widget response="0">btn_poly_cancel</action-widget>
     </action-widgets>
   </object>
+  <object class="GtkFileChooserDialog" id="dlog_file">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="title" translatable="yes">Escolha um arquivo...</property>
+    <property name="role">GtkFileChooserDialog</property>
+    <property name="modal">True</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="transient_for">main_window</property>
+    <property name="create_folders">False</property>
+    <property name="filter">obj_filter</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="filechooserdialog-vbox1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="filechooserdialog-action_area1">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="open_file_ok">
+                <property name="label" translatable="yes">OK</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="open_file_cancel">
+                <property name="label" translatable="yes">Cancelar</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="1">open_file_ok</action-widget>
+      <action-widget response="0">open_file_cancel</action-widget>
+    </action-widgets>
+  </object>
   <object class="GtkMessageDialog" id="dlog_help">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -790,7 +900,9 @@
     <property name="text" translatable="yes">Atalhos:
 	+ 				=&gt; Zoom in
 	- 				=&gt; Zoom out
-	Setas de direção 	=&gt; Move a tela</property>
+	Setas de direção 	=&gt; Move a tela
+	Ctrl+Seta Esquerda	=&gt; Rotaciona window
+	Ctrl+Seta Direita	=&gt; Rotaciona window</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="messagedialog-vbox">
         <property name="can_focus">False</property>
@@ -1464,6 +1576,7 @@
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="open_file_event" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -1473,15 +1586,7 @@
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem4">
-                        <property name="label">gtk-save-as</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
+                        <signal name="activate" handler="save_file_event" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -1781,29 +1886,36 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <child>
-                                      <placeholder/>
+                                      <object class="GtkButton" id="btn_rot_left">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="receives_default">True</property>
+                                        <signal name="clicked" handler="main_btns_event" swapped="no"/>
+                                        <child>
+                                          <object class="GtkImage" id="image6">
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <property name="stock">gtk-undo</property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">True</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">0</property>
+                                      </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkAlignment" id="alignment4">
+                                      <object class="GtkButton" id="btn_down">
                                         <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="xscale">0</property>
-                                        <property name="yscale">0.5</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="receives_default">True</property>
+                                        <signal name="clicked" handler="main_btns_event" swapped="no"/>
                                         <child>
-                                          <object class="GtkButton" id="btn_down">
-                                            <property name="width_request">65</property>
+                                          <object class="GtkImage" id="image7">
                                             <property name="visible">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="receives_default">True</property>
-                                            <property name="tooltip_text" translatable="yes">Para baixo</property>
-                                            <signal name="clicked" handler="main_btns_event" swapped="no"/>
-                                            <child>
-                                              <object class="GtkImage" id="image6">
-                                                <property name="visible">True</property>
-                                                <property name="can_focus">False</property>
-                                                <property name="stock">gtk-go-down</property>
-                                              </object>
-                                            </child>
+                                            <property name="can_focus">False</property>
+                                            <property name="stock">gtk-go-down</property>
                                           </object>
                                         </child>
                                       </object>
@@ -1814,7 +1926,24 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <placeholder/>
+                                      <object class="GtkButton" id="btn_rot_right">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="receives_default">True</property>
+                                        <signal name="clicked" handler="main_btns_event" swapped="no"/>
+                                        <child>
+                                          <object class="GtkImage" id="image8">
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <property name="stock">gtk-redo</property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">True</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">2</property>
+                                      </packing>
                                     </child>
                                   </object>
                                   <packing>
@@ -2016,6 +2145,14 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkFileFilter" id="obj_filter">
+    <mime-types>
+      <mime-type>obj/ *</mime-type>
+    </mime-types>
+    <patterns>
+      <pattern>*.obj</pattern>
+    </patterns>
   </object>
   <object class="GtkListStore" id="poly_list_store">
     <columns>

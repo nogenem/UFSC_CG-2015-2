@@ -6,6 +6,15 @@ GtkBuilder* builder = NULL;
 
 /* Callbacks */
 extern "C"{
+    void color_choose_event(GtkColorButton *button, ObjDialog* dialog){
+        dialog->onColorChangeEvent(button);
+    }
+    void open_file_event(GtkMenuItem *menuitem, MainWindow* window){
+        window->openFile(builder);
+    }
+    void save_file_event(GtkMenuItem *menuitem, MainWindow* window){
+        window->saveFile(builder);
+    }
     void add_pnt_event(GtkMenuItem *menuitem, MainWindow* window){
         window->addPoint(builder);
     }
@@ -32,13 +41,17 @@ extern "C"{
         switch(b){
         case Buttons::ZOOM_OUT:
         case Buttons::ZOOM_IN:
-            window->zoom((Buttons)btnId);
+            window->zoom(b);
             break;
         case Buttons::UP:
         case Buttons::RIGHT:
         case Buttons::DOWN:
         case Buttons::LEFT:
-            window->move((Buttons)btnId);
+            window->move(b);
+            break;
+        case Buttons::ROT_LEFT:
+        case Buttons::ROT_RIGHT:
+            window->rotateWindow(b);
             break;
         }
     }
@@ -48,13 +61,19 @@ extern "C"{
             window->move(Buttons::UP);
             return true;
         case GDK_KEY_Right:
-            window->move(Buttons::RIGHT);
+            if (event->state & GDK_CONTROL_MASK)
+                window->rotateWindow(Buttons::ROT_RIGHT);
+            else
+                window->move(Buttons::RIGHT);
             return true;
         case GDK_KEY_Down:
             window->move(Buttons::DOWN);
             return true;
         case GDK_KEY_Left:
-            window->move(Buttons::LEFT);
+            if (event->state & GDK_CONTROL_MASK)
+                window->rotateWindow(Buttons::ROT_LEFT);
+            else
+                window->move(Buttons::LEFT);
             return true;
         case GDK_KEY_plus:
         case GDK_KEY_KP_Add:

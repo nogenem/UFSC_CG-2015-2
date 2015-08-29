@@ -47,8 +47,29 @@ Coordinate Object::center() const{
     return c;
 }
 
+Coordinate Object::nCenter() const{
+    Coordinate c;
+    int n = _nCoords.size();
+
+    for(auto &p : _nCoords){
+        c.x += p.x;
+        c.y += p.y;
+    }
+
+    c.x /= n;
+    c.y /= n;
+    return c;
+}
+
 void Object::transform(const Transformation& t){
     //std::cout << t << "\n";
     for(auto &p : _coords)
         p *= (t);
+}
+
+void Object::transformNormalized(const Transformation& t){
+    if(_nCoords.size() > 0)
+        _nCoords.clear();
+    for(auto p : _coords)
+        _nCoords.push_back( (p *= t) );
 }

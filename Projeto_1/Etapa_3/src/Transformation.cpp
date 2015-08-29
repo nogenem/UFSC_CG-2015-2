@@ -1,5 +1,12 @@
 #include "Transformation.hpp"
 
+Transformation::Transformation(){
+    for(int i=0; i<M_SIZE; i++)
+        for(int j=0; j<M_SIZE; j++)
+            _m[i][j] = 0;
+    _m[0][0] = _m[1][1] = _m[2][2] = 1;
+}
+
 Transformation Transformation::newTranslation(double dx, double dy){
     Matrix m = {{  {1,  0,  0},
                    {0,  1,  0},
@@ -19,11 +26,10 @@ Transformation Transformation::newScalingAroundObjCenter(double sx, double sy, c
 }
 
 Transformation Transformation::newRotation(double graus){
-    // Por algum motivo desconhecido, a rotação esta invertida
-    double rad = -toRadians(graus);
-    Matrix m = {{  {cos(rad), -sin(rad), 0},
-                   {sin(rad),  cos(rad), 0},
-                   {       0,         0, 1}  }};
+    double rad = toRadians(graus);
+    Matrix m = {{  { cos(rad), sin(rad), 0},
+                   {-sin(rad), cos(rad), 0},
+                   {        0,        0, 1}  }};
     return Transformation(m);
 }
 

@@ -8,10 +8,11 @@
 #include "Dialogs.hpp"
 #include "Objects.hpp"
 #include "World.hpp"
+#include "objsIO.hpp"
 
 #define UI_FILE "window.glade"
 
-enum class Buttons { ZOOM_OUT, ZOOM_IN, UP, RIGHT, DOWN, LEFT };
+enum class Buttons { ZOOM_OUT, ZOOM_IN, UP, RIGHT, DOWN, LEFT, ROT_LEFT, ROT_RIGHT };
 
 class MainWindow
 {
@@ -19,11 +20,14 @@ class MainWindow
         MainWindow(GtkBuilder* builder);
         virtual ~MainWindow() { delete _world; delete _viewport; }
         // Events
+        void openFile(GtkBuilder* builder);
+        void saveFile(GtkBuilder* builder);
         void addPoint(GtkBuilder* builder);
         void addLine(GtkBuilder* builder);
         void addPolygon(GtkBuilder* builder);
         void zoom(Buttons id);
         void move(Buttons id);
+        void rotateWindow(Buttons id);
         void onDraw(cairo_t* cr);
         void showPopUp(GdkEvent *event);
         void gotoSelectedObj();
@@ -109,8 +113,61 @@ MainWindow::MainWindow(GtkBuilder* builder) {
                        "ID", GINT_TO_POINTER(Buttons::DOWN));
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_left")),
                        "ID", GINT_TO_POINTER(Buttons::LEFT));
+    g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_rot_left")),
+                       "ID", GINT_TO_POINTER(Buttons::ROT_LEFT));
+    g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_rot_right")),
+                       "ID", GINT_TO_POINTER(Buttons::ROT_RIGHT));
 
     gtk_widget_show( _mainWindow );
+}
+
+void MainWindow::openFile(GtkBuilder* builder){
+    FileDialog dialog(GTK_BUILDER(builder));
+
+    if(dialog.run() == 1){
+        char* filename = dialog.getFileName();
+
+        if(filename == NULL)
+            return;
+
+        try{
+            ObjReader r(filename);
+            for(auto obj : r.getObjs()){
+                _world->addObj(obj);
+                addObjOnListStore(obj->getName(), obj->getTypeName().c_str());
+            }
+
+            log("Arquivo carregado.\n");
+            delete filename;
+        }catch(const char* msg){
+            log(msg);
+            showErrorDialog(msg);
+            delete filename;
+        }
+    }
+}
+
+void MainWindow::saveFile(GtkBuilder* builder){
+    FileDialog dialog(GTK_BUILDER(builder), true);
+
+    if(dialog.run() == 1){
+        char* filename = dialog.getFileName();
+
+        if(filename == NULL)
+            return;
+
+        try{
+            ObjWriter w(filename);
+            w.writeObjs(_world);
+
+            log("Arquivo salvo.\n");
+            delete filename;
+        }catch(const char* msg){
+            log(msg);
+            showErrorDialog(msg);
+            delete filename;
+        }
+    }
 }
 
 void MainWindow::showErrorDialog(const char* msg){
@@ -159,7 +216,8 @@ void MainWindow::addPoint(GtkBuilder* builder){
         if(dialog.run() == 1){
             try{
                 Coordinate c(dialog.getX(),dialog.getY());
-                _world->addPoint(dialog.getName(), c);
+                _world->addPoint(dialog.getName(), dialog.getColor(),
+                                  c);
                 addObjOnListStore(dialog.getName(), "Point");
 
                 log("Novo ponto adicionado.\n");
@@ -184,7 +242,8 @@ void MainWindow::addLine(GtkBuilder* builder){
                 c.emplace_back(dialog.getX1(), dialog.getY1());
                 c.emplace_back(dialog.getX2(), dialog.getY2());
 
-                _world->addLine(dialog.getName(), c);
+                _world->addLine(dialog.getName(),  dialog.getColor(),
+                                c);
                 addObjOnListStore(dialog.getName(), "Line");
 
                 log("Nova reta adicionada.\n");
@@ -208,7 +267,7 @@ void MainWindow::addPolygon(GtkBuilder* builder){
                 Coordinates c;
                 dialog.getCoords(c);
 
-                _world->addPolygon(dialog.getName(),
+                _world->addPolygon(dialog.getName(), dialog.getColor(),
                                    dialog.shouldBeFilled(), c);
                 addObjOnListStore(dialog.getName(), "Polygon");
 
@@ -256,6 +315,21 @@ void MainWindow::move(Buttons id){
         break;
     case Buttons::LEFT:
         _viewport->moveX(-value);
+        break;
+    default:
+        break;
+    }
+    gtk_widget_queue_draw(_mainWindow);
+}
+
+void MainWindow::rotateWindow(Buttons id){
+    double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(_step));
+    switch(id){
+    case Buttons::ROT_LEFT:
+        _viewport->rotateWindow(value);
+        break;
+    case Buttons::ROT_RIGHT:
+        _viewport->rotateWindow(-value);
         break;
     default:
         break;

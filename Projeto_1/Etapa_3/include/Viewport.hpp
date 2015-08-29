@@ -19,10 +19,13 @@ class Viewport
         Coordinate transformCoordinate(const Coordinate& c) const;
         Coordinates transformCoordinates(const Coordinates& coords) const;
 
+        void transformAllObjs();
+
         void gotoObj(std::string objName);
         void zoom(double step){_window.zoom(step);}
         void moveX(double value){_window.moveX(value);}
         void moveY(double value){_window.moveY(value);}
+        void rotateWindow(double graus){_window.setAngulo(graus);}
         void drawObjs(cairo_t* cr);
 
         Coordinate center();
@@ -45,7 +48,7 @@ class Viewport
         void drawLine(Object* obj);
         void drawPolygon(Object* obj);
 
-        void prepareContext();
+        void prepareContext(GdkRGBA& color);
 };
 
 // Cria a borda da Viewport [mudar cor/tamanho da linha?]
@@ -63,7 +66,18 @@ Coordinate Viewport::center(){
 
 void Viewport::gotoObj(std::string objName){
     Object *obj = _world->getObj(objName);
-    _window.moveTo(obj->center());
+    _window.moveTo(obj->nCenter());
+}
+
+void Viewport::transformAllObjs(){
+    _window.updateMatrix();
+    auto t = _window.getT();
+
+    for(int i = 0; i < _world->numObjs(); i++){
+        Object *obj = _world->getObj(i);
+        obj->transformNormalized(t);
+    }
+    _border->transformNormalized(t);
 }
 
 Coordinate Viewport::transformCoordinate(const Coordinate& c) const {
@@ -85,6 +99,7 @@ Coordinates Viewport::transformCoordinates(const Coordinates& coords) const{
 
 void Viewport::drawObjs(cairo_t* cr){
     _cairo = cr;
+    transformAllObjs();
     for(int i = 0; i < _world->numObjs(); i++){
         Object *obj = _world->getObj(i);
         this->drawObj(obj);
@@ -109,21 +124,21 @@ void Viewport::drawObj(Object* obj){
 }
 
 void Viewport::drawPoint(Object* obj){
-    Coordinate coord = transformCoordinate(obj->getCoord(0));
-    prepareContext();
+    Coordinate coord = transformCoordinate(obj->getNCoord(0));
+    prepareContext(obj->getColor());
     cairo_move_to(_cairo, coord.x, coord.y);
     cairo_arc(_cairo, coord.x, coord.y, 1.0, 0.0, (2*PI) );//pnt deveria ir diminuindo, nao?
     cairo_fill(_cairo);
 }
 
 void Viewport::drawLine(Object* obj){
-    auto coords = obj->getCoords();
+    auto coords = obj->getNCoords();
     if(coords[0] == coords[1]){// Usuario quer um ponto?
         drawPoint(obj);
         return;
     }
     coords = transformCoordinates(coords);
-    prepareContext();
+    prepareContext(obj->getColor());
 
     cairo_move_to(_cairo, coords[0].x, coords[0].y);
     cairo_line_to(_cairo, coords[1].x, coords[1].y);
@@ -131,7 +146,7 @@ void Viewport::drawLine(Object* obj){
 }
 
 void Viewport::drawPolygon(Object* obj){
-    auto coords = obj->getCoords();
+    auto coords = obj->getNCoords();
     if(coords.size() == 1){// Usuario quer um ponto?
         drawPoint(obj);
         return;
@@ -141,7 +156,7 @@ void Viewport::drawPolygon(Object* obj){
     }
 
     coords = transformCoordinates(coords);
-    prepareContext();
+    prepareContext(obj->getColor());
 
     cairo_move_to(_cairo, coords[0].x, coords[0].y);
     for(unsigned int i = 0; i<coords.size(); i++)
@@ -157,8 +172,8 @@ void Viewport::drawPolygon(Object* obj){
         cairo_stroke(_cairo);
 }
 
-void Viewport::prepareContext(){
-    cairo_set_source_rgb(_cairo, 0, 0, 0);
+void Viewport::prepareContext(GdkRGBA& color){
+    cairo_set_source_rgb(_cairo, color.red, color.green, color.blue);
     cairo_set_line_width(_cairo, 1);
 }
 

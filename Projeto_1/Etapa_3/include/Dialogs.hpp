@@ -21,23 +21,45 @@ class Dialog
     private:
 };
 
-class PointDialog : public Dialog
+class FileDialog : public Dialog
+{
+    public:
+        FileDialog(GtkBuilder* builder, bool toSave=false);
+        char* const getFileName(){ return gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(_dialog)); }
+    private:
+};
+
+class ObjDialog : public Dialog
+{
+    public:
+        ObjDialog(): _color({0}) {}
+        std::string const getName(){ return gtk_entry_get_text(GTK_ENTRY(_entryName)); }
+        GdkRGBA& getColor(){ return _color; }
+
+        // Events
+        void onColorChangeEvent(GtkColorButton* btn){
+            gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(btn), &_color);
+        }
+    protected:
+        GtkWidget* _entryName;
+        GdkRGBA _color;
+};
+
+class PointDialog : public ObjDialog
 {
     public:
         PointDialog(GtkBuilder* builder);
-        std::string const getName(){ return gtk_entry_get_text(GTK_ENTRY(_entryName)); }
         double getX(){ return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryX)); }
         double getY(){ return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryY)); }
     protected:
     private:
-        GtkWidget *_entryX, *_entryY, *_entryName;
+        GtkWidget *_entryX, *_entryY;
 };
 
-class LineDialog : public Dialog
+class LineDialog : public ObjDialog
 {
     public:
         LineDialog(GtkBuilder* builder);
-        std::string const getName(){ return gtk_entry_get_text(GTK_ENTRY(_entryName)); }
         double getX1(){ return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryX1)); }
         double getY1(){ return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryY1)); }
         double getX2(){ return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryX2)); }
@@ -45,17 +67,16 @@ class LineDialog : public Dialog
     protected:
     private:
         GtkWidget *_entryX1, *_entryY1,
-            *_entryX2, *_entryY2, *_entryName;
+            *_entryX2, *_entryY2;
 };
 
-class PolygonDialog : public Dialog
+class PolygonDialog : public ObjDialog
 {
     public:
         PolygonDialog(GtkBuilder* builder);
         ~PolygonDialog(){ destroy(); }
         void destroy();
 
-        std::string const getName(){ return gtk_entry_get_text(GTK_ENTRY(_entryName)); }
         void getCoords(Coordinates& coords);
         bool shouldBeFilled(){ return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(_checkFilled)); }
 
@@ -67,7 +88,7 @@ class PolygonDialog : public Dialog
     protected:
     private:
         GtkTreeModel *_model;
-        GtkWidget *_entryX, *_entryY, *_checkFilled, *_entryName;
+        GtkWidget *_entryX, *_entryY, *_checkFilled;
 };
 
 class TranslateDialog : public Dialog
