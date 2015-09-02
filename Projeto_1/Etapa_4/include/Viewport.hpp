@@ -5,15 +5,24 @@
 #include "Window.hpp"
 #include "Objects.hpp"
 #include "World.hpp"
+#include "Clipping.hpp"
 
 #define PI 3.1415926535897932384626433832795
+
+class Border : public Polygon {
+public:
+    Border(ClipWindow& window);
+    void addNCoordinate(const Coordinates& coords){
+        _nCoords.insert(_nCoords.end(), coords.begin(), coords.end());
+    }
+};
 
 class Viewport
 {
     public:
         Viewport(double width, double height, World *world):
             _width(width), _height(height), _world(world), _window(width,height),
-            _border(new Border(width,height)) { transformAllObjs(); }
+            _border(new Border(_cWindow)) { transformAllObjs(); }
         virtual ~Viewport(){ delete _border; }
 
         Coordinate transformCoordinate(const Coordinate& c) const;
@@ -34,10 +43,7 @@ class Viewport
 
         cairo_t* _cairo;
 
-        class Border : public Polygon {
-            public:
-                Border(int width, int height);
-        };
+        ClipWindow _cWindow = {-0.95,0.95,-0.95,0.95};
         Border *_border;
 
         void transformAllObjs();
@@ -51,12 +57,15 @@ class Viewport
 };
 
 // Cria a borda da Viewport
-Viewport::Border::Border(int width, int height) :
+Border::Border(ClipWindow& window) :
     Polygon("_border_", GdkRGBA({0,0.9,0})) {
-    addCoordinate(0,0);
-    addCoordinate(width, 0);
-    addCoordinate(width, height);
-    addCoordinate(0, height);
+
+    addCoordinate(window.minX,window.minY);
+    addCoordinate(window.maxX, window.minY);
+    addCoordinate(window.maxX, window.maxY);
+    addCoordinate(window.minX, window.maxX);
+
+    addNCoordinate(_coords);
 }
 
 // Remover isso?
@@ -80,7 +89,7 @@ void Viewport::transformAllObjs(){
         Object *obj = _world->getObj(i);
         obj->transformNormalized(t);
     }
-    _border->transformNormalized(t);
+    //_border->transformNormalized(t);
 }
 
 Coordinate Viewport::transformCoordinate(const Coordinate& c) const {
@@ -103,11 +112,11 @@ Coordinates Viewport::transformCoordinates(const Coordinates& coords) const{
 void Viewport::drawObjs(cairo_t* cr){
     _cairo = cr;
 
-    this->drawObj(_border);
     for(int i = 0; i < _world->numObjs(); i++){
         Object *obj = _world->getObj(i);
         this->drawObj(obj);
     }
+    this->drawObj(_border);
 }
 
 void Viewport::drawObj(Object* obj){

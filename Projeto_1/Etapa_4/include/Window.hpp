@@ -12,7 +12,7 @@ class Window
 {
     public:
         Window(double vWidth, double vHeight):
-            _center( (vWidth/2),(vHeight/2) ), _angle(0),
+            _center( (vWidth/2)*0.95,(vHeight/2)*0.95 ), _angle(0),
             _width( (vWidth/2) ), _height( (vHeight/2) ) {}
         virtual ~Window() {}
 
