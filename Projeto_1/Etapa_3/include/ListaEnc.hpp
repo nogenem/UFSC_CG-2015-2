@@ -2,6 +2,7 @@
 #define LISTAENC_HPP
 
 #include "Elemento.hpp"
+#include "MyException.hpp"
 
 template<typename T>
 class ListaEnc {
@@ -47,14 +48,14 @@ T ListaEnc<T>::getFromPos(int pos){
     if(pos == 0)
         return this->head->getInfo();
     else if (pos < 0 || pos > this->size)
-        throw "Posicao invalida.\n";
+        throw MyException("Posicao invalida.\n");
 
     int i;
     Elemento<T> *temporario = this->head;
     for (i = 0; i < pos; i++) {
         temporario = temporario->getProximo();
         if (temporario == NULL) {
-            throw "Temporario foi detectado como nulo na posicao "+i;
+            throw MyException("Temporario foi detectado como nulo na posicao "+i);
         }
     }
     return temporario->getInfo();
@@ -95,7 +96,7 @@ void ListaEnc<T>::adiciona(const T& valor) {
     for (i = 0; i < max; i++) {
         temporario = temporario->getProximo();
         if (temporario == NULL) {
-            throw "Temporario foi detectado como nulo na posicao "+i;
+            throw MyException("Temporario foi detectado como nulo na posicao "+i);
         }
     }
     Elemento<T> *novo = new Elemento<T>(valor, NULL);
@@ -108,7 +109,7 @@ void ListaEnc<T>::adicionaNaPosicao(const T& valor, int posicao) {
     if (posicao == 0) {
         return this->adicionaNoInicio(valor);
     } else if (posicao < 0 || posicao > this->size) {
-        throw "Posicao invalida.\n";
+        throw MyException("Posicao invalida.\n");
     }
     Elemento<T> *temporario = this->head;
     Elemento<T> *novo;
@@ -117,7 +118,7 @@ void ListaEnc<T>::adicionaNaPosicao(const T& valor, int posicao) {
     for (h = 0; h < posicao; h++) {
         temporario = temporario->getProximo();
         if (temporario == NULL) {
-            throw "Posicao invalida ou lista cheia.\n";
+            throw MyException("Posicao invalida ou lista cheia.\n");
         }
     }
     novo = temporario->getProximo();
@@ -165,7 +166,7 @@ T ListaEnc<T>::retiraDaPosicao(int pos) {
     if (pos == 0) {
         return this->retiraDoInicio();
     } else if (pos < 0 || pos > this->size) {
-        throw "Posicao invalida.\n";
+        throw MyException("Posicao invalida.\n");
     }
     int i;
     Elemento<T> *temporario = this->head;
@@ -173,7 +174,7 @@ T ListaEnc<T>::retiraDaPosicao(int pos) {
     for (i = 0; i < pos; i++) {
         temporario = temporario->getProximo();
         if (temporario == NULL) {
-            throw "Temporario foi detectado como nulo na posicao "+i;
+            throw MyException("Temporario foi detectado como nulo na posicao "+i);
         }
     }
     Elemento<T> *proximo = temporario->getProximo();
@@ -200,10 +201,10 @@ int ListaEnc<T>::posicao(const T& dado) const {
         }
         temporario = temporario->getProximo();
         if (temporario == NULL) {
-            throw "Temporario foi detectado como nulo na posicao "+i;
+            throw MyException("Temporario foi detectado como nulo na posicao "+i);
         }
     }
-    throw "Elemento nao encontrado na lista.\n";
+    throw MyException("Elemento nao encontrado na lista.\n");
 }
 
 
@@ -217,17 +218,17 @@ T* ListaEnc<T>::posicaoMem(const T& dado) const {
         }
         temporario = temporario->getProximo();
         if (temporario == NULL) {
-            throw "Temporario foi detectado como nulo na posicao "+i;
+            throw MyException("Temporario foi detectado como nulo na posicao "+i);
         }
     }
-    throw "Elemento nao encontrado na lista.\n";
+    throw MyException("Elemento nao encontrado na lista.\n");
 }
 
 
 template <typename T>
 T ListaEnc<T>::retiraDoInicio() {
     if (this->listaVazia()) {
-        throw "A lista esta vazia.\n";
+        throw MyException("A lista esta vazia.\n");
     }
     Elemento<T> *inicio = this->head;
     T valor = inicio->getInfo();
@@ -240,7 +241,7 @@ T ListaEnc<T>::retiraDoInicio() {
 template <typename T>
 T ListaEnc<T>::retira() {
     if (this->listaVazia()) {
-        throw "A lista esta vazia.\n";
+        throw MyException("A lista esta vazia.\n");
     }
     int i, max;
     Elemento<T> *temporario = this->head;
@@ -251,7 +252,7 @@ T ListaEnc<T>::retira() {
     for (i = 0; i < max; i++) {
         temporario = temporario->getProximo();
         if (temporario == NULL) {
-            throw "Temporario foi detectado como nulo na posicao "+i;
+            throw MyException("Temporario foi detectado como nulo na posicao "+i);
         }
     }
     Elemento<T> *proximo = temporario->getProximo();
@@ -265,7 +266,7 @@ T ListaEnc<T>::retira() {
 template <typename T>
 void ListaEnc<T>::eliminaDoInicio() {
     if (this->listaVazia()) {
-        throw "A lista esta vazia.\n";
+        throw MyException("A lista esta vazia.\n");
     }
     Elemento<T> *inicio = this->head;
     Elemento<T> *atual = inicio->getProximo();
@@ -280,7 +281,7 @@ bool ListaEnc<T>::contem(const T& dado) {
     Elemento<T> *temporario = this->head;
     for (i = 0; i < this->size; i++) {
         if (temporario == NULL) {
-            throw "Temporario foi detectado como nulo na posicao "+i;
+            throw MyException("Temporario foi detectado como nulo na posicao "+i);
         }
         if (igual(temporario->getInfo(), dado)) {
             return true;

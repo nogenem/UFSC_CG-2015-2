@@ -2,70 +2,75 @@
 #define WINDOW_HPP
 
 #include "Objects.hpp"
+#include "MyException.hpp"
 
 // Valores minimo e maximo que a window pode assumir
 #define MIN_SIZE 1
-#define MAX_SIZE 10000
+#define MAX_SIZE 5000
 
 class Window
 {
     public:
         Window(double vWidth, double vHeight):
-            _wmin(-1,-1), _wmax(1,1), _angle(0) {}
+            _center( (vWidth/2),(vHeight/2) ), _angle(0),
+            _width( (vWidth/2) ), _height( (vHeight/2) ) {}
         virtual ~Window() {}
 
         Transformation& getT(){ return _t; }
-        Coordinate wMin() const { return _wmin; }
-        Coordinate wMax() const { return _wmax; }
+        Coordinate wMin() const { return Coordinate(-1,-1); }
+        Coordinate wMax() const { return Coordinate(1,1); }
+        Coordinate center(){ return _center; }
+
+        double getWidth(){return _width;}
+        double getHeight(){return _height;}
+        double getAngulo(){ return _angle; }
+
         void setAngulo(double graus){ _angle += graus; }
 
         void zoom(double step);
-        void moveX(double v){ _wmin.x += v; _wmax.x += v;}
-        void moveY(double v){ _wmin.y += v; _wmax.y += v;}
+        void move(double x, double y);
         void moveTo(Coordinate center);
 
         void updateMatrix();
     protected:
     private:
-        Coordinate _wmin, _wmax;
+        Coordinate _center;
         double _angle;
+        double _width, _height;
         Transformation _t;
-
-        double getWidth(){return _wmax.x-_wmin.x;}
-        double getHeight(){return _wmax.y-_wmin.y;}
-        Coordinate center(){ return Coordinate(getWidth()/2, getHeight()/2); }
 };
 
 void Window::updateMatrix(){
     Coordinate center = this->center();
     _t = Transformation();
     _t *= Transformation::newTranslation(-center.x, -center.y);
-    _t *= Transformation::newRotation(_angle);
+    _t *= Transformation::newRotationAroundPoint(-_angle, center);// ta certo?
     _t *= Transformation::newScaling(1/getWidth(), 1/getHeight());
 }
 
 void Window::zoom(double step){
-    step /= 2;
+    //step /= 2;
 
-    _wmin += step;
-    _wmax -= step;
+    if( (getWidth()+step <= MIN_SIZE || getHeight()+step <= MIN_SIZE) && step < 0 )
+        throw MyException("Zoom maximo alcancado.\n");
+    else if( (getWidth()+step >= MAX_SIZE || getHeight()+step >= MAX_SIZE) && step > 0)
+        throw MyException("Zoom minimo alcancado.\n");
 
-    if( (getWidth() <= MIN_SIZE || getHeight() <= MIN_SIZE) && step > 0 ){
-        _wmin -= step;//volta ao estado anterior
-        _wmax += step;
-        throw "Zoom maximo alcancado.\n";
-    }else if( (getWidth() >= MAX_SIZE || getHeight() >= MAX_SIZE) && step < 0){
-        _wmin -= step;//volta ao estado anterior
-        _wmax += step;
-        throw "Zoom minimo alcancado.\n";
-    }
+    _width += step;
+    _height += step;
+}
+
+void Window::move(double x, double y){
+    Coordinate c(x,y);
+    c *= Transformation::newRotation(_angle);
+    _center.x += c.x;
+    _center.y += c.y;
 }
 
 void Window::moveTo(Coordinate center){
-    this->_wmin = center;
-    this->_wmin -= 1;
-    this->_wmax = center;
-    this->_wmax += 1;
+    move(center.x - _center.x, center.y - _center.y);
+    _width = 100;
+    _height = 100;
 }
 
 #endif // WINDOW_HPP

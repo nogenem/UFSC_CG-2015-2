@@ -4,6 +4,7 @@
 #include <gtk/gtk.h>
 #include <string>
 #include "Objects.hpp"
+#include "MyException.hpp"
 
 #define UI_FILE "window.glade"
 

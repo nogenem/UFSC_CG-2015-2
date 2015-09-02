@@ -1890,6 +1890,7 @@
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
+                                        <property name="tooltip_text" translatable="yes">Rotacionar para esquerda</property>
                                         <signal name="clicked" handler="main_btns_event" swapped="no"/>
                                         <child>
                                           <object class="GtkImage" id="image6">
@@ -1910,6 +1911,7 @@
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
+                                        <property name="tooltip_text" translatable="yes">Para baixo</property>
                                         <signal name="clicked" handler="main_btns_event" swapped="no"/>
                                         <child>
                                           <object class="GtkImage" id="image7">
@@ -1930,6 +1932,7 @@
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
+                                        <property name="tooltip_text" translatable="yes">Rotacionar para direita</property>
                                         <signal name="clicked" handler="main_btns_event" swapped="no"/>
                                         <child>
                                           <object class="GtkImage" id="image8">

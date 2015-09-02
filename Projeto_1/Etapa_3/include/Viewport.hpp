@@ -13,22 +13,19 @@ class Viewport
     public:
         Viewport(double width, double height, World *world):
             _width(width), _height(height), _world(world), _window(width,height),
-            _border(new Border(width,height)) {}
+            _border(new Border(width,height)) { transformAllObjs(); }
         virtual ~Viewport(){ delete _border; }
 
         Coordinate transformCoordinate(const Coordinate& c) const;
         Coordinates transformCoordinates(const Coordinates& coords) const;
 
-        void transformAllObjs();
+        void transformObj(Object* obj);
 
         void gotoObj(std::string objName);
-        void zoom(double step){_window.zoom(step);}
-        void moveX(double value){_window.moveX(value);}
-        void moveY(double value){_window.moveY(value);}
-        void rotateWindow(double graus){_window.setAngulo(graus);}
+        void zoomWindow(double step){_window.zoom(step); transformAllObjs();}
+        void moveWindow(double x, double y){_window.move(x,y); transformAllObjs();}
+        void rotateWindow(double graus){_window.setAngulo(graus); transformAllObjs();}
         void drawObjs(cairo_t* cr);
-
-        Coordinate center();
     protected:
     private:
         double _width, _height;
@@ -43,6 +40,8 @@ class Viewport
         };
         Border *_border;
 
+        void transformAllObjs();
+
         void drawObj(Object* obj);
         void drawPoint(Object* obj);
         void drawLine(Object* obj);
@@ -51,22 +50,26 @@ class Viewport
         void prepareContext(GdkRGBA& color);
 };
 
-// Cria a borda da Viewport [mudar cor/tamanho da linha?]
+// Cria a borda da Viewport
 Viewport::Border::Border(int width, int height) :
-    Polygon("_Border") {
+    Polygon("_border_", GdkRGBA({0,0.9,0})) {
     addCoordinate(0,0);
     addCoordinate(width, 0);
     addCoordinate(width, height);
     addCoordinate(0, height);
 }
 
-Coordinate Viewport::center(){
-    return Coordinate(_width/2, _height/2);
-}
-
+// Remover isso?
 void Viewport::gotoObj(std::string objName){
     Object *obj = _world->getObj(objName);
-    _window.moveTo(obj->nCenter());
+    Coordinate c = obj->center();
+    _window.moveTo(c);
+    transformAllObjs();
+}
+
+void Viewport::transformObj(Object* obj){
+    auto t = _window.getT();
+    obj->transformNormalized(t);
 }
 
 void Viewport::transformAllObjs(){
@@ -99,15 +102,17 @@ Coordinates Viewport::transformCoordinates(const Coordinates& coords) const{
 
 void Viewport::drawObjs(cairo_t* cr){
     _cairo = cr;
-    transformAllObjs();
+
+    this->drawObj(_border);
     for(int i = 0; i < _world->numObjs(); i++){
         Object *obj = _world->getObj(i);
         this->drawObj(obj);
     }
-    this->drawObj(_border);
 }
 
 void Viewport::drawObj(Object* obj){
+    if(obj->getNCoordsSize() == 0) return;
+
     switch(obj->getType()){
     case ObjType::OBJECT:
         break;

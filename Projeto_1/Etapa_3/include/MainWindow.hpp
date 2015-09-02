@@ -8,7 +8,8 @@
 #include "Dialogs.hpp"
 #include "Objects.hpp"
 #include "World.hpp"
-#include "objsIO.hpp"
+#include "FileHandlers.hpp"
+#include "MyException.hpp"
 
 #define UI_FILE "window.glade"
 
@@ -19,6 +20,7 @@ class MainWindow
     public:
         MainWindow(GtkBuilder* builder);
         virtual ~MainWindow() { delete _world; delete _viewport; }
+
         // Events
         void openFile(GtkBuilder* builder);
         void saveFile(GtkBuilder* builder);
@@ -99,7 +101,7 @@ MainWindow::MainWindow(GtkBuilder* builder) {
 
     _helpDialog = GTK_WIDGET( gtk_builder_get_object( GTK_BUILDER(builder), "dlog_help" ) );
 
-    // Salva o id do botao para poder ser usado depois apenas 1 funcao
+    // Salva o id do botao para poder ser usado depois apenas 1 função
     // para manipula-los
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_zoom_out")),
                        "ID", GINT_TO_POINTER(Buttons::ZOOM_OUT));
@@ -130,19 +132,24 @@ void MainWindow::openFile(GtkBuilder* builder){
         if(filename == NULL)
             return;
 
+        std::string file(filename);
+        delete filename;
         try{
-            ObjReader r(filename);
+            ObjReader r(file);
             for(auto obj : r.getObjs()){
-                _world->addObj(obj);
-                addObjOnListStore(obj->getName(), obj->getTypeName().c_str());
+                try{
+                    _world->addObj(obj);
+                    _viewport->transformObj(obj);
+                    addObjOnListStore(obj->getName(), obj->getTypeName().c_str());
+                }catch(MyException& e){
+                    log(e.what());
+                }
             }
 
             log("Arquivo carregado.\n");
-            delete filename;
-        }catch(const char* msg){
-            log(msg);
-            showErrorDialog(msg);
-            delete filename;
+        }catch(MyException& e){
+            log(e.what());
+            showErrorDialog(e.what());
         }
     }
 }
@@ -156,16 +163,16 @@ void MainWindow::saveFile(GtkBuilder* builder){
         if(filename == NULL)
             return;
 
+        std::string file(filename);
+        delete filename;
         try{
-            ObjWriter w(filename);
+            ObjWriter w(file);
             w.writeObjs(_world);
 
             log("Arquivo salvo.\n");
-            delete filename;
-        }catch(const char* msg){
-            log(msg);
-            showErrorDialog(msg);
-            delete filename;
+        }catch(MyException& e){
+            log(e.what());
+            showErrorDialog(e.what());
         }
     }
 }
@@ -208,77 +215,56 @@ void MainWindow::addObjOnListStore(const std::string name, const char* type){
     gtk_list_store_set(liststore, &iter, 0, name.c_str(), 1, type, -1);
 }
 
-void MainWindow::addPoint(GtkBuilder* builder){
-    PointDialog dialog(GTK_BUILDER(builder));
-    bool finish = false;
+void MainWindow::showPopUp(GdkEvent *event){
+    gtk_menu_popup(GTK_MENU(_popUp), NULL, NULL, NULL, NULL,
+                    event->button.button, event->button.time);
 
-    while(!finish){
-        if(dialog.run() == 1){
-            try{
-                Coordinate c(dialog.getX(),dialog.getY());
-                _world->addPoint(dialog.getName(), dialog.getColor(),
-                                  c);
-                addObjOnListStore(dialog.getName(), "Point");
-
-                log("Novo ponto adicionado.\n");
-                finish = true;
-            }catch(const char* msg){
-                log(msg);
-                showErrorDialog(msg);
-            }
-        }else
-            finish = true;
-    }
 }
 
-void MainWindow::addLine(GtkBuilder* builder){
-    LineDialog dialog(GTK_BUILDER(builder));
-    bool finish = false;
+bool MainWindow::getSelectedObjName(std::string &name, GtkTreeIter *iter){
+    if(!gtk_tree_selection_get_selected(GTK_TREE_SELECTION(_treeSelection),
+                                    NULL, iter))
+        return false;
 
-    while(!finish){
-        if(dialog.run() == 1){
-            try{
-                Coordinates c;
-                c.emplace_back(dialog.getX1(), dialog.getY1());
-                c.emplace_back(dialog.getX2(), dialog.getY2());
+    char *_name;
+    gtk_tree_model_get(_mainModel, iter, 0, &_name, -1);
 
-                _world->addLine(dialog.getName(),  dialog.getColor(),
-                                c);
-                addObjOnListStore(dialog.getName(), "Line");
+    name = _name;
+    delete _name;
 
-                log("Nova reta adicionada.\n");
-                finish = true;
-            }catch(const char* msg){
-                log(msg);
-                showErrorDialog(msg);
-            }
-        }else
-            finish = true;
-    }
+    return true;
 }
 
-void MainWindow::addPolygon(GtkBuilder* builder){
-    PolygonDialog dialog(GTK_BUILDER(builder));
-    bool finish = false;
+void MainWindow::onDraw(cairo_t* cr){
+    _viewport->drawObjs(cr);
+}
 
-    while(!finish){
-        if(dialog.run() == 1){
-            try{
-                Coordinates c;
-                dialog.getCoords(c);
+void MainWindow::gotoSelectedObj(){
+    GtkTreeIter iter;
+    std::string name;
 
-                _world->addPolygon(dialog.getName(), dialog.getColor(),
-                                   dialog.shouldBeFilled(), c);
-                addObjOnListStore(dialog.getName(), "Polygon");
+    if(!getSelectedObjName(name, &iter))
+        return;
 
-                log("Novo poligono adicionado.\n");
-                finish = true;
-            }catch(const char* msg){
-                log(msg);
-                showErrorDialog(msg);
-            }
-        }else
-            finish = true;
+    _viewport->gotoObj(name);
+    gtk_widget_queue_draw(_mainWindow);
+}
+
+void MainWindow::removeSelectedObj(){
+    GtkTreeIter iter;
+    std::string name;
+
+    if(!getSelectedObjName(name, &iter))
+        return;
+
+    try{
+        _world->removeObj(name);
+        gtk_list_store_remove(GTK_LIST_STORE(_mainModel), &iter);
+
+        gtk_widget_queue_draw(_mainWindow);
+        log("Objeto removido.\n");
+    }catch(MyException& e){
+        log(e.what());
     }
 }
 
@@ -287,17 +273,17 @@ void MainWindow::zoom(Buttons id){
     try{
         switch(id){
         case Buttons::ZOOM_OUT:
-            _viewport->zoom(-value);
+            _viewport->zoomWindow(value);
             break;
         case Buttons::ZOOM_IN:
-            _viewport->zoom(value);
+            _viewport->zoomWindow(-value);
             break;
         default:
             break;
         }
         gtk_widget_queue_draw(_mainWindow);
-    }catch(const char* msg){
-        log(msg);
+    }catch(MyException& e){
+        log(e.what());
     }
 }
 
@@ -305,16 +291,16 @@ void MainWindow::move(Buttons id){
     double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(_step));
     switch(id){
     case Buttons::UP:
-        _viewport->moveY(value);
+        _viewport->moveWindow(0,value);
         break;
     case Buttons::RIGHT:
-        _viewport->moveX(value);
+        _viewport->moveWindow(value,0);
         break;
     case Buttons::DOWN:
-        _viewport->moveY(-value);
+        _viewport->moveWindow(0,-value);
         break;
     case Buttons::LEFT:
-        _viewport->moveX(-value);
+        _viewport->moveWindow(-value,0);
         break;
     default:
         break;
@@ -337,51 +323,84 @@ void MainWindow::rotateWindow(Buttons id){
     gtk_widget_queue_draw(_mainWindow);
 }
 
-void MainWindow::onDraw(cairo_t* cr){
-    _viewport->drawObjs(cr);
+void MainWindow::addPoint(GtkBuilder* builder){
+    PointDialog dialog(GTK_BUILDER(builder));
+    bool finish = false;
+
+    while(!finish){
+        if(dialog.run() == 1){
+            try{
+                Coordinate c(dialog.getX(),dialog.getY());
+
+                Object* obj = _world->addPoint(
+                                    dialog.getName(), dialog.getColor(),c);
+                _viewport->transformObj(obj);
+                addObjOnListStore(dialog.getName(), "Point");
+
+                gtk_widget_queue_draw(_mainWindow);
+                log("Novo ponto adicionado.\n");
+                finish = true;
+            }catch(MyException& e){
+                log(e.what());
+                showErrorDialog(e.what());
+            }
+        }else
+            finish = true;
+    }
 }
 
-void MainWindow::showPopUp(GdkEvent *event){
-    gtk_menu_popup(GTK_MENU(_popUp), NULL, NULL, NULL, NULL,
-                    event->button.button, event->button.time);
+void MainWindow::addLine(GtkBuilder* builder){
+    LineDialog dialog(GTK_BUILDER(builder));
+    bool finish = false;
 
+    while(!finish){
+        if(dialog.run() == 1){
+            try{
+                Coordinates c;
+                c.emplace_back(dialog.getX1(), dialog.getY1());
+                c.emplace_back(dialog.getX2(), dialog.getY2());
+
+                Object* obj = _world->addLine(
+                                    dialog.getName(), dialog.getColor(), c);
+                _viewport->transformObj(obj);
+                addObjOnListStore(dialog.getName(), "Line");
+
+                gtk_widget_queue_draw(_mainWindow);
+                log("Nova reta adicionada.\n");
+                finish = true;
+            }catch(MyException& e){
+                log(e.what());
+                showErrorDialog(e.what());
+            }
+        }else
+            finish = true;
+    }
 }
 
-bool MainWindow::getSelectedObjName(std::string &name, GtkTreeIter *iter){
-    if(!gtk_tree_selection_get_selected(GTK_TREE_SELECTION(_treeSelection),
-                                    NULL, iter))
-        return false;
+void MainWindow::addPolygon(GtkBuilder* builder){
+    PolygonDialog dialog(GTK_BUILDER(builder));
+    bool finish = false;
 
-    char *_name;
-    gtk_tree_model_get(_mainModel, iter, 0, &_name, -1);
+    while(!finish){
+        if(dialog.run() == 1){
+            try{
+                Coordinates c;
+                dialog.getCoords(c);
 
-    name = _name;
-    delete _name;
+                Object* obj = _world->addPolygon(dialog.getName(), dialog.getColor(),
+                                            dialog.shouldBeFilled(), c);
+                _viewport->transformObj(obj);
+                addObjOnListStore(dialog.getName(), "Polygon");
 
-    return true;
-}
-
-void MainWindow::gotoSelectedObj(){
-    GtkTreeIter iter;
-    std::string name;
-
-    if(!getSelectedObjName(name, &iter))
-        return;
-
-    _viewport->gotoObj(name);
-    gtk_widget_queue_draw(_mainWindow);
-}
-
-void MainWindow::removeSelectedObj(){
-    GtkTreeIter iter;
-    std::string name;
-
-    if(getSelectedObjName(name, &iter)){
-        _world->removeObj(name);
-        gtk_list_store_remove(GTK_LIST_STORE(_mainModel), &iter);
-
-        gtk_widget_queue_draw(_mainWindow);
-        log("Objeto removido.\n");
+                gtk_widget_queue_draw(_mainWindow);
+                log("Novo poligono adicionado.\n");
+                finish = true;
+            }catch(MyException& e){
+                log(e.what());
+                showErrorDialog(e.what());
+            }
+        }else
+            finish = true;
     }
 }
 
@@ -398,12 +417,15 @@ void MainWindow::translateSelectedObj(GtkBuilder* builder){
     while(!finish){
         if(dialog.run() == 1){
             try{
-                _world->translateObj(name, dialog.getDX(), dialog.getDY());
+                Object* obj = _world->translateObj(name, dialog.getDX(), dialog.getDY());
+                _viewport->transformObj(obj);
+
+                gtk_widget_queue_draw(_mainWindow);
                 log("Objeto transladado.\n");
                 finish = true;
-            }catch(const char* msg){
-                log(msg);
-                showErrorDialog(msg);
+            }catch(MyException& e){
+                log(e.what());
+                showErrorDialog(e.what());
             }
         }else
             finish = true;
@@ -423,12 +445,15 @@ void MainWindow::scaleSelectedObj(GtkBuilder* builder){
     while(!finish){
         if(dialog.run() == 1){
             try{
-                _world->scaleObj(name, dialog.getSX(), dialog.getSY());
+                Object* obj = _world->scaleObj(name, dialog.getSX(), dialog.getSY());
+                _viewport->transformObj(obj);
+
+                gtk_widget_queue_draw(_mainWindow);
                 log("Objeto escalonado.\n");
                 finish = true;
-            }catch(const char* msg){
-                log(msg);
-                showErrorDialog(msg);
+            }catch(MyException& e){
+                log(e.what());
+                showErrorDialog(e.what());
             }
         }else
             finish = true;
@@ -448,13 +473,17 @@ void MainWindow::rotateSelectedObj(GtkBuilder* builder){
     while(!finish){
         if(dialog.run() == 1){
             try{
-                _world->rotateObj(name, dialog.getAngulo(),
-                                  Coordinate(dialog.getCX(), dialog.getCY()),
-                                  dialog.getRotateType());
+                Object* obj = _world->rotateObj(name, dialog.getAngulo(),
+                                    Coordinate(dialog.getCX(), dialog.getCY()),
+                                        dialog.getRotateType());
+                _viewport->transformObj(obj);
+
+                gtk_widget_queue_draw(_mainWindow);
+                log("Objeto rotacionado.\n");
                 finish = true;
-            }catch(const char* msg){
-                log(msg);
-                showErrorDialog(msg);
+            }catch(MyException& e){
+                log(e.what());
+                showErrorDialog(e.what());
             }
         }else
             finish = true;

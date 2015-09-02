@@ -53,9 +53,12 @@ class Object
 		virtual std::string getTypeName() const { return "Object"; }
 
         Coordinates& getCoords() {return _coords;}
+        Coordinate& getCoord(int index) { return _coords[index]; }
+        int getCoordsSize(){ return _coords.size(); }
+
         Coordinates& getNCoords() {return _nCoords;}
 		Coordinate& getNCoord(int index) { return _nCoords[index]; }
-		int numPoints(){ return _coords.size(); }
+		int getNCoordsSize(){ return _nCoords.size(); }
 
         Coordinate center() const;
         Coordinate nCenter() const;
@@ -70,14 +73,14 @@ class Object
 		void addCoordinate(double x, double y) {_coords.emplace_back(x,y);}
 		void addCoordinate(const Coordinate& p) {_coords.push_back(p);}
     protected:
-        void addCoordinate(const Coordinates& coords){
-            _coords.insert(_coords.end(), coords.begin(), coords.end());
-        }
-    private:
         std::string _name;
         GdkRGBA _color;
         Coordinates _coords;
-        Coordinates _nCoords; //coordenadas normalizadadas
+        Coordinates _nCoords; // Coordenadas normalizadadas
+
+        void addCoordinate(const Coordinates& coords){
+            _coords.insert(_coords.end(), coords.begin(), coords.end());
+        }
 };
 
 class Point : public Object
@@ -119,11 +122,12 @@ class Polygon : public Object
             Object(name,color) { _filled = false; }
 		Polygon(std::string name, GdkRGBA color, const Coordinates& coords) :
             Object(name,color) { _filled = false; addCoordinate(coords); }
+        Polygon(std::string name, GdkRGBA color, bool filled, const Coordinates& coords) :
+            Object(name,color) { _filled = filled; addCoordinate(coords); }
 
         virtual ObjType getType() const { return ObjType::POLYGON; }
 		virtual std::string getTypeName() const { return "Polygon"; }
 
-        bool filled(){ return _filled; }
         bool filled() const { return _filled; }
         void setFilled(bool v){ _filled = v; }
     private:

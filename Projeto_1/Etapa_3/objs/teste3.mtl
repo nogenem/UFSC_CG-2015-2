@@ -1,0 +1,12 @@
+newmtl Color0
+Kd 0 0 0
+
+newmtl Color1
+Kd 0.643137 0 0
+
+newmtl Color2
+Kd 0.360784 0.207843 0.4
+
+newmtl Color3
+Kd 0 0 1
+

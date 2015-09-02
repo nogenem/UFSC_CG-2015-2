@@ -213,7 +213,7 @@ void PolygonDialog::getCoords(Coordinates& coords){
                                             &iter);
 
     if(!valid)
-        throw "Adicione pelo menos uma coordenada.\n";
+        throw MyException("Adicione pelo menos uma coordenada.\n");
 
     while(valid){
         gtk_tree_model_get (_model, &iter,

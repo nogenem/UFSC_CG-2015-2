@@ -3,6 +3,7 @@
 
 #include "ListaEnc.hpp"
 #include "Objects.hpp"
+#include "MyException.hpp"
 
 class DisplayFile : public ListaEnc<Object*>
 {
@@ -22,12 +23,12 @@ class DisplayFile : public ListaEnc<Object*>
 
 void DisplayFile::addObj(Object* obj){
     if(obj->getName() == "")
-        throw "Adicione um nome para este objeto.\n";
+        throw MyException("Adicione um nome para este objeto.\n");
 
     if(!contem(obj)){
         adiciona(obj);
     }else
-        throw "Ja existe um objeto com este mesmo nome.\n";
+        throw MyException("Ja existe um objeto com o nome '"+ obj->getName() +"'.\n");
 }
 
 Object* DisplayFile::getObj(Object *obj){
