@@ -22,18 +22,18 @@ class Viewport
     public:
         Viewport(double width, double height, World *world):
             _width(width), _height(height), _world(world), _window(width,height),
-            _border(new Border(_cWindow)) { transformAllObjs(); }
+            _border(new Border(_cWindow)) { transformAndClipAllObjs(); }
         virtual ~Viewport(){ delete _border; }
 
         Coordinate transformCoordinate(const Coordinate& c) const;
         Coordinates transformCoordinates(const Coordinates& coords) const;
 
-        void transformObj(Object* obj);
+        void transformAndClipObj(Object* obj);
 
         void gotoObj(std::string objName);
-        void zoomWindow(double step){_window.zoom(step); transformAllObjs();}
-        void moveWindow(double x, double y){_window.move(x,y); transformAllObjs();}
-        void rotateWindow(double graus){_window.setAngulo(graus); transformAllObjs();}
+        void zoomWindow(double step){_window.zoom(step); transformAndClipAllObjs();}
+        void moveWindow(double x, double y){_window.move(x,y); transformAndClipAllObjs();}
+        void rotateWindow(double graus){_window.setAngulo(graus); transformAndClipAllObjs();}
         void drawObjs(cairo_t* cr);
     protected:
     private:
@@ -44,9 +44,10 @@ class Viewport
         cairo_t* _cairo;
 
         ClipWindow _cWindow = {-0.95,0.95,-0.95,0.95};
+        Clipping _clipping;
         Border *_border;
 
-        void transformAllObjs();
+        void transformAndClipAllObjs();
 
         void drawObj(Object* obj);
         void drawPoint(Object* obj);
@@ -73,23 +74,37 @@ void Viewport::gotoObj(std::string objName){
     Object *obj = _world->getObj(objName);
     Coordinate c = obj->center();
     _window.moveTo(c);
-    transformAllObjs();
+    transformAndClipAllObjs();
 }
 
-void Viewport::transformObj(Object* obj){
+void Viewport::transformAndClipObj(Object* obj){
     auto t = _window.getT();
+    bool shouldDraw = true;
     obj->transformNormalized(t);
+
+    switch(obj->getType()){
+    case ObjType::OBJECT:
+        break;
+    case ObjType::POINT:
+        shouldDraw = _clipping.clipPoint((Point*)obj,_cWindow);
+        break;
+    case ObjType::LINE:
+        break;
+    case ObjType::POLYGON:
+        break;
+    }
+
+    if(!shouldDraw)
+        obj->getNCoords().clear();
 }
 
-void Viewport::transformAllObjs(){
+void Viewport::transformAndClipAllObjs(){
     _window.updateMatrix();
-    auto t = _window.getT();
 
     for(int i = 0; i < _world->numObjs(); i++){
         Object *obj = _world->getObj(i);
-        obj->transformNormalized(t);
+        transformAndClipObj(obj);
     }
-    //_border->transformNormalized(t);
 }
 
 Coordinate Viewport::transformCoordinate(const Coordinate& c) const {

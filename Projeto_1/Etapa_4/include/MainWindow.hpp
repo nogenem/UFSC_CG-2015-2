@@ -139,7 +139,7 @@ void MainWindow::openFile(GtkBuilder* builder){
             for(auto obj : r.getObjs()){
                 try{
                     _world->addObj(obj);
-                    _viewport->transformObj(obj);
+                    _viewport->transformAndClipObj(obj);
                     addObjOnListStore(obj->getName(), obj->getTypeName().c_str());
                 }catch(MyException& e){
                     log(e.what());
@@ -334,7 +334,7 @@ void MainWindow::addPoint(GtkBuilder* builder){
 
                 Object* obj = _world->addPoint(
                                     dialog.getName(), dialog.getColor(),c);
-                _viewport->transformObj(obj);
+                _viewport->transformAndClipObj(obj);
                 addObjOnListStore(dialog.getName(), "Point");
 
                 gtk_widget_queue_draw(_mainWindow);
@@ -362,7 +362,7 @@ void MainWindow::addLine(GtkBuilder* builder){
 
                 Object* obj = _world->addLine(
                                     dialog.getName(), dialog.getColor(), c);
-                _viewport->transformObj(obj);
+                _viewport->transformAndClipObj(obj);
                 addObjOnListStore(dialog.getName(), "Line");
 
                 gtk_widget_queue_draw(_mainWindow);
@@ -389,7 +389,7 @@ void MainWindow::addPolygon(GtkBuilder* builder){
 
                 Object* obj = _world->addPolygon(dialog.getName(), dialog.getColor(),
                                             dialog.shouldBeFilled(), c);
-                _viewport->transformObj(obj);
+                _viewport->transformAndClipObj(obj);
                 addObjOnListStore(dialog.getName(), "Polygon");
 
                 gtk_widget_queue_draw(_mainWindow);
@@ -418,7 +418,7 @@ void MainWindow::translateSelectedObj(GtkBuilder* builder){
         if(dialog.run() == 1){
             try{
                 Object* obj = _world->translateObj(name, dialog.getDX(), dialog.getDY());
-                _viewport->transformObj(obj);
+                _viewport->transformAndClipObj(obj);
 
                 gtk_widget_queue_draw(_mainWindow);
                 log("Objeto transladado.\n");
@@ -446,7 +446,7 @@ void MainWindow::scaleSelectedObj(GtkBuilder* builder){
         if(dialog.run() == 1){
             try{
                 Object* obj = _world->scaleObj(name, dialog.getSX(), dialog.getSY());
-                _viewport->transformObj(obj);
+                _viewport->transformAndClipObj(obj);
 
                 gtk_widget_queue_draw(_mainWindow);
                 log("Objeto escalonado.\n");
@@ -476,7 +476,7 @@ void MainWindow::rotateSelectedObj(GtkBuilder* builder){
                 Object* obj = _world->rotateObj(name, dialog.getAngulo(),
                                     Coordinate(dialog.getCX(), dialog.getCY()),
                                         dialog.getRotateType());
-                _viewport->transformObj(obj);
+                _viewport->transformAndClipObj(obj);
 
                 gtk_widget_queue_draw(_mainWindow);
                 log("Objeto rotacionado.\n");
