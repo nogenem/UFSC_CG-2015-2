@@ -127,14 +127,16 @@ bool Clipping::LiangBaskyLineClip(Line* l){
 
         r = q/p;
         if(p < 0){
-            if(r > u2)
+            if(r > u2){
+                std::cout << "pos: " << pos << " - r: " << r << " - u2: " << u2 << "\n";
                 return false;
-            else if(r > u1)
+            }else if(r > u1)
                 u1 = r;
         }else if(p > 0){
-            if(r < u1)
+            if(r < u1){
+                std::cout << "pos: " << pos << " - r: " << r << " - u1: " << u1 << "\n";
                 return false;
-            else if(r < u2)
+            }else if(r < u2)
                 u2 = r;
         }
     }

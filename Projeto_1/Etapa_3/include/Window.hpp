@@ -44,7 +44,7 @@ void Window::updateMatrix(){
     Coordinate center = this->center();
     _t = Transformation();
     _t *= Transformation::newTranslation(-center.x, -center.y);
-    _t *= Transformation::newRotationAroundPoint(-_angle, center);// ta certo?
+    _t *= Transformation::newRotation(-_angle);// ta certo?
     _t *= Transformation::newScaling(1/getWidth(), 1/getHeight());
 }
 
@@ -61,16 +61,15 @@ void Window::zoom(double step){
 }
 
 void Window::move(double x, double y){
-    Coordinate c(x,y);
-    c *= Transformation::newRotation(_angle);
-    _center.x += c.x;
-    _center.y += c.y;
+    _center.x += x;
+    _center.y += y;
 }
 
 void Window::moveTo(Coordinate center){
     move(center.x - _center.x, center.y - _center.y);
-    _width = 100;
-    _height = 100;
+
+    _width = 150;
+    _height = 150;
 }
 
 #endif // WINDOW_HPP
