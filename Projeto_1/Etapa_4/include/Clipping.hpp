@@ -139,14 +139,13 @@ bool Clipping::LiangBaskyLineClip(Line* l){
         }
     }
 
-    std::cout << "u1: " << u1 << " - u2: " << u2 << "\n";
-    if(u1 > 0){
-        c1.x = c1.x + u1*delta.x;
-        c1.y = c1.y + u1*delta.y;
-    }
     if(u2 < 1){
         c2.x = c1.x + u2*delta.x;
         c2.y = c1.y + u2*delta.y;
+    }
+    if(u1 > 0){
+        c1.x = c1.x + u1*delta.x;
+        c1.y = c1.y + u1*delta.y;
     }
     return true;
 }
