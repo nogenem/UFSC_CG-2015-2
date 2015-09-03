@@ -31,7 +31,7 @@ class Window
         void move(double x, double y);
         void moveTo(Coordinate center);
 
-        void updateMatrix();
+        void updateTransformation();
     protected:
     private:
         Coordinate _center;
@@ -40,12 +40,11 @@ class Window
         Transformation _t;
 };
 
-void Window::updateMatrix(){
-    Coordinate center = this->center();
+void Window::updateTransformation(){
     _t = Transformation();
-    _t *= Transformation::newTranslation(-center.x, -center.y);
+    _t *= Transformation::newTranslation(-_center.x, -_center.y);
     _t *= Transformation::newRotation(-_angle);// ta certo?
-    _t *= Transformation::newScaling(1/getWidth(), 1/getHeight());
+    _t *= Transformation::newScaling(1/_width, 1/_height);
 }
 
 void Window::zoom(double step){

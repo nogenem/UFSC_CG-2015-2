@@ -73,7 +73,7 @@ void Viewport::transformObj(Object* obj){
 }
 
 void Viewport::transformAllObjs(){
-    _window.updateMatrix();
+    _window.updateTransformation();
     auto t = _window.getT();
 
     for(int i = 0; i < _world->numObjs(); i++){
