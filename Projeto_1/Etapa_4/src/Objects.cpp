@@ -24,6 +24,10 @@ Coordinate& Coordinate::operator-=(const Coordinate& c){
     return *this;
 }
 
+Coordinate operator-(const Coordinate& c1, const Coordinate& c2){
+    return Coordinate(c1.x - c2.x, c1.y - c2.y);
+}
+
 Coordinate& Coordinate::operator*=(const Transformation& t){
     const auto &m = t.getM();
     double x = this->x, y = this->y, z = this->z;

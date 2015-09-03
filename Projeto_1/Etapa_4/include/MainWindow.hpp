@@ -38,6 +38,7 @@ class MainWindow
         void scaleSelectedObj(GtkBuilder* builder);
         void rotateSelectedObj(GtkBuilder* builder);
         void showHelpDialog();
+        void changeLineClipAlg(LineClipAlgs alg);
     protected:
     private:
         GtkWidget* _mainWindow, *_step, *_log, *_popUp, *_logScroll;
@@ -120,7 +121,17 @@ MainWindow::MainWindow(GtkBuilder* builder) {
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_rot_right")),
                        "ID", GINT_TO_POINTER(Buttons::ROT_RIGHT));
 
+    g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "rb_CS_alg")),
+                       "ID", GINT_TO_POINTER(LineClipAlgs::CS));
+    g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "rb_LB_alg")),
+                       "ID", GINT_TO_POINTER(LineClipAlgs::LB));
+
     gtk_widget_show( _mainWindow );
+}
+
+void MainWindow::changeLineClipAlg(LineClipAlgs alg){
+    _viewport->changeLineClipAlg(alg);
+    gtk_widget_queue_draw(_mainWindow);
 }
 
 void MainWindow::openFile(GtkBuilder* builder){
@@ -141,6 +152,8 @@ void MainWindow::openFile(GtkBuilder* builder){
                     _world->addObj(obj);
                     _viewport->transformAndClipObj(obj);
                     addObjOnListStore(obj->getName(), obj->getTypeName().c_str());
+
+                    gtk_widget_queue_draw(_mainWindow);
                 }catch(MyException& e){
                     log(e.what());
                 }

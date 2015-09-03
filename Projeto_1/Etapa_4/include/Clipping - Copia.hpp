@@ -11,7 +11,7 @@ class Clipping
 {
     public:
         Clipping(ClipWindow window):
-            _w(window), _current(LineClipAlgs::CS) {}
+            _w(window), _current(LineClipAlgs::LB) {}
         virtual ~Clipping() {}
 
         void setLineClipAlg(LineClipAlgs alg){ _current = alg; }
@@ -23,7 +23,7 @@ class Clipping
         ClipWindow _w;
         LineClipAlgs _current;
 
-        enum RC {INSIDE=0, LEFT=1, RIGHT=2, BOTTOM=4, TOP=8};
+        enum RC {INSIDE, LEFT, RIGHT, BOTTOM=4, TOP=8};
 
         int getCoordRC(const Coordinate& c);
         bool CohenSutherlandLineClip(Line* l);
@@ -31,9 +31,8 @@ class Clipping
 };
 
 bool Clipping::clipPoint(Point* p){
-    if(p->getNCoordsSize() == 0) return false;
-
     auto c = p->getNCoord(0);
+
     return c.x >= _w.minX && c.x <= _w.maxX &&
                 c.y >= _w.minY && c.y <= _w.maxY;
 }
@@ -45,7 +44,6 @@ bool Clipping::clipLine(Line* l){
         return LiangBaskyLineClip(l);
 }
 
-//https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
 int Clipping::getCoordRC(const Coordinate& c){
     int rc = Clipping::RC::INSIDE;
 
@@ -70,10 +68,10 @@ bool Clipping::CohenSutherlandLineClip(Line* l){
     int rc2 = getCoordRC(c2);
 
     while(true){
-        if( (rc1 | rc2) == 0 )// Dentro
+        if( (rc1 | rc2) == 0 )// [rc1 == rc2 == 0] ==> Dentro
             return true;
-        else if( (rc1 & rc2) != 0 )// Fora
-            return false;
+        else if( (rc1 & rc2) != 0 )
+            return false;// [(rc1 & rc2) != 0] ==> Fora
 
         double x,y;
         int rc = rc1 ? rc1 : rc2;
@@ -105,16 +103,13 @@ bool Clipping::CohenSutherlandLineClip(Line* l){
     }
 }
 
-//http://www.skytopia.com/project/articles/compsci/clipping.html
 bool Clipping::LiangBaskyLineClip(Line* l){
     auto &c1 = l->getNCoord(0);
     auto &c2 = l->getNCoord(1);
 
-    if(c1 == c2) return clipPoint((Point*)l);
-
     auto delta = c2 - c1;
     double p,q,r;
-    double u1 = 0.0, u2 = 1.0;
+    double u1 = 0, u2 = 1;
 
     for(int pos = 0; pos<4; pos++){
         if(pos == 0){ p = -delta.x; q = c1.x - _w.minX; }
@@ -127,19 +122,16 @@ bool Clipping::LiangBaskyLineClip(Line* l){
 
         r = q/p;
         if(p < 0){
-            if(r > u2)
-                return false;
-            else if(r > u1)
+            if(r > u1)
                 u1 = r;
         }else if(p > 0){
-            if(r < u1)
-                return false;
-            else if(r < u2)
+            if(r < u2)
                 u2 = r;
         }
     }
 
-    std::cout << "u1: " << u1 << " - u2: " << u2 << "\n";
+    if(u1 > u2){ return false; }
+
     if(u1 > 0){
         c1.x = c1.x + u1*delta.x;
         c1.y = c1.y + u1*delta.y;

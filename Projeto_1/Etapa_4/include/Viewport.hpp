@@ -22,13 +22,15 @@ class Viewport
     public:
         Viewport(double width, double height, World *world):
             _width(width), _height(height), _world(world), _window(width,height),
-            _border(new Border(_cWindow)) { transformAndClipAllObjs(); }
+            _clipping(_cWindow), _border(new Border(_cWindow))
+            { transformAndClipAllObjs(); }
         virtual ~Viewport(){ delete _border; }
 
         Coordinate transformCoordinate(const Coordinate& c) const;
         Coordinates transformCoordinates(const Coordinates& coords) const;
 
         void transformAndClipObj(Object* obj);
+        void changeLineClipAlg(LineClipAlgs alg){_clipping.setLineClipAlg(alg); transformAndClipAllObjs();}
 
         void gotoObj(std::string objName);
         void zoomWindow(double step){_window.zoom(step); transformAndClipAllObjs();}
@@ -38,7 +40,7 @@ class Viewport
     protected:
     private:
         double _width, _height;
-        World *_world;
+        World* _world;
         Window _window;
 
         cairo_t* _cairo;
@@ -61,7 +63,7 @@ class Viewport
 Border::Border(ClipWindow& window) :
     Polygon("_border_", GdkRGBA({0,0.9,0})) {
 
-    addCoordinate(window.minX,window.minY);
+    addCoordinate(window.minX, window.minY);
     addCoordinate(window.maxX, window.minY);
     addCoordinate(window.maxX, window.maxY);
     addCoordinate(window.minX, window.maxX);
@@ -84,11 +86,13 @@ void Viewport::transformAndClipObj(Object* obj){
 
     switch(obj->getType()){
     case ObjType::OBJECT:
+        shouldDraw = false;
         break;
     case ObjType::POINT:
-        shouldDraw = _clipping.clipPoint((Point*)obj,_cWindow);
+        shouldDraw = _clipping.clipPoint((Point*)obj);
         break;
     case ObjType::LINE:
+        shouldDraw = _clipping.clipLine((Line*)obj);
         break;
     case ObjType::POLYGON:
         break;

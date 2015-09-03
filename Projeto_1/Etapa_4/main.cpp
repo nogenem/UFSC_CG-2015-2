@@ -6,6 +6,12 @@ GtkBuilder* builder = NULL;
 
 /* Callbacks */
 extern "C"{
+    void change_alg_event(GtkToggleButton *button, MainWindow* window){
+        int btnId = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "ID"));
+        LineClipAlgs alg = (LineClipAlgs) btnId;
+
+        window->changeLineClipAlg(alg);
+    }
     void color_choose_event(GtkColorButton *button, ObjDialog* dialog){
         dialog->onColorChangeEvent(button);
     }

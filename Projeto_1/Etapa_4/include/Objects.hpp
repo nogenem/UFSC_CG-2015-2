@@ -32,6 +32,8 @@ class Coordinate
     private:
 };
 
+Coordinate operator-(const Coordinate& c1, const Coordinate& c2);
+
 typedef std::vector<Coordinate> Coordinates;
 enum class ObjType { OBJECT, POINT, LINE, POLYGON };
 
