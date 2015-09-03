@@ -103,7 +103,7 @@ void Viewport::transformAndClipObj(Object* obj){
 }
 
 void Viewport::transformAndClipAllObjs(){
-    _window.updateMatrix();
+    _window.updateTransformation();
 
     for(int i = 0; i < _world->numObjs(); i++){
         Object *obj = _world->getObj(i);
