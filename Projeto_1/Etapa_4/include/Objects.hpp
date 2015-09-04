@@ -72,7 +72,7 @@ class Object
         }
         Object& operator*(){ return *this; }
 
-		void addCoordinate(double x, double y) {_coords.emplace_back(x,y);}
+		virtual void addCoordinate(double x, double y) {_coords.emplace_back(x,y);}
 		void addCoordinate(const Coordinate& p) {_coords.push_back(p);}
     protected:
         std::string _name;

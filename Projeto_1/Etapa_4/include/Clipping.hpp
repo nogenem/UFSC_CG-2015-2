@@ -1,16 +1,23 @@
 #ifndef CLIPPING_HPP
 #define CLIPPING_HPP
 
-typedef struct {
-  double minX, maxX, minY, maxY;
-}ClipWindow;
+#include "Objects.hpp"
+
+class ClipWindow : public Polygon {
+public:
+    ClipWindow(double minX_, double maxX_, double minY_, double maxY_);
+
+    void addCoordinate(double x, double y) {_coords.emplace_back(x,y);
+                                            _nCoords.emplace_back(x,y);}
+    double minX, maxX, minY, maxY;
+};
 
 enum class LineClipAlgs { CS, LB };
 
 class Clipping
 {
     public:
-        Clipping(ClipWindow window):
+        Clipping(ClipWindow* window):
             _w(window), _current(LineClipAlgs::CS) {}
         virtual ~Clipping() {}
 
@@ -20,7 +27,7 @@ class Clipping
         bool clipLine(Line* l);
     protected:
     private:
-        ClipWindow _w;
+        ClipWindow* _w;
         LineClipAlgs _current;
 
         enum RC {INSIDE=0, LEFT=1, RIGHT=2, BOTTOM=4, TOP=8};
@@ -30,12 +37,24 @@ class Clipping
         bool LiangBaskyLineClip(Line* l);
 };
 
+ClipWindow::ClipWindow(double minX_, double maxX_, double minY_, double maxY_):
+        Polygon("_border_", GdkRGBA({0,0.9,0})) {
+
+    minX = minX_; maxX = maxX_;
+    minY = minY_; maxY = maxY_;
+
+    addCoordinate(minX,minY);
+    addCoordinate(maxX,minY);
+    addCoordinate(maxX,maxY);
+    addCoordinate(minX,maxY);
+}
+
 bool Clipping::clipPoint(Point* p){
     if(p->getNCoordsSize() == 0) return false;
 
     auto c = p->getNCoord(0);
-    return c.x >= _w.minX && c.x <= _w.maxX &&
-                c.y >= _w.minY && c.y <= _w.maxY;
+    return c.x >= _w->minX && c.x <= _w->maxX &&
+                c.y >= _w->minY && c.y <= _w->maxY;
 }
 
 bool Clipping::clipLine(Line* l){
@@ -49,14 +68,14 @@ bool Clipping::clipLine(Line* l){
 int Clipping::getCoordRC(const Coordinate& c){
     int rc = Clipping::RC::INSIDE;
 
-    if(c.x < _w.minX)
+    if(c.x < _w->minX)
         rc |= Clipping::RC::LEFT;
-    else if(c.x > _w.maxX)
+    else if(c.x > _w->maxX)
         rc |= Clipping::RC::RIGHT;
 
-    if(c.y < _w.minY)
+    if(c.y < _w->minY)
         rc |= Clipping::RC::BOTTOM;
-    else if(c.y > _w.maxY)
+    else if(c.y > _w->maxY)
         rc |= Clipping::RC::TOP;
 
     return rc;
@@ -76,21 +95,21 @@ bool Clipping::CohenSutherlandLineClip(Line* l){
             return false;
 
         double x,y;
-        int rc = rc1 ? rc1 : rc2;
+        int rc = rc1 ? rc1 : rc2;// (rc1 == 0) => Dentro
         double m = (c2.y-c1.y)/(c2.x-c1.x);
 
         if(rc & Clipping::RC::TOP){
-            x = c1.x + 1/m * (_w.maxY-c1.y);
-            y = _w.maxY;
+            x = c1.x + 1/m * (_w->maxY-c1.y);
+            y = _w->maxY;
         }else if(rc & Clipping::RC::BOTTOM){
-            x = c1.x + 1/m * (_w.minY-c1.y);
-            y = _w.minY;
+            x = c1.x + 1/m * (_w->minY-c1.y);
+            y = _w->minY;
         }else if(rc & Clipping::RC::RIGHT){
-            y = m * (_w.maxX-c1.x) + c1.y;
-            x = _w.maxX;
+            y = m * (_w->maxX-c1.x) + c1.y;
+            x = _w->maxX;
         }else if(rc & Clipping::RC::LEFT){
-            y = m * (_w.minX-c1.x) + c1.y;
-            x = _w.minX;
+            y = m * (_w->minX-c1.x) + c1.y;
+            x = _w->minX;
         }
 
         if(rc == rc1){
@@ -117,29 +136,25 @@ bool Clipping::LiangBaskyLineClip(Line* l){
     double u1 = 0.0, u2 = 1.0;
 
     for(int pos = 0; pos<4; pos++){
-        if(pos == 0){ p = -delta.x; q = c1.x - _w.minX; }
-        else if(pos == 1){ p = delta.x; q = _w.maxX - c1.x; }
-        else if(pos == 2){ p = -delta.y; q = c1.y - _w.minY; }
-        else if(pos == 3){ p = delta.y; q = _w.maxY - c1.y; }
+        if     (pos == 0){ p = -delta.x; q = c1.x - _w->minX; }
+        else if(pos == 1){ p = delta.x; q = _w->maxX - c1.x; }
+        else if(pos == 2){ p = -delta.y; q = c1.y - _w->minY; }
+        else if(pos == 3){ p = delta.y; q = _w->maxY - c1.y; }
 
         if(p == 0 && q < 0)
             return false;
 
         r = q/p;
         if(p < 0){
-            if(r > u2){
-                std::cout << "pos: " << pos << " - r: " << r << " - u2: " << u2 << "\n";
-                return false;
-            }else if(r > u1)
+            if(r > u1)
                 u1 = r;
         }else if(p > 0){
-            if(r < u1){
-                std::cout << "pos: " << pos << " - r: " << r << " - u1: " << u1 << "\n";
-                return false;
-            }else if(r < u2)
+            if(r < u2)
                 u2 = r;
         }
     }
+
+    if(u1 > u2) return false;
 
     if(u2 < 1){
         c2.x = c1.x + u2*delta.x;

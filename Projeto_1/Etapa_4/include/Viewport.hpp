@@ -9,20 +9,12 @@
 
 #define PI 3.1415926535897932384626433832795
 
-class Border : public Polygon {
-public:
-    Border(ClipWindow& window);
-    void addNCoordinate(const Coordinates& coords){
-        _nCoords.insert(_nCoords.end(), coords.begin(), coords.end());
-    }
-};
-
 class Viewport
 {
     public:
         Viewport(double width, double height, World *world):
             _width(width), _height(height), _world(world), _window(width,height),
-            _clipping(_cWindow), _border(new Border(_cWindow))
+            _border(new ClipWindow(-0.95,0.95,-0.95,0.95)), _clipping(_border)
             { transformAndClipAllObjs(); }
         virtual ~Viewport(){ delete _border; }
 
@@ -45,9 +37,8 @@ class Viewport
 
         cairo_t* _cairo;
 
-        ClipWindow _cWindow = {-0.95,0.95,-0.95,0.95};
+        ClipWindow *_border;
         Clipping _clipping;
-        Border *_border;
 
         void transformAndClipAllObjs();
 
@@ -59,19 +50,6 @@ class Viewport
         void prepareContext(GdkRGBA& color);
 };
 
-// Cria a borda da Viewport
-Border::Border(ClipWindow& window) :
-    Polygon("_border_", GdkRGBA({0,0.9,0})) {
-
-    addCoordinate(window.minX, window.minY);
-    addCoordinate(window.maxX, window.minY);
-    addCoordinate(window.maxX, window.maxY);
-    addCoordinate(window.minX, window.maxX);
-
-    addNCoordinate(_coords);
-}
-
-// Remover isso?
 void Viewport::gotoObj(std::string objName){
     Object *obj = _world->getObj(objName);
     Coordinate c = obj->center();
@@ -131,11 +109,12 @@ Coordinates Viewport::transformCoordinates(const Coordinates& coords) const{
 void Viewport::drawObjs(cairo_t* cr){
     _cairo = cr;
 
+    Object *obj;
     for(int i = 0; i < _world->numObjs(); i++){
-        Object *obj = _world->getObj(i);
-        this->drawObj(obj);
+        obj = _world->getObj(i);
+        drawObj(obj);
     }
-    this->drawObj(_border);
+    drawObj(_border);
 }
 
 void Viewport::drawObj(Object* obj){
@@ -145,13 +124,13 @@ void Viewport::drawObj(Object* obj){
     case ObjType::OBJECT:
         break;
     case ObjType::POINT:
-        this->drawPoint(obj);
+        drawPoint(obj);
         break;
     case ObjType::LINE:
-        this->drawLine(obj);
+        drawLine(obj);
         break;
     case ObjType::POLYGON:
-        this->drawPolygon(obj);
+        drawPolygon(obj);
         break;
     }
 }
