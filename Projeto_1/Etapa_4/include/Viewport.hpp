@@ -73,6 +73,7 @@ void Viewport::transformAndClipObj(Object* obj){
         shouldDraw = _clipping.clipLine((Line*)obj);
         break;
     case ObjType::POLYGON:
+        shouldDraw = _clipping.clipPolygon((Polygon*)obj);
         break;
     }
 

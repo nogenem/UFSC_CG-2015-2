@@ -60,6 +60,7 @@ class Object
 
         Coordinates& getNCoords() {return _nCoords;}
 		Coordinate& getNCoord(int index) { return _nCoords[index]; }
+		void setNCoord(const Coordinates& c);
 		int getNCoordsSize(){ return _nCoords.size(); }
 
         Coordinate center() const;

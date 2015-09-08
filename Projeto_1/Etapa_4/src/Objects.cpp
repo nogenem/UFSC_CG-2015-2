@@ -77,3 +77,8 @@ void Object::transformNormalized(const Transformation& t){
     for(auto p : _coords)
         _nCoords.push_back( (p *= t) );
 }
+
+void Object::setNCoord(const Coordinates& c){
+    _nCoords.clear();
+    _nCoords.insert(_nCoords.end(), c.begin(), c.end());
+}
