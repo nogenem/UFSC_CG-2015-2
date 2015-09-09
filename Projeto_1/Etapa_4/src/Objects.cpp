@@ -39,9 +39,9 @@ Coordinate& Coordinate::operator*=(const Transformation& t){
 
 Coordinate Object::center() const{
     Coordinate c;
-    int n = _coords.size();
+    int n = m_coords.size();
 
-    for(auto &p : _coords){
+    for(auto &p : m_coords){
         c.x += p.x;
         c.y += p.y;
     }
@@ -53,9 +53,9 @@ Coordinate Object::center() const{
 
 Coordinate Object::nCenter() const{
     Coordinate c;
-    int n = _nCoords.size();
+    int n = m_nCoords.size();
 
-    for(auto &p : _nCoords){
+    for(auto &p : m_nCoords){
         c.x += p.x;
         c.y += p.y;
     }
@@ -67,18 +67,18 @@ Coordinate Object::nCenter() const{
 
 void Object::transform(const Transformation& t){
     //std::cout << t << "\n";
-    for(auto &p : _coords)
+    for(auto &p : m_coords)
         p *= (t);
 }
 
 void Object::transformNormalized(const Transformation& t){
-    if(_nCoords.size() > 0)
-        _nCoords.clear();
-    for(auto p : _coords)
-        _nCoords.push_back( (p *= t) );
+    if(m_nCoords.size() > 0)
+        m_nCoords.clear();
+    for(auto p : m_coords)
+        m_nCoords.push_back( (p *= t) );
 }
 
 void Object::setNCoord(const Coordinates& c){
-    _nCoords.clear();
-    _nCoords.insert(_nCoords.end(), c.begin(), c.end());
+    m_nCoords.clear();
+    m_nCoords.insert(m_nCoords.end(), c.begin(), c.end());
 }

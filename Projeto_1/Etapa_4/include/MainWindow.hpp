@@ -38,16 +38,19 @@ class MainWindow
         void scaleSelectedObj(GtkBuilder* builder);
         void rotateSelectedObj(GtkBuilder* builder);
         void showHelpDialog();
-        void changeLineClipAlg(LineClipAlgs alg);
+        void changeLineClipAlg(const LineClipAlgs alg);
     protected:
     private:
-        GtkWidget* _mainWindow, *_step, *_log, *_popUp, *_logScroll;
-        GtkWidget *_helpDialog;
-        GtkTreeModel* _mainModel;
-        GtkTreeSelection* _treeSelection;
+        GtkWidget *_mainWindow = nullptr, *_step = nullptr,
+                  *_log = nullptr, *_popUp = nullptr,
+                  *_logScroll = nullptr;
 
-        Viewport *_viewport;
-        World *_world;
+        GtkWidget *_helpDialog = nullptr;
+        GtkTreeModel* _mainModel = nullptr;
+        GtkTreeSelection* _treeSelection = nullptr;
+
+        Viewport *_viewport = nullptr;
+        World *_world = nullptr;
 
         // Altera o nome do obj passado como parametro para o
         // nome do objeto selecionado e seta o inter para
@@ -58,15 +61,15 @@ class MainWindow
         // Escreve no TextView de logs
         void log(const char* msg);
         // Adiciona os dados de um objeto na ListStore
-        void addObjOnListStore(const std::string name, const char* type);
+        void addObjOnListStore(const std::string& name, const char* type);
 };
 
 MainWindow::MainWindow(GtkBuilder* builder) {
-    GError* error = NULL;
+    GError* error = nullptr;
     // (char*) usado para tirar warnings do compilador
     char* ids[] = {(char*)"main_list_store",(char*)"adj_step",
         (char*)"main_window",(char*)"main_pop_up_menu",(char*)"adj_log",
-        (char*)"dlog_help", NULL};
+        (char*)"dlog_help", nullptr};
 
     if(!gtk_builder_add_objects_from_file (GTK_BUILDER(builder), UI_FILE, ids, &error)){
         g_warning( "%s", error->message );
@@ -81,7 +84,7 @@ MainWindow::MainWindow(GtkBuilder* builder) {
     GtkWidget* area = GTK_WIDGET( gtk_builder_get_object( GTK_BUILDER(builder), "drawing_area" ) );
 
     GtkRequisition min_size;
-    gtk_widget_get_preferred_size(area, &min_size, NULL);
+    gtk_widget_get_preferred_size(area, &min_size, nullptr);
 
     _world = new World();
     _viewport = new Viewport(min_size.width, min_size.height, _world);
@@ -129,7 +132,7 @@ MainWindow::MainWindow(GtkBuilder* builder) {
     gtk_widget_show( _mainWindow );
 }
 
-void MainWindow::changeLineClipAlg(LineClipAlgs alg){
+void MainWindow::changeLineClipAlg(const LineClipAlgs alg){
     _viewport->changeLineClipAlg(alg);
     gtk_widget_queue_draw(_mainWindow);
 }
@@ -140,7 +143,7 @@ void MainWindow::openFile(GtkBuilder* builder){
     if(dialog.run() == 1){
         char* filename = dialog.getFileName();
 
-        if(filename == NULL)
+        if(filename == nullptr)
             return;
 
         std::string file(filename);
@@ -173,7 +176,7 @@ void MainWindow::saveFile(GtkBuilder* builder){
     if(dialog.run() == 1){
         char* filename = dialog.getFileName();
 
-        if(filename == NULL)
+        if(filename == nullptr)
             return;
 
         std::string file(filename);
@@ -220,7 +223,7 @@ void MainWindow::log(const char* msg){
                                    gtk_adjustment_get_page_size(adj)));
 }
 
-void MainWindow::addObjOnListStore(const std::string name, const char* type){
+void MainWindow::addObjOnListStore(const std::string& name, const char* type){
     GtkListStore *liststore = GTK_LIST_STORE(_mainModel);
     GtkTreeIter iter;
 
@@ -229,14 +232,14 @@ void MainWindow::addObjOnListStore(const std::string name, const char* type){
 }
 
 void MainWindow::showPopUp(GdkEvent *event){
-    gtk_menu_popup(GTK_MENU(_popUp), NULL, NULL, NULL, NULL,
+    gtk_menu_popup(GTK_MENU(_popUp), nullptr, nullptr, nullptr, nullptr,
                     event->button.button, event->button.time);
 
 }
 
 bool MainWindow::getSelectedObjName(std::string &name, GtkTreeIter *iter){
     if(!gtk_tree_selection_get_selected(GTK_TREE_SELECTION(_treeSelection),
-                                    NULL, iter))
+                                    nullptr, iter))
         return false;
 
     char *_name;

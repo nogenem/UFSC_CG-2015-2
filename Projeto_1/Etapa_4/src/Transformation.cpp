@@ -3,8 +3,8 @@
 Transformation::Transformation(){
     for(int i=0; i<M_SIZE; i++)
         for(int j=0; j<M_SIZE; j++)
-            _m[i][j] = 0;
-    _m[0][0] = _m[1][1] = _m[2][2] = 1;
+            m_matrix[i][j] = 0;
+    m_matrix[0][0] = m_matrix[1][1] = m_matrix[2][2] = 1;
 }
 
 Transformation Transformation::newTranslation(double dx, double dy){
@@ -38,13 +38,13 @@ Transformation Transformation::newRotationAroundPoint(double graus, const Coordi
 }
 
 Transformation& Transformation::operator*=(const Transformation& t2){
-    auto m1 = this->_m;
+    auto m1 = this->m_matrix;
     const auto &m2 = t2.getM();
     for(int i=0; i<M_SIZE; i++)
         for(int j=0; j<M_SIZE; j++){
-            _m[i][j]=0;
+            m_matrix[i][j]=0;
             for(int k=0; k<M_SIZE; k++)
-                _m[i][j] += m1[i][k] * m2[k][j];
+                m_matrix[i][j] += m1[i][k] * m2[k][j];
         }
 
     return *this;

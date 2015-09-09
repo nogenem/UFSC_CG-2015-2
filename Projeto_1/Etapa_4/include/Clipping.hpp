@@ -7,8 +7,8 @@ class ClipWindow : public Polygon {
 public:
     ClipWindow(double minX_, double maxX_, double minY_, double maxY_);
 
-    void addCoordinate(double x, double y) {_coords.emplace_back(x,y);
-                                            _nCoords.emplace_back(x,y);}
+    void addCoordinate(double x, double y) {m_coords.emplace_back(x,y);
+                                            m_nCoords.emplace_back(x,y);}
     double minX, maxX, minY, maxY;
 };
 
@@ -17,19 +17,19 @@ enum class LineClipAlgs { CS, LB };
 class Clipping
 {
     public:
-        Clipping(ClipWindow* window):
-            _w(window), _current(LineClipAlgs::CS) {}
+        Clipping(const ClipWindow* window):
+            m_w(window) {}
         virtual ~Clipping() {}
 
-        void setLineClipAlg(LineClipAlgs alg){ _current = alg; }
+        void setLineClipAlg(const LineClipAlgs alg){ m_current = alg; }
 
         bool clipPoint(Point* p);
         bool clipLine(Line* l);
         bool clipPolygon(Polygon* p){return SutherlandHodgmanPolygonClip(p);}
     protected:
     private:
-        ClipWindow* _w;
-        LineClipAlgs _current;
+        const ClipWindow* m_w;
+        LineClipAlgs m_current = LineClipAlgs::CS;
 
         enum RC {INSIDE=0, LEFT=1, RIGHT=2, BOTTOM=4, TOP=8};
 
@@ -60,12 +60,12 @@ bool Clipping::clipPoint(Point* p){
     if(p->getNCoordsSize() == 0) return false;
 
     auto c = p->getNCoord(0);
-    return c.x >= _w->minX && c.x <= _w->maxX &&
-                c.y >= _w->minY && c.y <= _w->maxY;
+    return c.x >= m_w->minX && c.x <= m_w->maxX &&
+                c.y >= m_w->minY && c.y <= m_w->maxY;
 }
 
 bool Clipping::clipLine(Line* l){
-    if(_current == LineClipAlgs::CS)
+    if(m_current == LineClipAlgs::CS)
         return CohenSutherlandLineClip(l);
     else
         return LiangBaskyLineClip(l);
@@ -75,14 +75,14 @@ bool Clipping::clipLine(Line* l){
 int Clipping::getCoordRC(const Coordinate& c){
     int rc = Clipping::RC::INSIDE;
 
-    if(c.x < _w->minX)
+    if(c.x < m_w->minX)
         rc |= Clipping::RC::LEFT;
-    else if(c.x > _w->maxX)
+    else if(c.x > m_w->maxX)
         rc |= Clipping::RC::RIGHT;
 
-    if(c.y < _w->minY)
+    if(c.y < m_w->minY)
         rc |= Clipping::RC::BOTTOM;
-    else if(c.y > _w->maxY)
+    else if(c.y > m_w->maxY)
         rc |= Clipping::RC::TOP;
 
     return rc;
@@ -106,17 +106,17 @@ bool Clipping::CohenSutherlandLineClip(Line* l){
         double m = (c2.y-c1.y)/(c2.x-c1.x);
 
         if(rc & Clipping::RC::TOP){
-            x = c1.x + 1/m * (_w->maxY-c1.y);
-            y = _w->maxY;
+            x = c1.x + 1/m * (m_w->maxY-c1.y);
+            y = m_w->maxY;
         }else if(rc & Clipping::RC::BOTTOM){
-            x = c1.x + 1/m * (_w->minY-c1.y);
-            y = _w->minY;
+            x = c1.x + 1/m * (m_w->minY-c1.y);
+            y = m_w->minY;
         }else if(rc & Clipping::RC::RIGHT){
-            y = m * (_w->maxX-c1.x) + c1.y;
-            x = _w->maxX;
+            y = m * (m_w->maxX-c1.x) + c1.y;
+            x = m_w->maxX;
         }else if(rc & Clipping::RC::LEFT){
-            y = m * (_w->minX-c1.x) + c1.y;
-            x = _w->minX;
+            y = m * (m_w->minX-c1.x) + c1.y;
+            x = m_w->minX;
         }
 
         if(rc == rc1){
@@ -143,10 +143,10 @@ bool Clipping::LiangBaskyLineClip(Line* l){
     double u1 = 0.0, u2 = 1.0;
 
     for(int pos = 0; pos<4; pos++){
-        if     (pos == 0){ p = -delta.x; q = c1.x - _w->minX; }
-        else if(pos == 1){ p = delta.x; q = _w->maxX - c1.x; }
-        else if(pos == 2){ p = -delta.y; q = c1.y - _w->minY; }
-        else if(pos == 3){ p = delta.y; q = _w->maxY - c1.y; }
+        if     (pos == 0){ p = -delta.x; q = c1.x - m_w->minX; }
+        else if(pos == 1){ p = delta.x; q = m_w->maxX - c1.x; }
+        else if(pos == 2){ p = -delta.y; q = c1.y - m_w->minY; }
+        else if(pos == 3){ p = delta.y; q = m_w->maxY - c1.y; }
 
         if(p == 0 && q < 0)
             return false;
@@ -198,7 +198,7 @@ void Clipping::clipLeft(Coordinates& input, Coordinates& output){
     if(input.size() == 0)
         return;
 
-    double clipX = _w->minX;
+    double clipX = m_w->minX;
     input.push_back(input[0]);
     for(unsigned int i = 0; i < input.size()-1; i++){
         Coordinate c0 = input[i];
@@ -211,19 +211,16 @@ void Clipping::clipLeft(Coordinates& input, Coordinates& output){
         if(c0.x >= clipX && c1.x >= clipX)
             output.push_back(c1);
 
+        double x = clipX;
+        double m = (c1.y-c0.y)/(c1.x-c0.x);
+        double y = m * (x-c0.x) + c0.y;
+
         //Caso 3: in -> out
-        if(c0.x >= clipX && c1.x < clipX){
-            double x = clipX;
-            double m = (c1.y-c0.y)/(c1.x-c0.x);
-            double y = m * (x-c0.x) + c0.y;
+        if(c0.x >= clipX && c1.x < clipX)
             output.emplace_back(x,y);
-        }
 
         //Caso 4: out -> in
         if(c0.x < clipX && c1.x >= clipX){
-            double x = clipX;
-            double m = (c1.y-c0.y)/(c1.x-c0.x);
-            double y = m * (x-c0.x) + c0.y;
             output.emplace_back(x,y);
             output.push_back(c1);
         }
@@ -236,7 +233,7 @@ void Clipping::clipRight(Coordinates& input, Coordinates& output){
     if(input.size() == 0)
         return;
 
-    double clipX = _w->maxX;
+    double clipX = m_w->maxX;
     input.push_back(input[0]);
     for(unsigned int i = 0; i < input.size()-1; i++){
         Coordinate c0 = input[i];
@@ -249,19 +246,16 @@ void Clipping::clipRight(Coordinates& input, Coordinates& output){
         if(c0.x < clipX && c1.x < clipX)
             output.push_back(c1);
 
+        double x = clipX;
+        double m = (c1.y-c0.y)/(c1.x-c0.x);
+        double y = m * (x-c0.x) + c0.y;
+
         //Caso 3: in -> out
-        if(c0.x < clipX && c1.x >= clipX){
-            double x = clipX;
-            double m = (c1.y-c0.y)/(c1.x-c0.x);
-            double y = m * (x-c0.x) + c0.y;
+        if(c0.x < clipX && c1.x >= clipX)
             output.emplace_back(x,y);
-        }
 
         //Caso 4: out -> in
         if(c0.x >= clipX && c1.x < clipX){
-            double x = clipX;
-            double m = (c1.y-c0.y)/(c1.x-c0.x);
-            double y = m * (x-c0.x) + c0.y;
             output.emplace_back(x,y);
             output.push_back(c1);
         }
@@ -274,7 +268,7 @@ void Clipping::clipTop(Coordinates& input, Coordinates& output){
     if(input.size() == 0)
         return;
 
-    double clipY = _w->maxY;
+    double clipY = m_w->maxY;
     input.push_back(input[0]);
     for(unsigned int i = 0; i < input.size()-1; i++){
         Coordinate c0 = input[i];
@@ -287,19 +281,16 @@ void Clipping::clipTop(Coordinates& input, Coordinates& output){
         if(c0.y <= clipY && c1.y <= clipY)
             output.push_back(c1);
 
+        double y = clipY;
+        double m = (c1.x-c0.x)/(c1.y-c0.y);
+        double x = m * (y-c0.y) + c0.x;
+
         //Caso 3: in -> out
-        if(c0.y <= clipY && c1.y > clipY){
-            double y = clipY;
-            double m = (c1.x-c0.x)/(c1.y-c0.y);
-            double x = m * (y-c0.y) + c0.x;
+        if(c0.y <= clipY && c1.y > clipY)
             output.emplace_back(x,y);
-        }
 
         //Caso 4: out -> in
         if(c0.y > clipY && c1.y <= clipY){
-            double y = clipY;
-            double m = (c1.x-c0.x)/(c1.y-c0.y);
-            double x = m * (y-c0.y) + c0.x;
             output.emplace_back(x,y);
             output.push_back(c1);
         }
@@ -312,7 +303,7 @@ void Clipping::clipBottom(Coordinates& input, Coordinates& output){
     if(input.size() == 0)
         return;
 
-    double clipY = _w->minY;
+    double clipY = m_w->minY;
     input.push_back(input[0]);
     for(unsigned int i = 0; i < input.size()-1; i++){
         Coordinate c0 = input[i];
@@ -325,19 +316,16 @@ void Clipping::clipBottom(Coordinates& input, Coordinates& output){
         if(c0.y >= clipY && c1.y >= clipY)
             output.push_back(c1);
 
+        double y = clipY;
+        double m = (c1.x-c0.x)/(c1.y-c0.y);
+        double x = m * (y-c0.y) + c0.x;
+
         //Caso 3: in -> out
-        if(c0.y >= clipY && c1.y < clipY){
-            double y = clipY;
-            double m = (c1.x-c0.x)/(c1.y-c0.y);
-            double x = m * (y-c0.y) + c0.x;
+        if(c0.y >= clipY && c1.y < clipY)
             output.emplace_back(x,y);
-        }
 
         //Caso 4: out -> in
         if(c0.y < clipY && c1.y >= clipY){
-            double y = clipY;
-            double m = (c1.x-c0.x)/(c1.y-c0.y);
-            double x = m * (y-c0.y) + c0.x;
             output.emplace_back(x,y);
             output.push_back(c1);
         }

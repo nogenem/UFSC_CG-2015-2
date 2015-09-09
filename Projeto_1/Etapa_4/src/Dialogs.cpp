@@ -1,9 +1,9 @@
 #include "Dialogs.hpp"
 
 FileDialog::FileDialog(GtkBuilder* builder, bool toSave){
-    GError* error = NULL;
+    GError* error = nullptr;
     // (char*) usado para tirar warnings do compilador
-    char* ids[] = {(char*)"dlog_file",(char*)"obj_filter",NULL};
+    char* ids[] = {(char*)"dlog_file",(char*)"obj_filter",nullptr};
 
     if(!gtk_builder_add_objects_from_file (builder, UI_FILE, ids, &error)){
         g_warning( "%s", error->message );
@@ -11,40 +11,40 @@ FileDialog::FileDialog(GtkBuilder* builder, bool toSave){
         return;
     }
 
-    _dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_file" ) );
+    m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_file" ) );
     if(toSave){
-        gtk_window_set_title (GTK_WINDOW(_dialog), "Salve o arquivo...");
-        gtk_file_chooser_set_action(GTK_FILE_CHOOSER(_dialog), GTK_FILE_CHOOSER_ACTION_SAVE);
-        gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(_dialog), true);
-        gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(_dialog), true);
-        gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER(_dialog), "untitled.obj");
+        gtk_window_set_title (GTK_WINDOW(m_dialog), "Salve o arquivo...");
+        gtk_file_chooser_set_action(GTK_FILE_CHOOSER(m_dialog), GTK_FILE_CHOOSER_ACTION_SAVE);
+        gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(m_dialog), true);
+        gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(m_dialog), true);
+        gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER(m_dialog), "untitled.obj");
     }
 }
 
 int Dialog::run(){
-    if(_dialog == NULL) return 0;
-    return gtk_dialog_run(GTK_DIALOG(_dialog));
+    if(m_dialog == nullptr) return 0;
+    return gtk_dialog_run(GTK_DIALOG(m_dialog));
 }
 
 void Dialog::destroy(){
-    if(_dialog != NULL){
-        gtk_widget_destroy(_dialog);
-        _dialog = NULL;
+    if(m_dialog != nullptr){
+        gtk_widget_destroy(m_dialog);
+        m_dialog = nullptr;
     }
 }
 
 void PolygonDialog::destroy(){
-    if(_model != NULL){
+    if(_model != nullptr){
         gtk_list_store_clear(GTK_LIST_STORE(_model));
-        _model = NULL;
+        _model = nullptr;
     }
 }
 
 PointDialog::PointDialog(GtkBuilder* builder){
-    GError* error = NULL;
+    GError* error = nullptr;
     // (char*) usado para tirar warnings do compilador
     char* ids[] = {(char*)"dlog_add_pnt",(char*)"adj_x1",
-        (char*)"adj_y1",NULL};
+        (char*)"adj_y1",nullptr};
 
     if(!gtk_builder_add_objects_from_file (builder, UI_FILE, ids, &error)){
         g_warning( "%s", error->message );
@@ -52,7 +52,7 @@ PointDialog::PointDialog(GtkBuilder* builder){
         return;
     }
 
-    _dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_add_pnt" ) );
+    m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_add_pnt" ) );
     _entryName = GTK_WIDGET( gtk_builder_get_object( builder, "point_name" ) );
     _entryX = GTK_WIDGET( gtk_builder_get_object( builder, "point_x" ) );
     _entryY = GTK_WIDGET( gtk_builder_get_object( builder, "point_y" ) );
@@ -61,10 +61,10 @@ PointDialog::PointDialog(GtkBuilder* builder){
 }
 
 LineDialog::LineDialog(GtkBuilder* builder){
-    GError* error = NULL;
+    GError* error = nullptr;
     // (char*) usado para tirar warnings do compilador
     char* ids[] = {(char*)"dlog_add_line",(char*)"adj_x1",
-        (char*)"adj_y1",(char*)"adj_x2",(char*)"adj_y2",NULL};
+        (char*)"adj_y1",(char*)"adj_x2",(char*)"adj_y2",nullptr};
 
     if(!gtk_builder_add_objects_from_file (builder, UI_FILE, ids, &error)){
         g_warning( "%s", error->message );
@@ -72,7 +72,7 @@ LineDialog::LineDialog(GtkBuilder* builder){
         return;
     }
 
-    _dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_add_line" ) );
+    m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_add_line" ) );
     _entryName = GTK_WIDGET( gtk_builder_get_object( builder, "line_name" ) );
     _entryX1 = GTK_WIDGET( gtk_builder_get_object( builder, "line_x1" ) );
     _entryY1 = GTK_WIDGET( gtk_builder_get_object( builder, "line_y1" ) );
@@ -83,10 +83,10 @@ LineDialog::LineDialog(GtkBuilder* builder){
 }
 
 PolygonDialog::PolygonDialog(GtkBuilder* builder){
-    GError* error = NULL;
+    GError* error = nullptr;
     // (char*) usado para tirar warnings do compilador
     char* ids[] = {(char*)"poly_list_store",(char*)"adj_x1",(char*)"adj_y1",
-        (char*)"dlog_add_poly",NULL};
+        (char*)"dlog_add_poly",nullptr};
 
     if(!gtk_builder_add_objects_from_file(builder, UI_FILE, ids, &error)){
         g_warning( "%s", error->message );
@@ -94,7 +94,7 @@ PolygonDialog::PolygonDialog(GtkBuilder* builder){
         return;
     }
 
-    _dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_add_poly" ) );
+    m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_add_poly" ) );
     _entryName = GTK_WIDGET( gtk_builder_get_object( builder, "poly_name" ) );
     _entryX = GTK_WIDGET( gtk_builder_get_object( builder, "poly_x" ) );
     _entryY = GTK_WIDGET( gtk_builder_get_object( builder, "poly_y" ) );
@@ -107,10 +107,10 @@ PolygonDialog::PolygonDialog(GtkBuilder* builder){
 }
 
 TranslateDialog::TranslateDialog(GtkBuilder* builder){
-    GError* error = NULL;
+    GError* error = nullptr;
     // (char*) usado para tirar warnings do compilador
     char* ids[] = {(char*)"dlog_translate",(char*)"adj_x1",
-        (char*)"adj_y1",NULL};
+        (char*)"adj_y1",nullptr};
 
     if(!gtk_builder_add_objects_from_file (builder, UI_FILE, ids, &error)){
         g_warning( "%s", error->message );
@@ -118,16 +118,16 @@ TranslateDialog::TranslateDialog(GtkBuilder* builder){
         return;
     }
 
-    _dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_translate" ) );
+    m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_translate" ) );
     _entryDX = GTK_WIDGET( gtk_builder_get_object( builder, "entry_dx" ) );
     _entryDY = GTK_WIDGET( gtk_builder_get_object( builder, "entry_dy" ) );
 }
 
 ScaleDialog::ScaleDialog(GtkBuilder* builder){
-    GError* error = NULL;
+    GError* error = nullptr;
     // (char*) usado para tirar warnings do compilador
     char* ids[] = {(char*)"dlog_scale",(char*)"adj_x1",
-        (char*)"adj_y1",NULL};
+        (char*)"adj_y1",nullptr};
 
     if(!gtk_builder_add_objects_from_file (builder, UI_FILE, ids, &error)){
         g_warning( "%s", error->message );
@@ -135,7 +135,7 @@ ScaleDialog::ScaleDialog(GtkBuilder* builder){
         return;
     }
 
-    _dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_scale" ) );
+    m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_scale" ) );
     _entrySX = GTK_WIDGET( gtk_builder_get_object( builder, "entry_sx" ) );
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(_entrySX), 1.0);
     _entrySY = GTK_WIDGET( gtk_builder_get_object( builder, "entry_sy" ) );
@@ -143,10 +143,10 @@ ScaleDialog::ScaleDialog(GtkBuilder* builder){
 }
 
 RotateDialog::RotateDialog(GtkBuilder* builder){
-    GError* error = NULL;
+    GError* error = nullptr;
     // (char*) usado para tirar warnings do compilador
     char* ids[] = {(char*)"dlog_rotate",(char*)"adj_x1",
-        (char*)"adj_y1",(char*)"adj_angulo",NULL};
+        (char*)"adj_y1",(char*)"adj_angulo",nullptr};
 
     if(!gtk_builder_add_objects_from_file (builder, UI_FILE, ids, &error)){
         g_warning( "%s", error->message );
@@ -154,7 +154,7 @@ RotateDialog::RotateDialog(GtkBuilder* builder){
         return;
     }
 
-    _dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_rotate" ) );
+    m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_rotate" ) );
     _entryCX = GTK_WIDGET( gtk_builder_get_object( builder, "entry_cx" ) );
     _entryCY = GTK_WIDGET( gtk_builder_get_object( builder, "entry_cy" ) );
     _entryAngulo = GTK_WIDGET( gtk_builder_get_object( builder, "entry_angulo" ) );
@@ -164,7 +164,7 @@ RotateDialog::RotateDialog(GtkBuilder* builder){
     _pntCenter = GTK_WIDGET( gtk_builder_get_object( builder, "rb_pnt_center" ) );
 }
 
-rotateType RotateDialog::getRotateType(){
+rotateType RotateDialog::getRotateType() const {
     if(isActive(_objCenter))
         return rotateType::OBJECT;
     else if(isActive(_worldCenter))
@@ -204,7 +204,7 @@ void PolygonDialog::onEditCelEvent(GtkCellRendererText *cell,
                         atof(new_text), -1);
 }
 
-void PolygonDialog::getCoords(Coordinates& coords){
+void PolygonDialog::getCoords(Coordinates& coords) const {
     GtkTreeIter iter;
     gboolean valid;
     double x, y;

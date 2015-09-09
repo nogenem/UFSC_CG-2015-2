@@ -12,8 +12,7 @@ class Transformation;
 class Coordinate
 {
     public:
-        Coordinate() :
-            x(0), y(0), z(1){}
+        Coordinate(){}
         Coordinate(double cx, double cy) :
             x(cx), y(cy), z(1){}
         virtual ~Coordinate(){};
@@ -27,7 +26,7 @@ class Coordinate
             return (this->x==c.x && this->y==c.y);
         }
 
-        double x,y,z;
+        double x = 0, y = 0, z = 1;
     protected:
     private:
 };
@@ -40,28 +39,27 @@ enum class ObjType { OBJECT, POINT, LINE, POLYGON };
 class Object
 {
     public:
-        Object(const std::string name) :
-            _name(name), _color({0}) {}
-        Object(const std::string name, GdkRGBA color) :
-            _name(name), _color(color) {}
+        Object(const std::string& name) :
+            m_name(name) {}
+        Object(const std::string& name, const GdkRGBA& c) :
+            m_name(name), m_color({c.red,c.green,c.blue,c.alpha}) {}
         virtual ~Object() {}
 
-        std::string getName(){ return _name; }
-        const std::string getName() const { return _name; }
+        const std::string& getName() const { return m_name; }
 
-        GdkRGBA& getColor(){ return _color; }
+        const GdkRGBA& getColor() const { return m_color; }
 
         virtual ObjType getType() const { return ObjType::OBJECT; }
 		virtual std::string getTypeName() const { return "Object"; }
 
-        Coordinates& getCoords() {return _coords;}
-        Coordinate& getCoord(int index) { return _coords[index]; }
-        int getCoordsSize(){ return _coords.size(); }
+        Coordinates& getCoords() {return m_coords;}
+        Coordinate& getCoord(int index) { return m_coords[index]; }
+        int getCoordsSize() const { return m_coords.size(); }
 
-        Coordinates& getNCoords() {return _nCoords;}
-		Coordinate& getNCoord(int index) { return _nCoords[index]; }
+        Coordinates& getNCoords() {return m_nCoords;}
+		Coordinate& getNCoord(int index) { return m_nCoords[index]; }
 		void setNCoord(const Coordinates& c);
-		int getNCoordsSize(){ return _nCoords.size(); }
+		int getNCoordsSize() const { return m_nCoords.size(); }
 
         Coordinate center() const;
         Coordinate nCenter() const;
@@ -73,29 +71,29 @@ class Object
         }
         Object& operator*(){ return *this; }
 
-		virtual void addCoordinate(double x, double y) {_coords.emplace_back(x,y);}
-		void addCoordinate(const Coordinate& p) {_coords.push_back(p);}
+		virtual void addCoordinate(double x, double y) {m_coords.emplace_back(x,y);}
+		void addCoordinate(const Coordinate& p) {m_coords.push_back(p);}
     protected:
-        std::string _name;
-        GdkRGBA _color;
-        Coordinates _coords;
-        Coordinates _nCoords; // Coordenadas normalizadadas
+        std::string m_name;
+        GdkRGBA m_color{};
+        Coordinates m_coords;
+        Coordinates m_nCoords; // Coordenadas normalizadadas
 
         void addCoordinate(const Coordinates& coords){
-            _coords.insert(_coords.end(), coords.begin(), coords.end());
+            m_coords.insert(m_coords.end(), coords.begin(), coords.end());
         }
 };
 
 class Point : public Object
 {
     public:
-        Point(std::string name) :
+        Point(const std::string& name) :
             Object(name) {}
-        Point(std::string name, GdkRGBA color) :
+        Point(const std::string& name, const GdkRGBA& color) :
             Object(name,color) {}
-		Point(std::string name, GdkRGBA color, double x, double y) :
+		Point(const std::string& name, const GdkRGBA& color, double x, double y) :
             Object(name,color) { addCoordinate(x,y); }
-        Point(std::string name, GdkRGBA color, const Coordinate& p) :
+        Point(const std::string& name, const GdkRGBA& color, const Coordinate& p) :
             Object(name,color) { addCoordinate(p); }
 
         virtual ObjType getType() const { return ObjType::POINT; }
@@ -105,11 +103,11 @@ class Point : public Object
 class Line : public Object
 {
     public:
-        Line(std::string name) :
+        Line(const std::string& name) :
             Object(name) {}
-        Line(std::string name, GdkRGBA color) :
+        Line(const std::string& name, const GdkRGBA& color) :
             Object(name,color) {}
-		Line(std::string name, GdkRGBA color, const Coordinates& coords) :
+		Line(const std::string& name, const GdkRGBA& color, const Coordinates& coords) :
             Object(name,color) { addCoordinate(coords); }
 
         virtual ObjType getType() const { return ObjType::LINE; }
@@ -119,21 +117,21 @@ class Line : public Object
 class Polygon : public Object
 {
     public:
-        Polygon(std::string name) :
-            Object(name) { _filled = false; }
-        Polygon(std::string name, GdkRGBA color) :
-            Object(name,color) { _filled = false; }
-		Polygon(std::string name, GdkRGBA color, const Coordinates& coords) :
-            Object(name,color) { _filled = false; addCoordinate(coords); }
-        Polygon(std::string name, GdkRGBA color, bool filled, const Coordinates& coords) :
-            Object(name,color) { _filled = filled; addCoordinate(coords); }
+        Polygon(const std::string& name) :
+            Object(name) {}
+        Polygon(const std::string& name, const GdkRGBA& color) :
+            Object(name,color) {}
+		Polygon(const std::string& name, const GdkRGBA& color, const Coordinates& coords) :
+            Object(name,color) { addCoordinate(coords); }
+        Polygon(const std::string& name, const GdkRGBA& color, bool filled, const Coordinates& coords) :
+            Object(name,color) { m_filled = filled; addCoordinate(coords); }
 
         virtual ObjType getType() const { return ObjType::POLYGON; }
 		virtual std::string getTypeName() const { return "Polygon"; }
 
-        bool filled() const { return _filled; }
-        void setFilled(bool v){ _filled = v; }
+        bool filled() const { return m_filled; }
+        void setFilled(bool v){ m_filled = v; }
     private:
-        bool _filled;
+        bool m_filled = false;
 };
 #endif // OBJECTS_H

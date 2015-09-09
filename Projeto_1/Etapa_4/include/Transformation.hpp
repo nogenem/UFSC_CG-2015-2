@@ -16,12 +16,12 @@ class Transformation
 {
     public:
         Transformation(const Matrix m):
-            _m(m) {}
+            m_matrix(m) {}
         Transformation();
         virtual ~Transformation() {}
 
-        const Matrix& getM() const {return _m;}
-        Matrix& getM() {return _m;}
+        const Matrix& getM() const {return m_matrix;}
+        Matrix& getM() {return m_matrix;}
 
 		Transformation& operator*=(const Transformation& t2);
 
@@ -31,10 +31,10 @@ class Transformation
         static Transformation newScaling(double sx, double sy);
 		static Transformation newScalingAroundObjCenter(double sx, double sy, const Coordinate& center);
 
-		static double toRadians(double degrees){ return (PI/180) * degrees; }
+		static double toRadians(double degrees) { return (PI/180) * degrees; }
     protected:
     private:
-        Matrix _m;
+        Matrix m_matrix;
 };
 
 Transformation operator*(Transformation t1, const Transformation& t2);

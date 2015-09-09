@@ -10,72 +10,73 @@ class World
         World() {}
         virtual ~World() {}
 
-        Object* addPoint(std::string name, GdkRGBA color, const Coordinate& p);
-        Object* addLine(std::string name, GdkRGBA color, const Coordinates& c);
-        Object* addPolygon(std::string name, GdkRGBA color, bool filled, const Coordinates& c);
-        void addObj(Object *obj){ _objs.addObj(obj); }
+        Object* addPoint(const std::string& name, const GdkRGBA& color, const Coordinate& p);
+        Object* addLine(const std::string& name, const GdkRGBA& color, const Coordinates& c);
+        Object* addPolygon(const std::string& name, const GdkRGBA& color, bool filled, const Coordinates& c);
+        void addObj(Object *obj){ m_objs.addObj(obj); }
 
-        void removeObj(std::string name);
-        int numObjs(){ return _objs.size(); }
-        Object* getObj(int pos){ return _objs.getObj(pos); }
-        Object* getObj(std::string name);
+        void removeObj(const std::string& name);
+        int numObjs() const { return m_objs.size(); }
+        Object* getObj(int pos){ return m_objs.getObj(pos); }
+        Object* getObj(const std::string& name);
 
-        Object* translateObj(std::string objName, double dx, double dy);
-        Object* scaleObj(std::string objName, double sx, double sy);
+        Object* translateObj(const std::string& objName, double dx, double dy);
+        Object* scaleObj(const std::string& objName, double sx, double sy);
         // p = ponto central para rodar;
-        Object* rotateObj(std::string objName, double angle, const Coordinate& p,
+        Object* rotateObj(const std::string& objName, double angle, const Coordinate& p,
                        rotateType type);
     protected:
     private:
-        DisplayFile _objs;
+        DisplayFile m_objs;
 };
 
-Object* World::addPoint(std::string name, GdkRGBA color, const Coordinate& p){
+Object* World::addPoint(const std::string& name, const GdkRGBA& color, const Coordinate& p){
     Point *obj = new Point(name, color, p);
-    _objs.addObj(obj);
+    m_objs.addObj(obj);
     return obj;
 }
 
-Object* World::addLine(std::string name, GdkRGBA color, const Coordinates& c){
+Object* World::addLine(const std::string& name, const GdkRGBA& color, const Coordinates& c){
     Line *obj = new Line(name, color, c);
-    _objs.addObj(obj);
+    m_objs.addObj(obj);
     return obj;
 }
 
-Object* World::addPolygon(std::string name, GdkRGBA color, bool filled, const Coordinates& c){
+Object* World::addPolygon(const std::string& name, const GdkRGBA& color,
+                            bool filled, const Coordinates& c){
     Polygon *obj = new Polygon(name, color, filled, c);
-    _objs.addObj(obj);
+    m_objs.addObj(obj);
     return obj;
 }
 
-void World::removeObj(std::string name){
+void World::removeObj(const std::string& name){
     Object tmp(name);
-    _objs.removeObj(&tmp);
+    m_objs.removeObj(&tmp);
 }
 
-Object* World::getObj(std::string name){
+Object* World::getObj(const std::string& name){
     Object tmp(name);
-    return _objs.getObj(&tmp);
+    return m_objs.getObj(&tmp);
 }
 
-Object* World::translateObj(std::string objName, double dx, double dy){
+Object* World::translateObj(const std::string& objName, double dx, double dy){
     Object tmp(objName);
-    Object *obj = _objs.getObj(&tmp);
+    Object *obj = m_objs.getObj(&tmp);
     obj->transform(Transformation::newTranslation(dx,dy));
     return obj;
 }
 
-Object* World::scaleObj(std::string objName, double sx, double sy){
+Object* World::scaleObj(const std::string& objName, double sx, double sy){
     Object tmp(objName);
-    Object *obj = _objs.getObj(&tmp);
+    Object *obj = m_objs.getObj(&tmp);
     obj->transform(Transformation::newScalingAroundObjCenter(sx,sy,obj->center()));
     return obj;
 }
 
-Object* World::rotateObj(std::string objName, double angle, const Coordinate& p,
+Object* World::rotateObj(const std::string& objName, double angle, const Coordinate& p,
                        rotateType type){
     Object tmp(objName);
-    Object *obj = _objs.getObj(&tmp);
+    Object *obj = m_objs.getObj(&tmp);
 
     switch(type){
     case rotateType::OBJECT:

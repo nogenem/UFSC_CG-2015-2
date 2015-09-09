@@ -13,32 +13,32 @@ class Viewport
 {
     public:
         Viewport(double width, double height, World *world):
-            _width(width), _height(height), _world(world), _window(width,height),
-            _border(new ClipWindow(-0.95,0.95,-0.95,0.95)), _clipping(_border)
+            m_width(width), m_height(height), m_world(world), m_window(width,height),
+            m_border(new ClipWindow{-0.95,0.95,-0.95,0.95}), m_clipping(m_border)
             { transformAndClipAllObjs(); }
-        virtual ~Viewport(){ delete _border; }
-
-        Coordinate transformCoordinate(const Coordinate& c) const;
-        Coordinates transformCoordinates(const Coordinates& coords) const;
+        virtual ~Viewport(){ delete m_border; }
 
         void transformAndClipObj(Object* obj);
-        void changeLineClipAlg(LineClipAlgs alg){_clipping.setLineClipAlg(alg); transformAndClipAllObjs();}
+        void changeLineClipAlg(const LineClipAlgs alg){m_clipping.setLineClipAlg(alg); transformAndClipAllObjs();}
 
-        void gotoObj(std::string objName);
-        void zoomWindow(double step){_window.zoom(step); transformAndClipAllObjs();}
-        void moveWindow(double x, double y){_window.move(x,y); transformAndClipAllObjs();}
-        void rotateWindow(double graus){_window.setAngulo(graus); transformAndClipAllObjs();}
+        void gotoObj(const std::string& objName);
+        void zoomWindow(double step){m_window.zoom(step); transformAndClipAllObjs();}
+        void moveWindow(double x, double y){m_window.move(x,y); transformAndClipAllObjs();}
+        void rotateWindow(double graus){m_window.setAngulo(graus); transformAndClipAllObjs();}
         void drawObjs(cairo_t* cr);
     protected:
     private:
-        double _width, _height;
-        World* _world;
-        Window _window;
+        double m_width, m_height;
+        World* m_world;
+        Window m_window;
 
-        cairo_t* _cairo;
+        cairo_t* m_cairo;
 
-        ClipWindow *_border;
-        Clipping _clipping;
+        ClipWindow *m_border;
+        Clipping m_clipping;
+
+        Coordinate transformCoordinate(const Coordinate& c) const;
+        void transformCoordinates(const Coordinates& coords, Coordinates& output) const;
 
         void transformAndClipAllObjs();
 
@@ -47,18 +47,18 @@ class Viewport
         void drawLine(Object* obj);
         void drawPolygon(Object* obj);
 
-        void prepareContext(GdkRGBA& color);
+        void prepareContext(const GdkRGBA& color);
 };
 
-void Viewport::gotoObj(std::string objName){
-    Object *obj = _world->getObj(objName);
+void Viewport::gotoObj(const std::string& objName){
+    Object *obj = m_world->getObj(objName);
     Coordinate c = obj->center();
-    _window.moveTo(c);
+    m_window.moveTo(c);
     transformAndClipAllObjs();
 }
 
 void Viewport::transformAndClipObj(Object* obj){
-    auto t = _window.getT();
+    auto t = m_window.getT();
     bool shouldDraw = true;
     obj->transformNormalized(t);
 
@@ -67,13 +67,13 @@ void Viewport::transformAndClipObj(Object* obj){
         shouldDraw = false;
         break;
     case ObjType::POINT:
-        shouldDraw = _clipping.clipPoint((Point*)obj);
+        shouldDraw = m_clipping.clipPoint((Point*)obj);
         break;
     case ObjType::LINE:
-        shouldDraw = _clipping.clipLine((Line*)obj);
+        shouldDraw = m_clipping.clipLine((Line*)obj);
         break;
     case ObjType::POLYGON:
-        shouldDraw = _clipping.clipPolygon((Polygon*)obj);
+        shouldDraw = m_clipping.clipPolygon((Polygon*)obj);
         break;
     }
 
@@ -82,40 +82,38 @@ void Viewport::transformAndClipObj(Object* obj){
 }
 
 void Viewport::transformAndClipAllObjs(){
-    _window.updateTransformation();
+    m_window.updateTransformation();
 
-    for(int i = 0; i < _world->numObjs(); i++){
-        Object *obj = _world->getObj(i);
+    for(int i = 0; i < m_world->numObjs(); i++){
+        Object *obj = m_world->getObj(i);
         transformAndClipObj(obj);
     }
 }
 
 Coordinate Viewport::transformCoordinate(const Coordinate& c) const {
-    const Coordinate wmin = _window.wMin();
-    const Coordinate wmax = _window.wMax();
+    const Coordinate wmin = m_window.wMin();
+    const Coordinate wmax = m_window.wMax();
 
-    double x = ((c.x-wmin.x)/(wmax.x-wmin.x))*_width;
-    double y = (1-((c.y-wmin.y)/(wmax.y-wmin.y)))*_height;
+    double x = ((c.x-wmin.x)/(wmax.x-wmin.x))*m_width;
+    double y = (1-((c.y-wmin.y)/(wmax.y-wmin.y)))*m_height;
 
     return Coordinate(x,y);
 }
 
-Coordinates Viewport::transformCoordinates(const Coordinates& coords) const{
-    Coordinates vCoords;
+void Viewport::transformCoordinates(const Coordinates& coords, Coordinates& output) const {
     for(const auto &c : coords)
-        vCoords.push_back(transformCoordinate(c));
-    return vCoords;
+        output.push_back(transformCoordinate(c));
 }
 
 void Viewport::drawObjs(cairo_t* cr){
-    _cairo = cr;
+    m_cairo = cr;
 
     Object *obj;
-    for(int i = 0; i < _world->numObjs(); i++){
-        obj = _world->getObj(i);
+    for(int i = 0; i < m_world->numObjs(); i++){
+        obj = m_world->getObj(i);
         drawObj(obj);
     }
-    drawObj(_border);
+    drawObj(m_border);
 }
 
 void Viewport::drawObj(Object* obj){
@@ -139,27 +137,29 @@ void Viewport::drawObj(Object* obj){
 void Viewport::drawPoint(Object* obj){
     Coordinate coord = transformCoordinate(obj->getNCoord(0));
     prepareContext(obj->getColor());
-    cairo_move_to(_cairo, coord.x, coord.y);
-    cairo_arc(_cairo, coord.x, coord.y, 1.0, 0.0, (2*PI) );//pnt deveria ir diminuindo, nao?
-    cairo_fill(_cairo);
+    cairo_move_to(m_cairo, coord.x, coord.y);
+    cairo_arc(m_cairo, coord.x, coord.y, 1.0, 0.0, (2*PI) );//pnt deveria ir diminuindo, nao?
+    cairo_fill(m_cairo);
 }
 
 void Viewport::drawLine(Object* obj){
     auto coords = obj->getNCoords();
+    Coordinates nCoords;
     if(coords[0] == coords[1]){// Usuario quer um ponto?
         drawPoint(obj);
         return;
     }
-    coords = transformCoordinates(coords);
+    transformCoordinates(coords, nCoords);
     prepareContext(obj->getColor());
 
-    cairo_move_to(_cairo, coords[0].x, coords[0].y);
-    cairo_line_to(_cairo, coords[1].x, coords[1].y);
-    cairo_stroke(_cairo);
+    cairo_move_to(m_cairo, nCoords[0].x, nCoords[0].y);
+    cairo_line_to(m_cairo, nCoords[1].x, nCoords[1].y);
+    cairo_stroke(m_cairo);
 }
 
 void Viewport::drawPolygon(Object* obj){
     auto coords = obj->getNCoords();
+    Coordinates nCoords;
     if(coords.size() == 1){// Usuario quer um ponto?
         drawPoint(obj);
         return;
@@ -168,26 +168,26 @@ void Viewport::drawPolygon(Object* obj){
         return;
     }
 
-    coords = transformCoordinates(coords);
+    transformCoordinates(coords, nCoords);
     prepareContext(obj->getColor());
 
-    cairo_move_to(_cairo, coords[0].x, coords[0].y);
-    for(unsigned int i = 0; i<coords.size(); i++)
-        cairo_line_to(_cairo, coords[i].x, coords[i].y);
+    cairo_move_to(m_cairo, nCoords[0].x, nCoords[0].y);
+    for(unsigned int i = 0; i<nCoords.size(); i++)
+        cairo_line_to(m_cairo, nCoords[i].x, nCoords[i].y);
 
-    cairo_close_path(_cairo);
+    cairo_close_path(m_cairo);
 
     Polygon* p = (Polygon*) obj;
     if(p->filled()){
-        cairo_stroke_preserve(_cairo);
-        cairo_fill(_cairo);
+        cairo_stroke_preserve(m_cairo);
+        cairo_fill(m_cairo);
     }else
-        cairo_stroke(_cairo);
+        cairo_stroke(m_cairo);
 }
 
-void Viewport::prepareContext(GdkRGBA& color){
-    cairo_set_source_rgb(_cairo, color.red, color.green, color.blue);
-    cairo_set_line_width(_cairo, 1);
+void Viewport::prepareContext(const GdkRGBA& color){
+    cairo_set_source_rgb(m_cairo, color.red, color.green, color.blue);
+    cairo_set_line_width(m_cairo, 1);
 }
 
 #endif // VIEWPORT_HPP

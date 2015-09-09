@@ -36,7 +36,7 @@ public:
 protected:
     // Necessarias para percorrer a lista
 	T getFromPos(int pos);
-	int getSize(){ return this->size; }
+	int getSize() const { return this->size; }
 
 private:
 	Elemento<T>* head;

@@ -24,13 +24,13 @@
 class ColorReader
 {
     public:
-        ColorReader(){}
-        bool loadFile(std::string filename);
-        GdkRGBA getColor(std::string colorName);
+        ColorReader(){ m_colors["Padrao"] = GdkRGBA{}; }
+        bool loadFile(const std::string& filename);
+        const GdkRGBA& getColor(const std::string& colorName) const;
     private:
         //Ex: <"Color0", GdkRGBA(0,0.6,0)>
-        std::map<std::string, GdkRGBA> _colors;
-        std::ifstream _ifs;
+        std::map<std::string, GdkRGBA> m_colors;
+        std::ifstream m_ifs;
 
         void loadColors();
         void addColor(std::string name, std::stringstream& line);
@@ -39,17 +39,17 @@ class ColorReader
 class ColorWriter
 {
     public:
-        ColorWriter(): _numColors(0) {}
-        void loadFile(std::string filename);
-        std::string getColorName(GdkRGBA color);
+        ColorWriter(){}
+        void loadFile(const std::string& filename);
+        std::string getColorName(const GdkRGBA& color);
     private:
         //Ex: <"(0,0.6,0)", "Color0">
-        std::map<std::string, std::string> _colors;
-        std::ofstream _ofs;
+        std::map<std::string, std::string> m_colors;
+        std::ofstream m_ofs;
         //Contador de cores ja escritas, usado no nome da cor
-        int _numColors;
+        int m_numColors = 0;
 
-        void writeColor(std::string colorName, GdkRGBA& color);
+        void writeColor(const std::string& colorName, const GdkRGBA& color);
 };
 
 class ObjStream
@@ -57,24 +57,24 @@ class ObjStream
     public:
         ObjStream(std::string& filename);
     protected:
-        std::string _name;// Nome do arquivo, sem a extensao
-        std::string _path;// Path para o arquivo
-        std::fstream _objsFile;
-        std::fstream _colorsFile;
-        GdkRGBA _color;// Cor atual
+        std::string m_name;// Nome do arquivo, sem a extensao
+        std::string m_path;// Path para o arquivo
+        std::fstream m_objsFile;
+        std::fstream m_colorsFile;
+        GdkRGBA m_color{};// Cor atual
 };
 
 class ObjReader : public ObjStream
 {
     public:
         ObjReader(std::string& filename);
-        std::vector<Object*>& getObjs(){ return _objs; }
+        std::vector<Object*>& getObjs(){ return m_objs; }
     private:
-        std::vector<Object*> _objs;
-        Coordinates _coords;// Todas as coordenadas lidas do arquivo
-        ColorReader _cReader;
-        bool _usingColorsFile;// Existe uma chamada 'mtllib' no .obj?
-        int _numSubObjs; // Numero de objetos em seguida com o mesmo nome
+        std::vector<Object*> m_objs;
+        Coordinates m_coords;// Todas as coordenadas lidas do arquivo
+        ColorReader m_cReader;
+        bool m_usingColorsFile = false;// Existe uma chamada 'mtllib' no .obj?
+        int m_numSubObjs = 0; // Numero de objetos em seguida com o mesmo nome
 
         void loadObjs();
         void loadColorsFile(std::stringstream& line);
@@ -93,78 +93,76 @@ class ObjWriter : public ObjStream
         void writeObjs(World *world);
     private:
         // Numero de coordenadas ja escritas
-        int _numVertex;
-        ColorWriter _cWriter;
+        int m_numVertex = 0;
+        ColorWriter m_cWriter;
 
         void printObj(Object* obj);
 };
 
-ObjStream::ObjStream(std::string& filename): _color({0}) {
+ObjStream::ObjStream(std::string& filename) {
     if(!filename.find("\\.obj"))
         filename += ".obj";
 
     std::size_t found = filename.find_last_of("/\\");
-    _path = filename.substr(0,found+1);
-    _name = filename.substr(found+1, filename.size()-found-5);// Nome sem o '.obj'
+    m_path = filename.substr(0,found+1);
+    m_name = filename.substr(found+1, filename.size()-found-5);// Nome sem o '.obj'
 }
 
 ObjReader::ObjReader(std::string& filename):
     ObjStream(filename){
 
-    _numSubObjs = 0;
-    _usingColorsFile = false;
-    _objsFile.open(filename.c_str());
-    if(!_objsFile.is_open())
+    m_objsFile.open(filename.c_str());
+    if(!m_objsFile.is_open())
         throw MyException("Erro tentando abrir o arquivo:\n\t" + filename + ".\n");
     else
         loadObjs();
 }
 
 void ObjReader::destroyObjs(){
-    for(auto o : _objs)
+    for(auto o : m_objs)
         delete o;
 }
 
 void ObjReader::loadObjs(){
     std::string tmp, keyWord;
-    while(std::getline(_objsFile, tmp)){
+    while(std::getline(m_objsFile, tmp)){
         if(tmp.size() <= 1) continue;
         std::stringstream line(tmp);
         line >> keyWord;
 
         if(keyWord == "#"){ /* Nao faz nada... */ }
         else if(keyWord == "mtllib"){ loadColorsFile(line); }
-        else if(keyWord == "usemtl"){ if(_usingColorsFile){changeColor(line);} }
+        else if(keyWord == "usemtl"){ if(m_usingColorsFile){changeColor(line);} }
         else if(keyWord == "v"){ addCoord(line); }
-        else if(keyWord == "o"){ line >> _name; _numSubObjs = 0; }
+        else if(keyWord == "o"){ line >> m_name; m_numSubObjs = 0; }
         else if(keyWord == "w"){ /* TODO(?) */ }
-        else if(keyWord == "p"){ addPoint(line); _numSubObjs++; }
-        else if(keyWord == "l"){ addPoly(line, false); _numSubObjs++; }
-        else if(keyWord == "f"){ addPoly(line, true); _numSubObjs++; }
+        else if(keyWord == "p"){ addPoint(line); m_numSubObjs++; }
+        else if(keyWord == "l"){ addPoly(line, false); m_numSubObjs++; }
+        else if(keyWord == "f"){ addPoly(line, true); m_numSubObjs++; }
     }
 }
 
 void ObjReader::loadColorsFile(std::stringstream& line){
     std::string file;
     line >> file;
-    _usingColorsFile = _cReader.loadFile(_path+file);
+    m_usingColorsFile = m_cReader.loadFile(m_path+file);
 }
 
 void ObjReader::changeColor(std::stringstream& line){
     std::string colorName;
     line >> colorName;
-    _color = _cReader.getColor(colorName);
+    m_color = m_cReader.getColor(colorName);
 }
 
 void ObjReader::addCoord(std::stringstream& line){
     double x,y;
     line >> x >> y;
-    _coords.emplace_back(x,y);
+    m_coords.emplace_back(x,y);
 }
 
 void ObjReader::addPoint(std::stringstream& line){
     int index = 0;
-    int size = _coords.size();
+    int size = m_coords.size();
 
     line >> index;
 
@@ -178,15 +176,17 @@ void ObjReader::addPoint(std::stringstream& line){
         throw MyException("Indice de vertice invalido na linha: "+ line.str() + ".\n");
     }
 
-    std::string name = _numSubObjs == 0 ? _name : _name+"_sub"+std::to_string(_numSubObjs);
-    Point *p = new Point(name, _color);
-    p->addCoordinate(_coords[index]);
-    _objs.push_back(p);
+    std::string name = m_numSubObjs == 0 ? m_name :
+        m_name+"_sub"+std::to_string(m_numSubObjs);
+
+    Point *p = new Point(name, m_color);
+    p->addCoordinate(m_coords[index]);
+    m_objs.push_back(p);
 }
 
 void ObjReader::addPoly(std::stringstream& line, bool filled){
     int index = 0;
-    int size = _coords.size();
+    int size = m_coords.size();
     Coordinates objCoords;
 
     while(line >> index){
@@ -200,32 +200,33 @@ void ObjReader::addPoly(std::stringstream& line, bool filled){
             throw MyException("Indice de vertice invalido na linha: "+ line.str() + ".\n");
         }
 
-        objCoords.push_back(_coords[index]);
+        objCoords.push_back(m_coords[index]);
     }
 
     Object *obj;
-    std::string name = _numSubObjs == 0 ? _name : _name+"_sub"+std::to_string(_numSubObjs);
-    if(objCoords.size() == 2)
-        obj = new Line(name, _color, objCoords);
-    else
-        obj = new Polygon(name, _color, filled, objCoords);
+    std::string name = m_numSubObjs == 0 ? m_name :
+        m_name+"_sub"+std::to_string(m_numSubObjs);
 
-    _objs.push_back(obj);
+    if(objCoords.size() == 2)
+        obj = new Line(name, m_color, objCoords);
+    else
+        obj = new Polygon(name, m_color, filled, objCoords);
+
+    m_objs.push_back(obj);
 }
 
 ObjWriter::ObjWriter(std::string& filename):
     ObjStream(filename) {
 
-    _numVertex = 0;
-    _objsFile.open(filename.c_str(), std::fstream::out);
+    m_objsFile.open(filename.c_str(), std::fstream::out);
 
-    if(!_objsFile.is_open())
+    if(!m_objsFile.is_open())
         throw MyException("Erro tentando abrir arquivo:\n\t" + filename + ".\n");
 }
 
 void ObjWriter::writeObjs(World *world){
-    _cWriter.loadFile(_path+_name+".mtl");
-    _objsFile << "mtllib " << _name << ".mtl\n\n";
+    m_cWriter.loadFile(m_path+m_name+".mtl");
+    m_objsFile << "mtllib " << m_name << ".mtl\n\n";
 
     Object *obj;
     int size = world->numObjs();
@@ -238,14 +239,14 @@ void ObjWriter::writeObjs(World *world){
 void ObjWriter::printObj(Object* obj){
     auto coords = obj->getCoords();
     for(const auto &c : coords)
-        _objsFile << "v " << c.x << " " << c.y << "\n";
+        m_objsFile << "v " << c.x << " " << c.y << "\n";
 
-    _objsFile << "\no " << obj->getName() << "\n";
+    m_objsFile << "\no " << obj->getName() << "\n";
 
-    std::string colorName = _cWriter.getColorName(obj->getColor());
+    const std::string colorName = m_cWriter.getColorName(obj->getColor());
 
     if(colorName != "none")
-        _objsFile << "usemtl " << colorName << "\n";
+        m_objsFile << "usemtl " << colorName << "\n";
 
     std::string keyWord;
     switch(obj->getType()){
@@ -263,18 +264,18 @@ void ObjWriter::printObj(Object* obj){
     }
 
     int size = coords.size();
-    _objsFile << keyWord;
+    m_objsFile << keyWord;
     for(int i = 0; i<size; i++)
-        _objsFile << " " << _numVertex+(i+1);
+        m_objsFile << " " << m_numVertex+(i+1);
 
-    _objsFile << "\n" << std::endl;
-    _numVertex += size;
+    m_objsFile << "\n" << std::endl;
+    m_numVertex += size;
 }
 
-bool ColorReader::loadFile(std::string filename){
-    _ifs.open(filename);
+bool ColorReader::loadFile(const std::string& filename){
+    m_ifs.open(filename);
 
-    if(!_ifs.is_open()){ //dar throw?
+    if(!m_ifs.is_open()){ //dar throw?
         std::cout << "Erro tentando abrir arquivo:\n\t" + filename + ".\n";
         return false;
     }else{
@@ -285,7 +286,7 @@ bool ColorReader::loadFile(std::string filename){
 
 void ColorReader::loadColors(){
     std::string tmp, keyWord, colorName;
-    while(std::getline(_ifs, tmp)){
+    while(std::getline(m_ifs, tmp)){
         if(tmp.size() <= 1) continue;
         std::stringstream line(tmp);
         line >> keyWord;
@@ -298,46 +299,47 @@ void ColorReader::loadColors(){
 void ColorReader::addColor(std::string name, std::stringstream& line){
     double r,g,b;
     line >> r >> g >> b;
-    GdkRGBA color{r,g,b};
-    _colors[name] = color;
+    m_colors[name] = GdkRGBA{r,g,b};
 }
 
-GdkRGBA ColorReader::getColor(std::string colorName){
-    auto iter = _colors.find(colorName);
-    if(iter != _colors.end())
+const GdkRGBA& ColorReader::getColor(const std::string& colorName) const{
+    auto iter = m_colors.find(colorName);
+    if(iter != m_colors.end())
         return iter->second;
-    else
-        return GdkRGBA({0});
+    else{
+        auto iter2 = m_colors.find("Padrao");
+        return iter2->second;
+    }
 }
 
-void ColorWriter::loadFile(std::string filename){
-    _ofs.open(filename);
+void ColorWriter::loadFile(const std::string& filename){
+    m_ofs.open(filename);
 
-    if(!_ofs.is_open()) //dar throw?
+    if(!m_ofs.is_open()) //dar throw?
         std::cout << "Erro tentando abrir arquivo:\n\t" + filename + ".\n";
 }
 
-std::string ColorWriter::getColorName(GdkRGBA color){
-    if(!_ofs.is_open())
+std::string ColorWriter::getColorName(const GdkRGBA& color){
+    if(!m_ofs.is_open())
         return "none";
 
     std::string colorString = gdk_rgba_to_string(&color);
 
-    auto iter = _colors.find(colorString);
-    if(iter != _colors.end())
+    auto iter = m_colors.find(colorString);
+    if(iter != m_colors.end())
         return iter->second;
     else{ //Se nao existir, cria um novo nome para a cor, e retorna ele...
-        std::string colorName = "Color" + std::to_string(_numColors++);
+        std::string colorName = "Color" + std::to_string(m_numColors++);
 
-        _colors[colorString] = colorName;
+        m_colors[colorString] = colorName;
         writeColor(colorName, color);
         return colorName;
     }
 }
 
-void ColorWriter::writeColor(std::string colorName, GdkRGBA& color){
-    _ofs << "newmtl " << colorName << "\n";
-    _ofs << "Kd " << color.red << " " << color.green << " " << color.blue << "\n\n";
+void ColorWriter::writeColor(const std::string& colorName, const GdkRGBA& color){
+    m_ofs << "newmtl " << colorName << "\n";
+    m_ofs << "Kd " << color.red << " " << color.green << " " << color.blue << "\n\n";
 }
 
 #endif // FILEHANDLERS_HPP
