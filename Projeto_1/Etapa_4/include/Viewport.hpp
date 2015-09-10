@@ -26,19 +26,11 @@ class Viewport
         void moveWindow(double x, double y){m_window.move(x,y); transformAndClipAllObjs();}
         void rotateWindow(double graus){m_window.setAngulo(graus); transformAndClipAllObjs();}
         void drawObjs(cairo_t* cr);
-    protected:
+
     private:
-        double m_width, m_height;
-        World* m_world;
-        Window m_window;
-
-        cairo_t* m_cairo;
-
-        ClipWindow *m_border;
-        Clipping m_clipping;
-
         Coordinate transformCoordinate(const Coordinate& c) const;
-        void transformCoordinates(const Coordinates& coords, Coordinates& output) const;
+        void transformCoordinates(const Coordinates& coords,
+                                    Coordinates& output) const;
 
         void transformAndClipAllObjs();
 
@@ -48,6 +40,16 @@ class Viewport
         void drawPolygon(Object* obj);
 
         void prepareContext(const GdkRGBA& color);
+
+    private:
+        double m_width, m_height;
+        World* m_world;
+        Window m_window;
+
+        cairo_t* m_cairo;
+
+        ClipWindow *m_border;
+        Clipping m_clipping;
 };
 
 void Viewport::gotoObj(const std::string& objName){

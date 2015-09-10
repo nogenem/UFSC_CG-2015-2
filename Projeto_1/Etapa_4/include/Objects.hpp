@@ -22,13 +22,10 @@ class Coordinate
         Coordinate& operator+=(const Coordinate& c);
         Coordinate& operator-=(const Coordinate& c);
         Coordinate& operator*=(const Transformation& t);
-        bool operator==(const Coordinate& c){
-            return (this->x==c.x && this->y==c.y);
-        }
+        bool operator==(const Coordinate& c)
+            { return (this->x==c.x && this->y==c.y); }
 
         double x = 0, y = 0, z = 1;
-    protected:
-    private:
 };
 
 Coordinate operator-(const Coordinate& c1, const Coordinate& c2);
@@ -66,22 +63,22 @@ class Object
         void transform(const Transformation& t);
         void transformNormalized(const Transformation& t);
 
-        bool operator==(const Object& other){
-            return this->getName() == other.getName();
-        }
+        bool operator==(const Object& other)
+            { return this->getName() == other.getName(); }
         Object& operator*(){ return *this; }
 
-		virtual void addCoordinate(double x, double y) {m_coords.emplace_back(x,y);}
-		void addCoordinate(const Coordinate& p) {m_coords.push_back(p);}
+		virtual void addCoordinate(double x, double y) { m_coords.emplace_back(x,y); }
+		void addCoordinate(const Coordinate& p) { m_coords.push_back(p); }
+
+    protected:
+        void addCoordinate(const Coordinates& coords)
+            { m_coords.insert(m_coords.end(), coords.begin(), coords.end()); }
+
     protected:
         std::string m_name;
-        GdkRGBA m_color{};
+        GdkRGBA m_color{};// [inicializada como preta]
         Coordinates m_coords;
         Coordinates m_nCoords; // Coordenadas normalizadadas
-
-        void addCoordinate(const Coordinates& coords){
-            m_coords.insert(m_coords.end(), coords.begin(), coords.end());
-        }
 };
 
 class Point : public Object
@@ -131,6 +128,7 @@ class Polygon : public Object
 
         bool filled() const { return m_filled; }
         void setFilled(bool v){ m_filled = v; }
+
     private:
         bool m_filled = false;
 };

@@ -32,7 +32,7 @@ class Transformation
 		static Transformation newScalingAroundObjCenter(double sx, double sy, const Coordinate& center);
 
 		static double toRadians(double degrees) { return (PI/180) * degrees; }
-    protected:
+
     private:
         Matrix m_matrix;
 };

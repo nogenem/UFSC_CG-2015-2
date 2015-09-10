@@ -27,13 +27,15 @@ class ColorReader
         ColorReader(){ m_colors["Padrao"] = GdkRGBA{}; }
         bool loadFile(const std::string& filename);
         const GdkRGBA& getColor(const std::string& colorName) const;
+
+    private:
+        void loadColors();
+        void addColor(std::string name, std::stringstream& line);
+
     private:
         //Ex: <"Color0", GdkRGBA(0,0.6,0)>
         std::map<std::string, GdkRGBA> m_colors;
         std::ifstream m_ifs;
-
-        void loadColors();
-        void addColor(std::string name, std::stringstream& line);
 };
 
 class ColorWriter
@@ -42,26 +44,30 @@ class ColorWriter
         ColorWriter(){}
         void loadFile(const std::string& filename);
         std::string getColorName(const GdkRGBA& color);
+
+    private:
+        void writeColor(const std::string& colorName,
+                            const GdkRGBA& color);
+
     private:
         //Ex: <"(0,0.6,0)", "Color0">
         std::map<std::string, std::string> m_colors;
         std::ofstream m_ofs;
         //Contador de cores ja escritas, usado no nome da cor
         int m_numColors = 0;
-
-        void writeColor(const std::string& colorName, const GdkRGBA& color);
 };
 
 class ObjStream
 {
     public:
         ObjStream(std::string& filename);
+
     protected:
         std::string m_name;// Nome do arquivo, sem a extensao
         std::string m_path;// Path para o arquivo
         std::fstream m_objsFile;
         std::fstream m_colorsFile;
-        GdkRGBA m_color{};// Cor atual
+        GdkRGBA m_color{};// Cor atual [inicializada como preta]
 };
 
 class ObjReader : public ObjStream
@@ -69,13 +75,8 @@ class ObjReader : public ObjStream
     public:
         ObjReader(std::string& filename);
         std::vector<Object*>& getObjs(){ return m_objs; }
-    private:
-        std::vector<Object*> m_objs;
-        Coordinates m_coords;// Todas as coordenadas lidas do arquivo
-        ColorReader m_cReader;
-        bool m_usingColorsFile = false;// Existe uma chamada 'mtllib' no .obj?
-        int m_numSubObjs = 0; // Numero de objetos em seguida com o mesmo nome
 
+    private:
         void loadObjs();
         void loadColorsFile(std::stringstream& line);
         void changeColor(std::stringstream& line);
@@ -84,6 +85,13 @@ class ObjReader : public ObjStream
         void addPoly(std::stringstream& line, bool filled);
         // Usado para destruir os objs caso de algum erro
         void destroyObjs();
+
+    private:
+        std::vector<Object*> m_objs;
+        Coordinates m_coords;// Todas as coordenadas lidas do arquivo
+        ColorReader m_cReader;
+        bool m_usingColorsFile = false;// Existe uma chamada 'mtllib' no .obj?
+        int m_numSubObjs = 0; // Numero de objetos em seguida com o mesmo nome
 };
 
 class ObjWriter : public ObjStream
@@ -91,12 +99,14 @@ class ObjWriter : public ObjStream
     public:
         ObjWriter(std::string& filename);
         void writeObjs(World *world);
+
+    private:
+        void printObj(Object* obj);
+
     private:
         // Numero de coordenadas ja escritas
         int m_numVertex = 0;
         ColorWriter m_cWriter;
-
-        void printObj(Object* obj);
 };
 
 ObjStream::ObjStream(std::string& filename) {

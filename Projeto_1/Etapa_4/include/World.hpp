@@ -25,7 +25,7 @@ class World
         // p = ponto central para rodar;
         Object* rotateObj(const std::string& objName, double angle, const Coordinate& p,
                        rotateType type);
-    protected:
+
     private:
         DisplayFile m_objs;
 };

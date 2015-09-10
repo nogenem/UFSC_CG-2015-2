@@ -38,8 +38,19 @@ class MainWindow
         void scaleSelectedObj(GtkBuilder* builder);
         void rotateSelectedObj(GtkBuilder* builder);
         void showHelpDialog();
-        void changeLineClipAlg(const LineClipAlgs alg);
-    protected:
+        void changeLineClipAlg(LineClipAlgs alg);
+
+    private:
+        // Seta o parametro 'name' e 'inter' para
+        // apontar para o obj selecionado;
+        // Retorna TRUE caso tenha algum obj selecionado
+        bool getSelectedObjName(std::string &name, GtkTreeIter *iter);
+        void showErrorDialog(const char* msg);
+        // Escreve no TextView de logs
+        void log(const char* msg);
+        // Adiciona os dados de um objeto na ListStore
+        void addObjOnListStore(const std::string& name, const char* type);
+
     private:
         GtkWidget *_mainWindow = nullptr, *_step = nullptr,
                   *_log = nullptr, *_popUp = nullptr,
@@ -51,17 +62,6 @@ class MainWindow
 
         Viewport *_viewport = nullptr;
         World *_world = nullptr;
-
-        // Altera o nome do obj passado como parametro para o
-        // nome do objeto selecionado e seta o inter para
-        // apontar para o obj selecionado;
-        // Retorna TRUE caso tenha algum obj selecionado
-        bool getSelectedObjName(std::string &name, GtkTreeIter *iter);
-        void showErrorDialog(const char* msg);
-        // Escreve no TextView de logs
-        void log(const char* msg);
-        // Adiciona os dados de um objeto na ListStore
-        void addObjOnListStore(const std::string& name, const char* type);
 };
 
 MainWindow::MainWindow(GtkBuilder* builder) {
@@ -132,7 +132,7 @@ MainWindow::MainWindow(GtkBuilder* builder) {
     gtk_widget_show( _mainWindow );
 }
 
-void MainWindow::changeLineClipAlg(const LineClipAlgs alg){
+void MainWindow::changeLineClipAlg(LineClipAlgs alg){
     _viewport->changeLineClipAlg(alg);
     gtk_widget_queue_draw(_mainWindow);
 }

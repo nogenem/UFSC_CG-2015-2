@@ -32,7 +32,7 @@ class Window
         void moveTo(Coordinate center);
 
         void updateTransformation();
-    protected:
+
     private:
         Coordinate _center;
         double _angle;

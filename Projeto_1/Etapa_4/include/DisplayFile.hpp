@@ -17,8 +17,6 @@ class DisplayFile : public ListaEnc<Object*>
         void addObj(Object *obj);
         void removeObj(Object *obj){ delete retiraEspecifico(obj); }
         int size() const { return getSize(); }
-    protected:
-    private:
 };
 
 void DisplayFile::addObj(Object* obj){

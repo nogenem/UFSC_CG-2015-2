@@ -6,9 +6,9 @@
 class ClipWindow : public Polygon {
 public:
     ClipWindow(double minX_, double maxX_, double minY_, double maxY_);
-
     void addCoordinate(double x, double y) {m_coords.emplace_back(x,y);
                                             m_nCoords.emplace_back(x,y);}
+
     double minX, maxX, minY, maxY;
 };
 
@@ -26,13 +26,8 @@ class Clipping
         bool clipPoint(Point* p);
         bool clipLine(Line* l);
         bool clipPolygon(Polygon* p){return SutherlandHodgmanPolygonClip(p);}
-    protected:
+
     private:
-        const ClipWindow* m_w;
-        LineClipAlgs m_current = LineClipAlgs::CS;
-
-        enum RC {INSIDE=0, LEFT=1, RIGHT=2, BOTTOM=4, TOP=8};
-
         int getCoordRC(const Coordinate& c);
         bool CohenSutherlandLineClip(Line* l);
         bool LiangBaskyLineClip(Line* l);
@@ -42,6 +37,12 @@ class Clipping
         void clipRight(Coordinates& input, Coordinates& output);
         void clipTop(Coordinates& input, Coordinates& output);
         void clipBottom(Coordinates& input, Coordinates& output);
+
+    private:
+        const ClipWindow* m_w;
+        LineClipAlgs m_current = LineClipAlgs::CS;
+
+        enum RC {INSIDE=0, LEFT=1, RIGHT=2, BOTTOM=4, TOP=8};
 };
 
 ClipWindow::ClipWindow(double minX_, double maxX_, double minY_, double maxY_):
