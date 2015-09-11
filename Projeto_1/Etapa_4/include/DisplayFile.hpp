@@ -13,6 +13,7 @@ class DisplayFile : public ListaEnc<Object*>
 
         Object* getObj(int pos){ return getFromPos(pos); }
         Object* getObj(Object *obj);
+        Elemento<Object*>* getFirstElement(){ return getHead(); }
 
         void addObj(Object *obj);
         void removeObj(Object *obj){ delete retiraEspecifico(obj); }

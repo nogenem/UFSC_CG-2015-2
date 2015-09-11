@@ -39,7 +39,7 @@ class Viewport
         void drawLine(Object* obj);
         void drawPolygon(Object* obj);
 
-        void prepareContext(const GdkRGBA& color);
+        void prepareContext(const Object* obj);
 
     private:
         double m_width, m_height;
@@ -86,9 +86,10 @@ void Viewport::transformAndClipObj(Object* obj){
 void Viewport::transformAndClipAllObjs(){
     m_window.updateTransformation();
 
-    for(int i = 0; i < m_world->numObjs(); i++){
-        Object *obj = m_world->getObj(i);
-        transformAndClipObj(obj);
+    auto element = m_world->getFirstObject();
+    while(element != nullptr){
+        transformAndClipObj(element->getInfo());
+        element = element->getProximo();
     }
 }
 
@@ -110,10 +111,10 @@ void Viewport::transformCoordinates(const Coordinates& coords, Coordinates& outp
 void Viewport::drawObjs(cairo_t* cr){
     m_cairo = cr;
 
-    Object *obj;
-    for(int i = 0; i < m_world->numObjs(); i++){
-        obj = m_world->getObj(i);
-        drawObj(obj);
+    auto element = m_world->getFirstObject();
+    while(element != nullptr){
+        drawObj(element->getInfo());
+        element = element->getProximo();
     }
     drawObj(m_border);
 }
@@ -138,7 +139,8 @@ void Viewport::drawObj(Object* obj){
 
 void Viewport::drawPoint(Object* obj){
     Coordinate coord = transformCoordinate(obj->getNCoord(0));
-    prepareContext(obj->getColor());
+    prepareContext(obj);
+
     cairo_move_to(m_cairo, coord.x, coord.y);
     cairo_arc(m_cairo, coord.x, coord.y, 1.0, 0.0, (2*PI) );//pnt deveria ir diminuindo, nao?
     cairo_fill(m_cairo);
@@ -152,7 +154,7 @@ void Viewport::drawLine(Object* obj){
         return;
     }
     transformCoordinates(coords, nCoords);
-    prepareContext(obj->getColor());
+    prepareContext(obj);
 
     cairo_move_to(m_cairo, nCoords[0].x, nCoords[0].y);
     cairo_line_to(m_cairo, nCoords[1].x, nCoords[1].y);
@@ -171,7 +173,7 @@ void Viewport::drawPolygon(Object* obj){
     }
 
     transformCoordinates(coords, nCoords);
-    prepareContext(obj->getColor());
+    prepareContext(obj);
 
     cairo_move_to(m_cairo, nCoords[0].x, nCoords[0].y);
     for(unsigned int i = 0; i<nCoords.size(); i++)
@@ -187,9 +189,10 @@ void Viewport::drawPolygon(Object* obj){
         cairo_stroke(m_cairo);
 }
 
-void Viewport::prepareContext(const GdkRGBA& color){
+void Viewport::prepareContext(const Object* obj){
+    const GdkRGBA color = obj->getColor();
     cairo_set_source_rgb(m_cairo, color.red, color.green, color.blue);
-    cairo_set_line_width(m_cairo, 1);
+    cairo_set_line_width(m_cairo, ((obj==m_border) ? 3 : 1) );//Pequena gambiarra...
 }
 
 #endif // VIEWPORT_HPP

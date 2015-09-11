@@ -19,6 +19,7 @@ class World
         int numObjs() const { return m_objs.size(); }
         Object* getObj(int pos){ return m_objs.getObj(pos); }
         Object* getObj(const std::string& name);
+        Elemento<Object*>* getFirstObject(){ return m_objs.getFirstElement(); }
 
         Object* translateObj(const std::string& objName, double dx, double dy);
         Object* scaleObj(const std::string& objName, double sx, double sy);

@@ -10,29 +10,24 @@ private:
 public:
 	Elemento(const T& info, Elemento<T>* next) : info(new T(info)), _next(next) {}
 
-	~Elemento()
-	{
+	~Elemento(){
 		delete info;
 	}
 
-	Elemento<T>* getProximo() const
-	{
+	Elemento<T>* getProximo() const {
 		return _next;
 	}
 
-	T getInfo() const
-	{
+	T getInfo() const {
 		return *info;
 	}
 
     // Necessaria para o posicaoMem
-	T* getInfoPointer() const
-	{
+	T* getInfoPointer() const{
 		return info;
 	}
 
-	void setProximo(Elemento<T>* next)
-	{
+	void setProximo(Elemento<T>* next){
 		_next = next;
 	}
 };
