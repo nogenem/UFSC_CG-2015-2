@@ -1,0 +1,46 @@
+mtllib teste3.mtl
+
+v 0 0
+v 150 150
+
+o teste
+usemtl Color0
+l 1 2
+
+v 500 0
+v 0 500
+
+o teste2
+usemtl Color1
+l 3 4
+
+v 250 0
+v 250 500
+
+o teste3
+usemtl Color0
+l 5 6
+
+v 0 250
+v 500 250
+
+o teste4
+usemtl Color0
+l 7 8
+
+v 277.5 152.5
+v 277.5 277.5
+v 152.5 277.5
+v 152.5 152.5
+
+o teste5
+usemtl Color2
+f 9 10 11 12
+
+v 0 0
+v 500 500
+
+o teste6
+usemtl Color3
+l 13 14
+
