@@ -26,13 +26,15 @@ class Clipping
         bool clip(Object* obj);
 
     private:
-        bool clipPoint(Object* p);
-        bool clipLine(Object* l);
-        bool clipPolygon(Object* p){return SutherlandHodgmanPolygonClip(p);}
+        bool clipPoint(const Coordinate& c);
+        bool clipLine(Coordinate& c1, Coordinate& c2);
+        bool clipPolygon(Object* p)
+            {return SutherlandHodgmanPolygonClip(p);}
+        bool clipCurve(Object *obj);
 
         int getCoordRC(const Coordinate& c);
-        bool CohenSutherlandLineClip(Object* l);
-        bool LiangBaskyLineClip(Object* l);
+        bool CohenSutherlandLineClip(Coordinate& c1, Coordinate& c2);
+        bool LiangBaskyLineClip(Coordinate& c1, Coordinate& c2);
         bool SutherlandHodgmanPolygonClip(Object* p);
 
         void clipLeft(Coordinates& input, Coordinates& output);
@@ -62,31 +64,28 @@ ClipWindow::ClipWindow(double minX_, double maxX_, double minY_, double maxY_):
 bool Clipping::clip(Object* obj){
     switch(obj->getType()){
     case ObjType::POINT:
-        return clipPoint(obj);
+        return clipPoint(obj->getNCoord(0));
     case ObjType::LINE:
-        return clipLine(obj);
+        return clipLine(obj->getNCoord(0), obj->getNCoord(1));
     case ObjType::POLYGON:
         return clipPolygon(obj);
     case ObjType::CURVE:
-        return true;//Temporario
+        return clipCurve(obj);
     default:
         return false;
     }
 }
 
-bool Clipping::clipPoint(Object* p){
-    if(p->getNCoordsSize() == 0) return false;
-
-    auto c = p->getNCoord(0);
+bool Clipping::clipPoint(const Coordinate& c){
     return c.x >= m_w->minX && c.x <= m_w->maxX &&
                 c.y >= m_w->minY && c.y <= m_w->maxY;
 }
 
-bool Clipping::clipLine(Object* l){
+bool Clipping::clipLine(Coordinate& c1, Coordinate& c2){
     if(m_current == LineClipAlgs::CS)
-        return CohenSutherlandLineClip(l);
+        return CohenSutherlandLineClip(c1,c2);
     else
-        return LiangBaskyLineClip(l);
+        return LiangBaskyLineClip(c1,c2);
 }
 
 //https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm
@@ -106,9 +105,8 @@ int Clipping::getCoordRC(const Coordinate& c){
     return rc;
 }
 
-bool Clipping::CohenSutherlandLineClip(Object* l){
-    auto &c1 = l->getNCoord(0);
-    auto &c2 = l->getNCoord(1);
+bool Clipping::CohenSutherlandLineClip(Coordinate& c1, Coordinate& c2){
+    if(c1 == c2) return clipPoint(c1);
 
     int rc1 = getCoordRC(c1);
     int rc2 = getCoordRC(c2);
@@ -150,11 +148,8 @@ bool Clipping::CohenSutherlandLineClip(Object* l){
 }
 
 //http://www.skytopia.com/project/articles/compsci/clipping.html
-bool Clipping::LiangBaskyLineClip(Object* l){
-    auto &c1 = l->getNCoord(0);
-    auto &c2 = l->getNCoord(1);
-
-    if(c1 == c2) return clipPoint((Point*)l);
+bool Clipping::LiangBaskyLineClip(Coordinate& c1, Coordinate& c2){
+    if(c1 == c2) return clipPoint(c1);
 
     auto delta = c2 - c1;
     double p,q,r;
@@ -193,7 +188,6 @@ bool Clipping::LiangBaskyLineClip(Object* l){
 }
 
 bool Clipping::SutherlandHodgmanPolygonClip(Object* p){
-
     auto input = p->getNCoords();
     Coordinates tmp;
     Coordinates output;
@@ -348,6 +342,37 @@ void Clipping::clipBottom(Coordinates& input, Coordinates& output){
             output.push_back(c1);
         }
     }
+}
+
+bool Clipping::clipCurve(Object *obj){
+    auto& coords = obj->getNCoords();
+    Coordinates newPath;
+    bool prevInside = true;
+    Coordinate prev;
+
+    for(unsigned int i = 0; i < coords.size(); i++){
+        if(clipPoint(coords[i])){
+            if(!prevInside){
+                clipLine(prev, coords[i]);
+                newPath.push_back(prev);
+            }
+            newPath.push_back(coords[i]);
+            prevInside = true;
+        }else{
+            if(prevInside && newPath.size() != 0){
+                clipLine(prev, coords[i]);
+                newPath.push_back(coords[i]);
+            }
+            prevInside = false;
+        }
+        prev = coords[i];
+    }
+
+    if(newPath.size() == 0)
+        return false;
+
+    obj->setNCoord(newPath);
+    return true;
 }
 
 #endif // CLIPPING_HPP
