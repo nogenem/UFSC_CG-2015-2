@@ -38,6 +38,7 @@ class Viewport
         void drawPoint(Object* obj);
         void drawLine(Object* obj);
         void drawPolygon(Object* obj);
+        void drawCurve(Object* obj);
 
         void prepareContext(const Object* obj);
 
@@ -61,25 +62,9 @@ void Viewport::gotoObj(const std::string& objName){
 
 void Viewport::transformAndClipObj(Object* obj){
     auto t = m_window.getT();
-    bool shouldDraw = true;
     obj->transformNormalized(t);
 
-    switch(obj->getType()){
-    case ObjType::OBJECT:
-        shouldDraw = false;
-        break;
-    case ObjType::POINT:
-        shouldDraw = m_clipping.clipPoint((Point*)obj);
-        break;
-    case ObjType::LINE:
-        shouldDraw = m_clipping.clipLine((Line*)obj);
-        break;
-    case ObjType::POLYGON:
-        shouldDraw = m_clipping.clipPolygon((Polygon*)obj);
-        break;
-    }
-
-    if(!shouldDraw)
+    if(!m_clipping.clip(obj))
         obj->getNCoords().clear();
 }
 
@@ -134,6 +119,9 @@ void Viewport::drawObj(Object* obj){
     case ObjType::POLYGON:
         drawPolygon(obj);
         break;
+    case ObjType::CURVE:
+        drawCurve(obj);
+        break;
     }
 }
 
@@ -187,6 +175,20 @@ void Viewport::drawPolygon(Object* obj){
         cairo_fill(m_cairo);
     }else
         cairo_stroke(m_cairo);
+}
+
+void Viewport::drawCurve(Object* obj){
+    auto coords = obj->getNCoords();
+    Coordinates nCoords;
+
+    transformCoordinates(coords, nCoords);
+    prepareContext(obj);
+
+    cairo_move_to(m_cairo, nCoords[0].x, nCoords[0].y);
+    for(unsigned int i = 0; i<nCoords.size(); i++)
+        cairo_line_to(m_cairo, nCoords[i].x, nCoords[i].y);
+
+    cairo_stroke(m_cairo);
 }
 
 void Viewport::prepareContext(const Object* obj){

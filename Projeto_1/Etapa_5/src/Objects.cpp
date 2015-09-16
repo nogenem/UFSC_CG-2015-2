@@ -82,3 +82,31 @@ void Object::setNCoord(const Coordinates& c){
     m_nCoords.clear();
     m_nCoords.insert(m_nCoords.end(), c.begin(), c.end());
 }
+
+void Curve::generateCurve(){
+    const auto coords = m_coords;
+    int numCurves = ((coords.size()-4)/3) + 1;
+    m_coords.clear();
+
+    for(int i = 0; i<numCurves; i++){
+
+        // Bleding Function
+        for(float t = 0; t<1; t += m_step){
+            double t2 = t * t;
+            double t3 = t2 * t;
+
+            double x,y;
+            x = (-t3 +3*t2 -3*t +1)*coords[i*3+0].x + (3*t3 -6*t2 +3*t)*coords[i*3+1].x +
+                (-3*t3 +3*t2)*coords[i*3+2].x + (t3)*coords[i*3+3].x;
+            y = (-t3 +3*t2 -3*t +1)*coords[i*3+0].y + (3*t3 -6*t2 +3*t)*coords[i*3+1].y +
+                (-3*t3 +3*t2)*coords[i*3+2].y + (t3)*coords[i*3+3].y;
+
+            /*x = (2*t3 -3*t2 +1)*coords[i*3+0].x + (-2*t3 +3*t2)*coords[i*3+3].x +
+                (t3 -2*t2 +t)*coords[i*3+1].x + (t3 -t2)*coords[i*3+2].x;
+            y = (2*t3 -3*t2 +1)*coords[i*3+0].y + (-2*t3 +3*t2)*coords[i*3+3].y +
+                (t3 -2*t2 +t)*coords[i*3+1].y + (t3 -t2)*coords[i*3+2].y;*/
+
+            m_coords.emplace_back(x,y);
+        }
+    }
+}

@@ -31,7 +31,7 @@ class Coordinate
 Coordinate operator-(const Coordinate& c1, const Coordinate& c2);
 
 typedef std::vector<Coordinate> Coordinates;
-enum class ObjType { OBJECT, POINT, LINE, POLYGON };
+enum class ObjType { OBJECT, POINT, LINE, POLYGON, CURVE };
 
 class Object
 {
@@ -132,4 +132,23 @@ class Polygon : public Object
     private:
         bool m_filled = false;
 };
+
+class Curve : public Object
+{
+    public:
+        Curve(const std::string& name) :
+            Object(name) {}
+        Curve(const std::string& name, const GdkRGBA& color) :
+            Object(name,color) {}
+		Curve(const std::string& name, const GdkRGBA& color, const Coordinates& coords) :
+            Object(name,color) { addCoordinate(coords); generateCurve(); }
+
+        virtual ObjType getType() const { return ObjType::CURVE; }
+		virtual std::string getTypeName() const { return "Curve"; }
+
+		void generateCurve();
+    protected:
+        float m_step = 0.01; //Passo usado na bleding function
+};
+
 #endif // OBJECTS_H

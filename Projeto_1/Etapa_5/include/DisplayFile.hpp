@@ -12,26 +12,13 @@ class DisplayFile : public ListaEnc<Object*>
         virtual ~DisplayFile() {}
 
         Object* getObj(int pos){ return getFromPos(pos); }
-        Object* getObj(Object *obj);
+        Object* getObj(Object *obj){ return *posicaoMem(obj); }
         Elemento<Object*>* getFirstElement(){ return getHead(); }
 
-        void addObj(Object *obj);
+        void addObj(Object *obj){ adiciona(obj); }
         void removeObj(Object *obj){ delete retiraEspecifico(obj); }
         int size() const { return getSize(); }
+        bool contains(Object *obj){ return contem(obj); }
 };
-
-void DisplayFile::addObj(Object* obj){
-    if(obj->getName() == "")
-        throw MyException("Adicione um nome para este objeto.\n");
-
-    if(!contem(obj)){
-        adiciona(obj);
-    }else
-        throw MyException("Ja existe um objeto com o nome '"+ obj->getName() +"'.\n");
-}
-
-Object* DisplayFile::getObj(Object *obj){
-    return *posicaoMem(obj);
-}
 
 #endif // DISPLAYFILE_HPP

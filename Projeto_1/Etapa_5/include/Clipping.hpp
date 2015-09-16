@@ -23,15 +23,17 @@ class Clipping
 
         void setLineClipAlg(const LineClipAlgs alg){ m_current = alg; }
 
-        bool clipPoint(Point* p);
-        bool clipLine(Line* l);
-        bool clipPolygon(Polygon* p){return SutherlandHodgmanPolygonClip(p);}
+        bool clip(Object* obj);
 
     private:
+        bool clipPoint(Object* p);
+        bool clipLine(Object* l);
+        bool clipPolygon(Object* p){return SutherlandHodgmanPolygonClip(p);}
+
         int getCoordRC(const Coordinate& c);
-        bool CohenSutherlandLineClip(Line* l);
-        bool LiangBaskyLineClip(Line* l);
-        bool SutherlandHodgmanPolygonClip(Polygon* p);
+        bool CohenSutherlandLineClip(Object* l);
+        bool LiangBaskyLineClip(Object* l);
+        bool SutherlandHodgmanPolygonClip(Object* p);
 
         void clipLeft(Coordinates& input, Coordinates& output);
         void clipRight(Coordinates& input, Coordinates& output);
@@ -57,7 +59,22 @@ ClipWindow::ClipWindow(double minX_, double maxX_, double minY_, double maxY_):
     addCoordinate(minX,maxY);
 }
 
-bool Clipping::clipPoint(Point* p){
+bool Clipping::clip(Object* obj){
+    switch(obj->getType()){
+    case ObjType::POINT:
+        return clipPoint(obj);
+    case ObjType::LINE:
+        return clipLine(obj);
+    case ObjType::POLYGON:
+        return clipPolygon(obj);
+    case ObjType::CURVE:
+        return true;//Temporario
+    default:
+        return false;
+    }
+}
+
+bool Clipping::clipPoint(Object* p){
     if(p->getNCoordsSize() == 0) return false;
 
     auto c = p->getNCoord(0);
@@ -65,7 +82,7 @@ bool Clipping::clipPoint(Point* p){
                 c.y >= m_w->minY && c.y <= m_w->maxY;
 }
 
-bool Clipping::clipLine(Line* l){
+bool Clipping::clipLine(Object* l){
     if(m_current == LineClipAlgs::CS)
         return CohenSutherlandLineClip(l);
     else
@@ -89,7 +106,7 @@ int Clipping::getCoordRC(const Coordinate& c){
     return rc;
 }
 
-bool Clipping::CohenSutherlandLineClip(Line* l){
+bool Clipping::CohenSutherlandLineClip(Object* l){
     auto &c1 = l->getNCoord(0);
     auto &c2 = l->getNCoord(1);
 
@@ -133,7 +150,7 @@ bool Clipping::CohenSutherlandLineClip(Line* l){
 }
 
 //http://www.skytopia.com/project/articles/compsci/clipping.html
-bool Clipping::LiangBaskyLineClip(Line* l){
+bool Clipping::LiangBaskyLineClip(Object* l){
     auto &c1 = l->getNCoord(0);
     auto &c2 = l->getNCoord(1);
 
@@ -175,7 +192,7 @@ bool Clipping::LiangBaskyLineClip(Line* l){
     return true;
 }
 
-bool Clipping::SutherlandHodgmanPolygonClip(Polygon* p){
+bool Clipping::SutherlandHodgmanPolygonClip(Object* p){
 
     auto input = p->getNCoords();
     Coordinates tmp;

@@ -13,6 +13,7 @@ class World
         Object* addPoint(const std::string& name, const GdkRGBA& color, const Coordinate& p);
         Object* addLine(const std::string& name, const GdkRGBA& color, const Coordinates& c);
         Object* addPolygon(const std::string& name, const GdkRGBA& color, bool filled, const Coordinates& c);
+        Object* addBezierCurve(const std::string& name, const GdkRGBA& color, const Coordinates& c);
         void addObj(Object *obj){ m_objs.addObj(obj); }
 
         void removeObj(const std::string& name);
@@ -29,15 +30,30 @@ class World
 
     private:
         DisplayFile m_objs;
+
+        void validateName(const std::string& name);
 };
 
+void World::validateName(const std::string& name){
+    if(name == "")
+        throw MyException("Adicione um nome para este objeto.\n");
+
+    Object tmp(name);
+    if(m_objs.contains(&tmp))
+        throw MyException("Ja existe um objeto com o nome '"+ name +"'.\n");
+}
+
 Object* World::addPoint(const std::string& name, const GdkRGBA& color, const Coordinate& p){
+    validateName(name);
+
     Point *obj = new Point(name, color, p);
     m_objs.addObj(obj);
     return obj;
 }
 
 Object* World::addLine(const std::string& name, const GdkRGBA& color, const Coordinates& c){
+    validateName(name);
+
     Line *obj = new Line(name, color, c);
     m_objs.addObj(obj);
     return obj;
@@ -45,7 +61,21 @@ Object* World::addLine(const std::string& name, const GdkRGBA& color, const Coor
 
 Object* World::addPolygon(const std::string& name, const GdkRGBA& color,
                             bool filled, const Coordinates& c){
+    validateName(name);
+
     Polygon *obj = new Polygon(name, color, filled, c);
+    m_objs.addObj(obj);
+    return obj;
+}
+
+Object* World::addBezierCurve(const std::string& name, const GdkRGBA& color,
+                              const Coordinates& c){
+    validateName(name);
+
+    if(c.size() < 4 || (c.size()-4)%3 != 0)
+        throw MyException("Uma curva de Bezier deve ter 4, 7, 10, 13... coordenadas.");
+
+    Curve *obj = new Curve(name, color, c);
     m_objs.addObj(obj);
     return obj;
 }

@@ -34,9 +34,9 @@ void Dialog::destroy(){
 }
 
 void PolygonDialog::destroy(){
-    if(_model != nullptr){
-        gtk_list_store_clear(GTK_LIST_STORE(_model));
-        _model = nullptr;
+    if(m_model != nullptr){
+        gtk_list_store_clear(GTK_LIST_STORE(m_model));
+        m_model = nullptr;
     }
 }
 
@@ -53,9 +53,9 @@ PointDialog::PointDialog(GtkBuilder* builder){
     }
 
     m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_add_pnt" ) );
-    _entryName = GTK_WIDGET( gtk_builder_get_object( builder, "point_name" ) );
-    _entryX = GTK_WIDGET( gtk_builder_get_object( builder, "point_x" ) );
-    _entryY = GTK_WIDGET( gtk_builder_get_object( builder, "point_y" ) );
+    m_entryName = GTK_WIDGET( gtk_builder_get_object( builder, "point_name" ) );
+    m_entryX = GTK_WIDGET( gtk_builder_get_object( builder, "point_x" ) );
+    m_entryY = GTK_WIDGET( gtk_builder_get_object( builder, "point_y" ) );
 
     gtk_builder_connect_signals(builder, this);
 }
@@ -73,11 +73,11 @@ LineDialog::LineDialog(GtkBuilder* builder){
     }
 
     m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_add_line" ) );
-    _entryName = GTK_WIDGET( gtk_builder_get_object( builder, "line_name" ) );
-    _entryX1 = GTK_WIDGET( gtk_builder_get_object( builder, "line_x1" ) );
-    _entryY1 = GTK_WIDGET( gtk_builder_get_object( builder, "line_y1" ) );
-    _entryX2 = GTK_WIDGET( gtk_builder_get_object( builder, "line_x2" ) );
-    _entryY2 = GTK_WIDGET( gtk_builder_get_object( builder, "line_y2" ) );
+    m_entryName = GTK_WIDGET( gtk_builder_get_object( builder, "line_name" ) );
+    m_entryX1 = GTK_WIDGET( gtk_builder_get_object( builder, "line_x1" ) );
+    m_entryY1 = GTK_WIDGET( gtk_builder_get_object( builder, "line_y1" ) );
+    m_entryX2 = GTK_WIDGET( gtk_builder_get_object( builder, "line_x2" ) );
+    m_entryY2 = GTK_WIDGET( gtk_builder_get_object( builder, "line_y2" ) );
 
     gtk_builder_connect_signals(builder, this);
 }
@@ -95,13 +95,13 @@ PolygonDialog::PolygonDialog(GtkBuilder* builder){
     }
 
     m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_add_poly" ) );
-    _entryName = GTK_WIDGET( gtk_builder_get_object( builder, "poly_name" ) );
-    _entryX = GTK_WIDGET( gtk_builder_get_object( builder, "poly_x" ) );
-    _entryY = GTK_WIDGET( gtk_builder_get_object( builder, "poly_y" ) );
-    _checkFilled = GTK_WIDGET( gtk_builder_get_object( builder, "poly_filled" ) );
+    m_entryName = GTK_WIDGET( gtk_builder_get_object( builder, "poly_name" ) );
+    m_entryX = GTK_WIDGET( gtk_builder_get_object( builder, "poly_x" ) );
+    m_entryY = GTK_WIDGET( gtk_builder_get_object( builder, "poly_y" ) );
+    m_checkFilled = GTK_WIDGET( gtk_builder_get_object( builder, "poly_filled" ) );
 
     GtkTreeView* tree = GTK_TREE_VIEW( gtk_builder_get_object( GTK_BUILDER(builder), "poly_treeview" ) );
-    _model = gtk_tree_view_get_model(tree);
+    m_model = gtk_tree_view_get_model(tree);
 
     gtk_builder_connect_signals(builder, this);
 }
@@ -119,8 +119,8 @@ TranslateDialog::TranslateDialog(GtkBuilder* builder){
     }
 
     m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_translate" ) );
-    _entryDX = GTK_WIDGET( gtk_builder_get_object( builder, "entry_dx" ) );
-    _entryDY = GTK_WIDGET( gtk_builder_get_object( builder, "entry_dy" ) );
+    m_entryDX = GTK_WIDGET( gtk_builder_get_object( builder, "entry_dx" ) );
+    m_entryDY = GTK_WIDGET( gtk_builder_get_object( builder, "entry_dy" ) );
 }
 
 ScaleDialog::ScaleDialog(GtkBuilder* builder){
@@ -136,10 +136,10 @@ ScaleDialog::ScaleDialog(GtkBuilder* builder){
     }
 
     m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_scale" ) );
-    _entrySX = GTK_WIDGET( gtk_builder_get_object( builder, "entry_sx" ) );
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(_entrySX), 1.0);
-    _entrySY = GTK_WIDGET( gtk_builder_get_object( builder, "entry_sy" ) );
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(_entrySY), 1.0);
+    m_entrySX = GTK_WIDGET( gtk_builder_get_object( builder, "entry_sx" ) );
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(m_entrySX), 1.0);
+    m_entrySY = GTK_WIDGET( gtk_builder_get_object( builder, "entry_sy" ) );
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(m_entrySY), 1.0);
 }
 
 RotateDialog::RotateDialog(GtkBuilder* builder){
@@ -155,30 +155,30 @@ RotateDialog::RotateDialog(GtkBuilder* builder){
     }
 
     m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_rotate" ) );
-    _entryCX = GTK_WIDGET( gtk_builder_get_object( builder, "entry_cx" ) );
-    _entryCY = GTK_WIDGET( gtk_builder_get_object( builder, "entry_cy" ) );
-    _entryAngulo = GTK_WIDGET( gtk_builder_get_object( builder, "entry_angulo" ) );
+    m_entryCX = GTK_WIDGET( gtk_builder_get_object( builder, "entry_cx" ) );
+    m_entryCY = GTK_WIDGET( gtk_builder_get_object( builder, "entry_cy" ) );
+    m_entryAngulo = GTK_WIDGET( gtk_builder_get_object( builder, "entry_angulo" ) );
 
-    _objCenter = GTK_WIDGET( gtk_builder_get_object( builder, "tb_obj_center" ) );
-    _worldCenter = GTK_WIDGET( gtk_builder_get_object( builder, "rb_world_center" ) );
-    _pntCenter = GTK_WIDGET( gtk_builder_get_object( builder, "rb_pnt_center" ) );
+    m_objCenter = GTK_WIDGET( gtk_builder_get_object( builder, "tb_obj_center" ) );
+    m_worldCenter = GTK_WIDGET( gtk_builder_get_object( builder, "rb_world_center" ) );
+    m_pntCenter = GTK_WIDGET( gtk_builder_get_object( builder, "rb_pnt_center" ) );
 }
 
 rotateType RotateDialog::getRotateType() const {
-    if(isActive(_objCenter))
+    if(isActive(m_objCenter))
         return rotateType::OBJECT;
-    else if(isActive(_worldCenter))
+    else if(isActive(m_worldCenter))
         return rotateType::WORLD;
     else
         return rotateType::POINT;
 }
 
 void PolygonDialog::onClickEvent(){
-    GtkListStore *liststore = GTK_LIST_STORE(_model);
+    GtkListStore *liststore = GTK_LIST_STORE(m_model);
     GtkTreeIter iter;
 
-    double x = gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryX));
-    double y = gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryY));
+    double x = gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryX));
+    double y = gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryY));
 
     // Cria uma nova linha na ListStore e
     // seta os valores de 'x' e 'y'
@@ -186,11 +186,11 @@ void PolygonDialog::onClickEvent(){
     gtk_list_store_set(liststore, &iter, 0, x, 1, y, -1);
 
     // Seta os SpinButtons para 0 denovo
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(_entryX), 0.0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(_entryY), 0.0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(m_entryX), 0.0);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(m_entryY), 0.0);
 
     // Faz o SpinButton do 'x' pegar o focus da window
-    gtk_widget_grab_focus(_entryX);
+    gtk_widget_grab_focus(m_entryX);
 }
 
 void PolygonDialog::onEditCelEvent(GtkCellRendererText *cell,
@@ -199,8 +199,8 @@ void PolygonDialog::onEditCelEvent(GtkCellRendererText *cell,
     GtkTreePath *path = gtk_tree_path_new_from_string (path_string);
     GtkTreeIter iter;
 
-    gtk_tree_model_get_iter (_model, &iter, path);
-    gtk_list_store_set (GTK_LIST_STORE (_model), &iter, column,
+    gtk_tree_model_get_iter (m_model, &iter, path);
+    gtk_list_store_set (GTK_LIST_STORE (m_model), &iter, column,
                         atof(new_text), -1);
 }
 
@@ -209,18 +209,25 @@ void PolygonDialog::getCoords(Coordinates& coords) const {
     gboolean valid;
     double x, y;
 
-    valid = gtk_tree_model_get_iter_first (_model,
+    valid = gtk_tree_model_get_iter_first (m_model,
                                             &iter);
 
     if(!valid)
         throw MyException("Adicione pelo menos uma coordenada.\n");
 
     while(valid){
-        gtk_tree_model_get (_model, &iter,
+        gtk_tree_model_get (m_model, &iter,
                        0, &x, 1, &y, -1);
         coords.emplace_back(x, y);
 
-        valid = gtk_tree_model_iter_next (_model,
+        valid = gtk_tree_model_iter_next (m_model,
                                      &iter);
     }
+}
+
+CurveDialog::CurveDialog(GtkBuilder* builder):
+    PolygonDialog(builder) {
+
+    gtk_widget_hide(GTK_WIDGET(m_checkFilled));
+    gtk_window_set_title(GTK_WINDOW(m_dialog), "Adicione uma curva");
 }

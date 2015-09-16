@@ -30,6 +30,9 @@ extern "C"{
     void add_poly_event(GtkMenuItem *menuitem, MainWindow* window){
         window->addPolygon(builder);
     }
+    void add_bezier_curve_event(GtkMenuItem *menuitem, MainWindow* window){
+        window->addBezierCurve(builder);
+    }
     void add_poly_coord_event(GtkWidget *button, PolygonDialog* dialog){
         dialog->onClickEvent();
     }
