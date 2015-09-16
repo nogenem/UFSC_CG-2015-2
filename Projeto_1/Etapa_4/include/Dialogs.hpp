@@ -35,16 +35,16 @@ class ObjDialog : public Dialog
     public:
         ObjDialog() {}
         std::string const getName() const
-            { return gtk_entry_get_text(GTK_ENTRY(_entryName)); }
-        const GdkRGBA& getColor() const { return _color; }
+            { return gtk_entry_get_text(GTK_ENTRY(m_entryName)); }
+        const GdkRGBA& getColor() const { return m_color; }
 
         // Events
         void onColorChangeEvent(GtkColorButton* btn)
-            {gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(btn), &_color);}
+            {gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(btn), &m_color);}
 
     protected:
-        GtkWidget* _entryName = nullptr;
-        GdkRGBA _color{};
+        GtkWidget* m_entryName = nullptr;
+        GdkRGBA m_color{};
 };
 
 class PointDialog : public ObjDialog
@@ -52,13 +52,13 @@ class PointDialog : public ObjDialog
     public:
         PointDialog(GtkBuilder* builder);
         double getX() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryX)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryX)); }
         double getY() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryY)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryY)); }
 
     private:
-        GtkWidget *_entryX = nullptr,
-                  *_entryY = nullptr;
+        GtkWidget *m_entryX = nullptr,
+                  *m_entryY = nullptr;
 };
 
 class LineDialog : public ObjDialog
@@ -66,17 +66,17 @@ class LineDialog : public ObjDialog
     public:
         LineDialog(GtkBuilder* builder);
         double getX1() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryX1)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryX1)); }
         double getY1() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryY1)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryY1)); }
         double getX2() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryX2)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryX2)); }
         double getY2() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryY2)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryY2)); }
 
     private:
-        GtkWidget *_entryX1 = nullptr, *_entryY1 = nullptr,
-            *_entryX2 = nullptr, *_entryY2 = nullptr;
+        GtkWidget *m_entryX1 = nullptr, *m_entryY1 = nullptr,
+            *m_entryX2 = nullptr, *m_entryY2 = nullptr;
 };
 
 class PolygonDialog : public ObjDialog
@@ -88,18 +88,18 @@ class PolygonDialog : public ObjDialog
 
         void getCoords(Coordinates& coords) const;
         bool shouldBeFilled() const
-            { return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(_checkFilled)); }
+            { return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(m_checkFilled)); }
 
         // Events
-        void onClickEvent();//Adiciona coordenada
+        virtual void onClickEvent();//Adiciona coordenada
         void onEditCelEvent(GtkCellRendererText *cell,
                             const gchar *path_string,
                             const gchar *new_text, int column);//Edita coordenada ja adicionada
 
-    private:
-        GtkTreeModel *_model = nullptr;
-        GtkWidget *_entryX = nullptr, *_entryY = nullptr,
-                  *_checkFilled = nullptr;
+    protected:
+        GtkTreeModel *m_model = nullptr;
+        GtkWidget *m_entryX = nullptr, *m_entryY = nullptr,
+                  *m_checkFilled = nullptr;
 };
 
 class TranslateDialog : public Dialog
@@ -107,13 +107,13 @@ class TranslateDialog : public Dialog
     public:
         TranslateDialog(GtkBuilder* builder);
         double getDX() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryDX)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryDX)); }
         double getDY() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryDY)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryDY)); }
 
     private:
-        GtkWidget *_entryDX = nullptr,
-                  *_entryDY = nullptr;
+        GtkWidget *m_entryDX = nullptr,
+                  *m_entryDY = nullptr;
 };
 
 class ScaleDialog : public Dialog
@@ -121,13 +121,13 @@ class ScaleDialog : public Dialog
     public:
         ScaleDialog(GtkBuilder* builder);
         double getSX() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entrySX)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entrySX)); }
         double getSY() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entrySY)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entrySY)); }
 
     private:
-        GtkWidget *_entrySX = nullptr,
-                  *_entrySY = nullptr;
+        GtkWidget *m_entrySX = nullptr,
+                  *m_entrySY = nullptr;
 };
 
 class RotateDialog : public Dialog
@@ -136,11 +136,11 @@ class RotateDialog : public Dialog
         RotateDialog(GtkBuilder* builder);
 
         double getAngulo() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryAngulo)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryAngulo)); }
         double getCX() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryCX)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryCX)); }
         double getCY() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(_entryCY)); }
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryCY)); }
         rotateType getRotateType() const; // Retorna o tipo de rotacao escolhido pelo usuario
 
     private:
@@ -148,9 +148,9 @@ class RotateDialog : public Dialog
             { return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)); }
 
     private:
-        GtkWidget *_entryAngulo = nullptr, *_entryCX = nullptr,
-                  *_entryCY = nullptr, *_objCenter = nullptr,
-                  *_worldCenter = nullptr, *_pntCenter = nullptr;
+        GtkWidget *m_entryAngulo = nullptr, *m_entryCX = nullptr,
+                  *m_entryCY = nullptr, *m_objCenter = nullptr,
+                  *m_worldCenter = nullptr, *m_pntCenter = nullptr;
 };
 
 #endif // DIALOGS_HPP
