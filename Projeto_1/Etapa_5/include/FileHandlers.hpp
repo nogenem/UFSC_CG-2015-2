@@ -10,7 +10,8 @@
 
 /*
     Possiveis Diretivas:
-        v, o, p, l, f,
+        v, o, p, l, f, curv2,
+        cstype, deg, end
         usemtl, newmtl, Kd
 
     Obs:
@@ -86,12 +87,19 @@ class ObjReader : public ObjStream
         // Usado para destruir os objs caso de algum erro
         void destroyObjs();
 
+        void setFreeFormType(std::stringstream& line);
+        void setDegree(std::stringstream& line);//Soh le mas nao faz nada...
+        void addCurve(std::stringstream& line);
+
     private:
         std::vector<Object*> m_objs;
         Coordinates m_coords;// Todas as coordenadas lidas do arquivo
         ColorReader m_cReader;
         bool m_usingColorsFile = false;// Existe uma chamada 'mtllib' no .obj?
         int m_numSubObjs = 0; // Numero de objetos em seguida com o mesmo nome
+
+        unsigned int m_degree = 3;//Curvas de Bezier sao de grau 3
+        ObjType m_freeFormType = ObjType::OBJECT;
 };
 
 class ObjWriter : public ObjStream
@@ -146,9 +154,13 @@ void ObjReader::loadObjs(){
         else if(keyWord == "v"){ addCoord(line); }
         else if(keyWord == "o"){ line >> m_name; m_numSubObjs = 0; }
         else if(keyWord == "w"){ /* TODO(?) */ }
-        else if(keyWord == "p"){ addPoint(line); m_numSubObjs++; }
+        else if(keyWord == "p"){ addPoint(line); }
         else if(keyWord == "l"){ addPoly(line, false); m_numSubObjs++; }
         else if(keyWord == "f"){ addPoly(line, true); m_numSubObjs++; }
+        else if(keyWord == "cstype"){ setFreeFormType(line); } //cstype type
+        else if(keyWord == "deg"){ setDegree(line); }//deg degu
+        else if(keyWord == "curv2"){ addCurve(line); }//curv2 v1 v2 v3 v4 ...
+        else if(keyWord == "end"){ }
     }
 }
 
@@ -173,25 +185,28 @@ void ObjReader::addCoord(std::stringstream& line){
 void ObjReader::addPoint(std::stringstream& line){
     int index = 0;
     int size = m_coords.size();
+    Point *p;
 
-    line >> index;
+    while(line >> index){
 
-    if(index < 0)
-        index = size + (index+1);
-    else
-        index--;
+        if(index < 0)
+            index = size + (index+1);
+        else
+            index--;
 
-    if(index < 0 || index >= size){
-        destroyObjs();
-        throw MyException("Indice de vertice invalido na linha: "+ line.str() + ".\n");
+        if(index < 0 || index >= size){
+            destroyObjs();
+            throw MyException("Indice de vertice invalido na linha: "+ line.str() + ".\n");
+        }
+
+        std::string name = m_numSubObjs == 0 ? m_name :
+            m_name+"_sub"+std::to_string(m_numSubObjs);
+
+        p = new Point(name, m_color);
+        p->addCoordinate(m_coords[index]);
+        m_objs.push_back(p);
+        m_numSubObjs++;
     }
-
-    std::string name = m_numSubObjs == 0 ? m_name :
-        m_name+"_sub"+std::to_string(m_numSubObjs);
-
-    Point *p = new Point(name, m_color);
-    p->addCoordinate(m_coords[index]);
-    m_objs.push_back(p);
 }
 
 void ObjReader::addPoly(std::stringstream& line, bool filled){
@@ -225,6 +240,67 @@ void ObjReader::addPoly(std::stringstream& line, bool filled){
     m_objs.push_back(obj);
 }
 
+void ObjReader::addCurve(std::stringstream& line){
+    if(m_freeFormType == ObjType::OBJECT)
+        throw MyException("Tentativa de criar uma curva sem 'cstype' na linha: "+
+                          line.str() +".\n");
+
+    int index = 0;
+    int size = m_coords.size();
+    Coordinates objCoords;
+
+    while(line >> index){
+        if(index < 0)
+            index = size + index;
+        else
+            index--;
+
+        if(index < 0 || index >= size){
+            destroyObjs();
+            throw MyException("Indice de vertice invalido na linha: "+ line.str() + ".\n");
+        }
+
+        objCoords.push_back(m_coords[index]);
+    }
+
+    Object *obj = nullptr;
+    std::string name = m_numSubObjs == 0 ? m_name :
+        m_name+"_sub"+std::to_string(m_numSubObjs);
+
+    switch(m_freeFormType){
+    case ObjType::BEZIER_CURVE:
+        obj = new Curve(name, m_color, objCoords);
+        break;
+    /*case ObjType::BSPLINE_CURVE:
+        obj = new BSplineCurve(name, m_color, objCoords);
+        break;*/
+    default:
+        break;
+    }
+
+    m_objs.push_back(obj);
+}
+
+void ObjReader::setFreeFormType(std::stringstream& line){
+    std::string type;
+    line >> type;
+
+    if(type == "rat"){ line >> type; }//Nao intendi bem o que isto quer dizer...
+
+    if(type == "bezier"){ m_freeFormType = ObjType::BEZIER_CURVE; }
+    else if(type == "bspline"){ /* m_freeFormType = ObjType::BSPLINE_CURVE; */ }//TODO...
+    else{ throw MyException("cstype igual a: '"+
+                            type+"', nao eh suportado por esta aplicacao.\n"); }
+}
+
+void ObjReader::setDegree(std::stringstream& line){
+    int degree;
+    line >> degree;
+
+    if(degree > 0)
+        m_degree = degree;
+}
+
 ObjWriter::ObjWriter(std::string& filename):
     ObjStream(filename) {
 
@@ -248,6 +324,10 @@ void ObjWriter::writeObjs(World *world){
 
 void ObjWriter::printObj(Object* obj){
     auto coords = obj->getCoords();
+
+    if(obj->getType() == ObjType::BEZIER_CURVE)
+        coords = ((Curve*)obj)->getControlPoints();
+
     for(const auto &c : coords)
         m_objsFile << "v " << c.x << " " << c.y << "\n";
 
@@ -269,6 +349,10 @@ void ObjWriter::printObj(Object* obj){
     case ObjType::POLYGON:
         keyWord = ((Polygon*)obj)->filled() ? "f" : "l";
         break;
+    case ObjType::BEZIER_CURVE:
+        m_objsFile << "cstype bezier\n";
+        m_objsFile << "deg 3\n";
+        keyWord = "curv2";
     default:
         break;
     }
@@ -278,7 +362,11 @@ void ObjWriter::printObj(Object* obj){
     for(int i = 0; i<size; i++)
         m_objsFile << " " << m_numVertex+(i+1);
 
-    m_objsFile << "\n" << std::endl;
+
+    if(obj->getType() == ObjType::BEZIER_CURVE)
+        m_objsFile << "\nend\n" << std::endl;
+    else
+        m_objsFile << "\n" << std::endl;
     m_numVertex += size;
 }
 

@@ -107,8 +107,6 @@ class CurveDialog : public PolygonDialog
     public:
         CurveDialog(GtkBuilder* builder);
         ~CurveDialog(){ destroy(); }
-
-    private:
 };
 
 class TranslateDialog : public Dialog

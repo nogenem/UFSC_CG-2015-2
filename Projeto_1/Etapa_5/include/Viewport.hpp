@@ -119,7 +119,7 @@ void Viewport::drawObj(Object* obj){
     case ObjType::POLYGON:
         drawPolygon(obj);
         break;
-    case ObjType::CURVE:
+    case ObjType::BEZIER_CURVE:
         drawCurve(obj);
         break;
     }
@@ -129,8 +129,11 @@ void Viewport::drawPoint(Object* obj){
     Coordinate coord = transformCoordinate(obj->getNCoord(0));
     prepareContext(obj);
 
+    float size = (m_width/m_window.getWidth())/2;
+    size = size < 0.7 ? 0.7 : (size > 2 ? 2 : size);//Limita entre 0.7 e 2
+
     cairo_move_to(m_cairo, coord.x, coord.y);
-    cairo_arc(m_cairo, coord.x, coord.y, 1.0, 0.0, (2*PI) );//pnt deveria ir diminuindo, nao?
+    cairo_arc(m_cairo, coord.x, coord.y, size, 0.0, (2*PI) );//pnt deveria ir diminuindo, nao?
     cairo_fill(m_cairo);
 }
 

@@ -69,7 +69,7 @@ bool Clipping::clip(Object* obj){
         return clipLine(obj->getNCoord(0), obj->getNCoord(1));
     case ObjType::POLYGON:
         return clipPolygon(obj);
-    case ObjType::CURVE:
+    case ObjType::BEZIER_CURVE:
         return clipCurve(obj);
     default:
         return false;

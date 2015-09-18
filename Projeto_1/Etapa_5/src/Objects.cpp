@@ -84,7 +84,12 @@ void Object::setNCoord(const Coordinates& c){
 }
 
 void Curve::generateCurve(){
-    const auto coords = m_coords;
+    if(m_controlPoints.size() != 0)
+        return;
+
+    setControlPoints(m_coords);
+    const auto& coords = m_controlPoints;
+
     int numCurves = ((coords.size()-4)/3) + 1;
     m_coords.clear();
 

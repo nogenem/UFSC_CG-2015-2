@@ -31,7 +31,7 @@ class Coordinate
 Coordinate operator-(const Coordinate& c1, const Coordinate& c2);
 
 typedef std::vector<Coordinate> Coordinates;
-enum class ObjType { OBJECT, POINT, LINE, POLYGON, CURVE };
+enum class ObjType { OBJECT, POINT, LINE, POLYGON, BEZIER_CURVE };
 
 class Object
 {
@@ -143,11 +143,20 @@ class Curve : public Object
 		Curve(const std::string& name, const GdkRGBA& color, const Coordinates& coords) :
             Object(name,color) { addCoordinate(coords); generateCurve(); }
 
-        virtual ObjType getType() const { return ObjType::CURVE; }
+        virtual ObjType getType() const { return ObjType::BEZIER_CURVE; }
 		virtual std::string getTypeName() const { return "Curve"; }
 
 		void generateCurve();
+		Coordinates& getControlPoints(){ return m_controlPoints; }
+
+    private:
+        void setControlPoints(const Coordinates& coords)
+            { m_controlPoints.insert(m_controlPoints.end(), coords.begin(), coords.end()); }
+
     protected:
+        //Guarda os 4,7,10... pontos da curva
+        // para serem usados na hora de salvar a curva no .obj
+        Coordinates m_controlPoints;
         float m_step = 0.01; //Passo usado na bleding function
 };
 
