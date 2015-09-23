@@ -1,0 +1,15 @@
+mtllib ponto.mtl
+
+v 250 250
+
+o t
+usemtl Color0
+p 1
+
+v 230 230
+v 280 230
+
+o t2
+usemtl Color0
+l 2 3
+
