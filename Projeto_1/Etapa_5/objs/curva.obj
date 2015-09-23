@@ -1,11 +1,11 @@
 mtllib curva.mtl
 
 v 50 50
-v 62.5 100
-v 87.5 0
-v 100 50
+v 100 100
+v 200 -50
+v 250 50
 
-o te
+o c1
 usemtl Color0
 cstype bezier
 deg 3
