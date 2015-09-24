@@ -234,7 +234,10 @@ void ObjReader::addCurve(std::stringstream& line){
     std::string name = m_numSubObjs == 0 ? m_name :
         m_name+"_sub"+std::to_string(m_numSubObjs);
 
-    m_objs.push_back(new Curve(name, m_color, objCoords));
+    if(m_freeFormType == ObjType::BEZIER_CURVE)
+        m_objs.push_back(new BezierCurve(name, m_color, objCoords));
+    else if(m_freeFormType == ObjType::BSPLINE_CURVE)
+        m_objs.push_back(new BSplineCurve(name, m_color, objCoords));
     m_numSubObjs++;
 }
 
@@ -278,7 +281,7 @@ void ObjReader::setFreeFormType(std::stringstream& line){
     if(type == "rat"){ line >> type; }// Nao intendi bem o que isto quer dizer...
 
     if(type == "bezier"){ m_freeFormType = ObjType::BEZIER_CURVE; }
-    else if(type == "bspline"){ /* m_freeFormType = ObjType::BSPLINE_CURVE; */ }//TODO...
+    else if(type == "bspline"){ m_freeFormType = ObjType::BSPLINE_CURVE; }
     else{
         destroyObjs();
         throw MyException("cstype igual a: '"+
@@ -318,7 +321,7 @@ void ObjWriter::writeObjs(World *world){
 void ObjWriter::printObj(Object* obj){
     auto coords = obj->getCoords();
 
-    if(obj->getType() == ObjType::BEZIER_CURVE)
+    if(obj->getType() == ObjType::BEZIER_CURVE || obj->getType() == ObjType::BSPLINE_CURVE)
         coords = ((Curve*)obj)->getControlPoints();
 
     for(const auto &c : coords)
@@ -333,6 +336,8 @@ void ObjWriter::printObj(Object* obj){
 
     std::string keyWord;
     switch(obj->getType()){
+    case ObjType::OBJECT:
+        break;
     case ObjType::POINT:
         keyWord = "p";
         break;
@@ -346,8 +351,10 @@ void ObjWriter::printObj(Object* obj){
         m_objsFile << "cstype bezier\n";
         m_objsFile << "deg 3\n";
         keyWord = "curv2";
-    default:
-        break;
+    case ObjType::BSPLINE_CURVE:
+        m_objsFile << "cstype bspline\n";
+        m_objsFile << "deg 3\n";
+        keyWord = "curv2";
     }
 
     int size = coords.size();

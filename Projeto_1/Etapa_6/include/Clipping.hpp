@@ -63,6 +63,8 @@ ClipWindow::ClipWindow(double minX_, double maxX_, double minY_, double maxY_):
 
 bool Clipping::clip(Object* obj){
     switch(obj->getType()){
+    case ObjType::OBJECT:
+        break;
     case ObjType::POINT:
         return clipPoint(obj->getNCoord(0));
     case ObjType::LINE:
@@ -70,10 +72,10 @@ bool Clipping::clip(Object* obj){
     case ObjType::POLYGON:
         return clipPolygon(obj);
     case ObjType::BEZIER_CURVE:
+    case ObjType::BSPLINE_CURVE:
         return clipCurve(obj);
-    default:
-        return false;
     }
+    return false;
 }
 
 bool Clipping::clipPoint(const Coordinate& c){

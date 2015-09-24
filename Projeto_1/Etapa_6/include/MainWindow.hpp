@@ -29,6 +29,7 @@ class MainWindow
         void addLine(GtkBuilder* builder);
         void addPolygon(GtkBuilder* builder);
         void addBezierCurve(GtkBuilder* builder);
+        void addBSplineCurve(GtkBuilder* builder);
 
         void zoom(Buttons id);
         void move(Buttons id);
@@ -435,6 +436,33 @@ void MainWindow::addBezierCurve(GtkBuilder* builder){
                 dialog.getCoords(c);
 
                 Object* obj = _world->addBezierCurve(dialog.getName(),
+                                            dialog.getColor(), c);
+                _viewport->transformAndClipObj(obj);
+                addObjOnListStore(dialog.getName(), "Curve");
+
+                gtk_widget_queue_draw(_mainWindow);
+                log("Nova curva adicionada.\n");
+                finish = true;
+            }catch(MyException& e){
+                log(e.what());
+                showErrorDialog(e.what());
+            }
+        }else
+            finish = true;
+    }
+}
+
+void MainWindow::addBSplineCurve(GtkBuilder* builder){
+    CurveDialog dialog(GTK_BUILDER(builder));
+    bool finish = false;
+
+    while(!finish){
+        if(dialog.run() == 1){
+            try{
+                Coordinates c;
+                dialog.getCoords(c);
+
+                Object* obj = _world->addBSplineCurve(dialog.getName(),
                                             dialog.getColor(), c);
                 _viewport->transformAndClipObj(obj);
                 addObjOnListStore(dialog.getName(), "Curve");

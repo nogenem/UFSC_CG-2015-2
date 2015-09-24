@@ -33,6 +33,9 @@ extern "C"{
     void add_bezier_curve_event(GtkMenuItem *menuitem, MainWindow* window){
         window->addBezierCurve(builder);
     }
+    void add_bspline_curve_event(GtkMenuItem *menuitem, MainWindow* window){
+        window->addBSplineCurve(builder);
+    }
     void add_poly_coord_event(GtkWidget *button, PolygonDialog* dialog){
         dialog->onClickEvent();
     }

@@ -14,6 +14,7 @@ class World
         Object* addLine(const std::string& name, const GdkRGBA& color, const Coordinates& c);
         Object* addPolygon(const std::string& name, const GdkRGBA& color, bool filled, const Coordinates& c);
         Object* addBezierCurve(const std::string& name, const GdkRGBA& color, const Coordinates& c);
+        Object* addBSplineCurve(const std::string& name, const GdkRGBA& color, const Coordinates& c);
         void addObj(Object *obj){ m_objs.addObj(obj); }
 
         void removeObj(const std::string& name);
@@ -75,7 +76,18 @@ Object* World::addBezierCurve(const std::string& name, const GdkRGBA& color,
     if(c.size() < 4 || (c.size()-4)%3 != 0)
         throw MyException("Uma curva de Bezier deve ter 4, 7, 10, 13... coordenadas.");
 
-    Curve *obj = new Curve(name, color, c);
+    BezierCurve *obj = new BezierCurve(name, color, c);
+    m_objs.addObj(obj);
+    return obj;
+}
+
+Object* World::addBSplineCurve(const std::string& name, const GdkRGBA& color, const Coordinates& c){
+    validateName(name);
+
+    if(c.size() < 4)
+        throw MyException("Uma curva B-Spline deve ter no minimo 4 coordenadas.");
+
+    BSplineCurve *obj = new BSplineCurve(name, color, c);
     m_objs.addObj(obj);
     return obj;
 }

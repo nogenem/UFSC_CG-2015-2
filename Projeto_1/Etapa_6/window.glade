@@ -1665,6 +1665,15 @@
                                 <signal name="activate" handler="add_bezier_curve_event" swapped="no"/>
                               </object>
                             </child>
+                            <child>
+                              <object class="GtkMenuItem" id="mn_bspline">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">B-Spline</property>
+                                <property name="use_underline">True</property>
+                                <signal name="activate" handler="add_bspline_curve_event" swapped="no"/>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>

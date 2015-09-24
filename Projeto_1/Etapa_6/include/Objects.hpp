@@ -31,7 +31,7 @@ class Coordinate
 Coordinate operator-(const Coordinate& c1, const Coordinate& c2);
 
 typedef std::vector<Coordinate> Coordinates;
-enum class ObjType { OBJECT, POINT, LINE, POLYGON, BEZIER_CURVE };
+enum class ObjType { OBJECT, POINT, LINE, POLYGON, BEZIER_CURVE, BSPLINE_CURVE };
 
 class Object
 {
@@ -141,23 +141,52 @@ class Curve : public Object
         Curve(const std::string& name, const GdkRGBA& color) :
             Object(name,color) {}
 		Curve(const std::string& name, const GdkRGBA& color, const Coordinates& coords) :
-            Object(name,color) { addCoordinate(coords); generateCurve(); }
+            Object(name,color) { }
 
-        virtual ObjType getType() const { return ObjType::BEZIER_CURVE; }
-		virtual std::string getTypeName() const { return "Curve"; }
-
-		void generateCurve();
-		Coordinates& getControlPoints(){ return m_controlPoints; }
-
-    private:
-        void setControlPoints(const Coordinates& coords)
-            { m_controlPoints.insert(m_controlPoints.end(), coords.begin(), coords.end()); }
+        virtual void generateCurve(const Coordinates& cpCoords){};
+        Coordinates& getControlPoints(){ return m_controlPoints; }
 
     protected:
-        //Guarda os 4,7,10... pontos da curva
-        // para serem usados na hora de salvar a curva no .obj
-        Coordinates m_controlPoints;
-        float m_step = 0.01; //Passo usado na bleding function
+        void setControlPoints(const Coordinates& coords)
+                { m_controlPoints.insert(m_controlPoints.end(), coords.begin(), coords.end()); }
+
+    protected:
+            //Guarda os pontos de controle da curva
+            // para serem usados na hora de salvar a curva no .obj
+            Coordinates m_controlPoints;
+            float m_step = 0.1; //Passo usado na bleding function
+};
+
+class BezierCurve : public Curve
+{
+    public:
+        BezierCurve(const std::string& name) :
+            Curve(name) {}
+        BezierCurve(const std::string& name, const GdkRGBA& color) :
+            Curve(name,color) {}
+		BezierCurve(const std::string& name, const GdkRGBA& color, const Coordinates& coords) :
+            Curve(name,color) { generateCurve(coords); }
+
+        virtual ObjType getType() const { return ObjType::BEZIER_CURVE; }
+		virtual std::string getTypeName() const { return "Bezier Curve"; }
+
+		void generateCurve(const Coordinates& cpCoords);
+};
+
+class BSplineCurve : public Curve
+{
+    public:
+        BSplineCurve(const std::string& name) :
+            Curve(name) {}
+        BSplineCurve(const std::string& name, const GdkRGBA& color) :
+            Curve(name,color) {}
+		BSplineCurve(const std::string& name, const GdkRGBA& color, const Coordinates& coords) :
+            Curve(name,color) { this->generateCurve(coords); }
+
+        virtual ObjType getType() const { return ObjType::BSPLINE_CURVE; }
+		virtual std::string getTypeName() const { return "B-Spline Curve"; }
+
+		void generateCurve(const Coordinates& cpCoords);
 };
 
 #endif // OBJECTS_H

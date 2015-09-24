@@ -120,6 +120,7 @@ void Viewport::drawObj(Object* obj){
         drawPolygon(obj);
         break;
     case ObjType::BEZIER_CURVE:
+    case ObjType::BSPLINE_CURVE:
         drawCurve(obj);
         break;
     }
