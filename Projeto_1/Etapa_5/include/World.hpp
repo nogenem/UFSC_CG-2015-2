@@ -14,7 +14,7 @@ class World
         Object* addLine(const std::string& name, const GdkRGBA& color, const Coordinates& c);
         Object* addPolygon(const std::string& name, const GdkRGBA& color, bool filled, const Coordinates& c);
         Object* addBezierCurve(const std::string& name, const GdkRGBA& color, const Coordinates& c);
-        void addObj(Object *obj){ m_objs.addObj(obj); }
+        void addObj(Object *obj){ validateName(obj->getName()); m_objs.addObj(obj); }
 
         void removeObj(const std::string& name);
         int numObjs() const { return m_objs.size(); }

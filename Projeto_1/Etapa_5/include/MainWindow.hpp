@@ -163,6 +163,7 @@ void MainWindow::openFile(GtkBuilder* builder){
                     gtk_widget_queue_draw(_mainWindow);
                 }catch(MyException& e){
                     log(e.what());
+					delete obj;
                 }
             }
 
