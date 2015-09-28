@@ -13,3 +13,38 @@ cstype bspline
 deg 3
 curv2 1 2 3 4 5 6
 
+v 50 50
+
+o p1
+usemtl Color0
+p 7
+
+v 100 50
+
+o p2
+usemtl Color0
+p 8
+
+v 150 150
+
+o p3
+usemtl Color0
+p 9
+
+v 200 50
+
+o p4
+usemtl Color0
+p 10
+
+v 250 50
+
+o p5
+usemtl Color0
+p 11
+
+v 300 50
+
+o p6
+usemtl Color0
+p 12
