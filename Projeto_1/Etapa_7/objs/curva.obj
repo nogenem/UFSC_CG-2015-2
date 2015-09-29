@@ -1,0 +1,14 @@
+mtllib curva.mtl
+
+v 50 50
+v 100 100
+v 200 -50
+v 250 50
+
+o c1
+usemtl Color0
+cstype bezier
+deg 3
+curv2 1 2 3 4
+end
+

@@ -1,0 +1,37 @@
+mtllib bspline2.mtl
+
+v 100 100
+v 150 200
+v 200 0
+v 250 100
+
+o bs2
+usemtl Color0
+cstype bspline
+deg 3
+curv2 1 2 3 4
+
+v 100 100
+
+o bs2_pnt1
+usemtl Color1
+p 5
+
+v 150 200
+
+o bs2_pnt2
+usemtl Color1
+p 6
+
+v 200 0
+
+o bs2_pnt3
+usemtl Color1
+p 7
+
+v 250 100
+
+o bs2_pnt4
+usemtl Color1
+p 8
+
