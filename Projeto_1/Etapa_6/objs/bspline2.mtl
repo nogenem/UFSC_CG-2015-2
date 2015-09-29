@@ -1,3 +1,5 @@
 newmtl Color0
-Kd 0 0 0
+Kd 0 0 1.0
 
+newmtl Color1
+Kd 1.0 0.5 0

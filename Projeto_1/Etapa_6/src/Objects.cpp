@@ -132,19 +132,19 @@ void BSplineCurve::generateCurve(const Coordinates& cpCoords){
         auto c3 = coords[i+2];
         auto c4 = coords[i+3];
 
-        double ax = -n16 * c1.x  + 0.5  * c2.x - 0.5 * c3.x +n16 * c4.x;
-        double bx =   0.5  * c1.x  -        c2.x + 0.5 * c3.x;
-        double cx = - 0.5  * c1.x                + 0.5 * c3.x;
-        double dx =  n16 * c1.x  +n23 * c2.x +n16* c3.x;
+        double ax = -n16 * c1.x  +0.5 * c2.x -0.5 * c3.x +n16 * c4.x;
+        double bx =  0.5 * c1.x  -      c2.x +0.5 * c3.x;
+        double cx = -0.5 * c1.x              +0.5 * c3.x;
+        double dx =  n16 * c1.x  +n23 * c2.x +n16 * c3.x;
 
         double deltaX = ax*t3 +bx*t2 +cx*t;
         double deltaX3 = ax*(6*t3);
         double deltaX2 = deltaX3 +bx*(2*t2);
 
-        double ay = -n16 * c1.y  + 0.5  * c2.y - 0.5 * c3.y +n16 * c4.y;
-        double by =   0.5  * c1.y  -        c2.y + 0.5 * c3.y;
-        double cy = - 0.5  * c1.y                + 0.5 * c3.y;
-        double dy =  n16 * c1.y  +n23 * c2.y +n16* c3.y;
+        double ay = -n16 * c1.y  +0.5 * c2.y -0.5 * c3.y +n16 * c4.y;
+        double by =  0.5 * c1.y  -      c2.y +0.5 * c3.y;
+        double cy = -0.5 * c1.y              +0.5 * c3.y;
+        double dy =  n16 * c1.y  +n23 * c2.y +n16 * c3.y;
 
         double deltaY = ay*t3 +by*t2 +cy*t;
         double deltaY3 = ay*(6*t3);
@@ -152,7 +152,7 @@ void BSplineCurve::generateCurve(const Coordinates& cpCoords){
 
         double vx = dx, vy = dy;
         addCoordinate(vx, vy);
-        for(float t = 0; t <= 1; t += m_step){
+        for(float t = 0.0; t < 1.0; t += m_step){
             double x = vx, y = vy;
 
             x += deltaX;

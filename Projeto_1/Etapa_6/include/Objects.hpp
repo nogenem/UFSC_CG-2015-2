@@ -154,7 +154,7 @@ class Curve : public Object
             //Guarda os pontos de controle da curva
             // para serem usados na hora de salvar a curva no .obj
             Coordinates m_controlPoints;
-            float m_step = 0.1; //Passo usado na bleding function
+            float m_step = 0.02; //Passo usado na bleding function
 };
 
 class BezierCurve : public Curve
