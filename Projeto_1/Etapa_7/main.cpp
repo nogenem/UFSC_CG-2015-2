@@ -138,6 +138,13 @@ extern "C"{
     {
         dialog->onEditCelEvent(cell, path_string, new_text, 1);
     }
+    void add_poly_z_cell_edited(GtkCellRendererText *cell,
+             const gchar *path_string,
+             const gchar *new_text,
+             PolygonDialog* dialog)
+    {
+        dialog->onEditCelEvent(cell, path_string, new_text, 2);
+    }
 }
 
 int main(int argc, char ** argv)

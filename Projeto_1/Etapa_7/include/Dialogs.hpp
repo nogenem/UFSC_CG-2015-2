@@ -55,10 +55,13 @@ class PointDialog : public ObjDialog
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryX)); }
         double getY() const
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryY)); }
+        double getZ() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryZ)); }
 
     private:
         GtkWidget *m_entryX = nullptr,
-                  *m_entryY = nullptr;
+                  *m_entryY = nullptr,
+                  *m_entryZ = nullptr;
 };
 
 class LineDialog : public ObjDialog
@@ -69,14 +72,18 @@ class LineDialog : public ObjDialog
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryX1)); }
         double getY1() const
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryY1)); }
+        double getZ1() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryZ1)); }
         double getX2() const
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryX2)); }
         double getY2() const
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryY2)); }
+        double getZ2() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryZ2)); }
 
     private:
-        GtkWidget *m_entryX1 = nullptr, *m_entryY1 = nullptr,
-            *m_entryX2 = nullptr, *m_entryY2 = nullptr;
+        GtkWidget *m_entryX1 = nullptr, *m_entryY1 = nullptr, *m_entryZ1 = nullptr,
+            *m_entryX2 = nullptr, *m_entryY2 = nullptr, *m_entryZ2 = nullptr;
 };
 
 class PolygonDialog : public ObjDialog
@@ -98,7 +105,7 @@ class PolygonDialog : public ObjDialog
 
     protected:
         GtkTreeModel *m_model = nullptr;
-        GtkWidget *m_entryX = nullptr, *m_entryY = nullptr,
+        GtkWidget *m_entryX = nullptr, *m_entryY = nullptr, *m_entryZ = nullptr,
                   *m_checkFilled = nullptr;
 };
 
@@ -117,10 +124,13 @@ class TranslateDialog : public Dialog
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryDX)); }
         double getDY() const
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryDY)); }
+        double getDZ() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryDZ)); }
 
     private:
         GtkWidget *m_entryDX = nullptr,
-                  *m_entryDY = nullptr;
+                  *m_entryDY = nullptr,
+                  *m_entryDZ = nullptr;
 };
 
 class ScaleDialog : public Dialog
@@ -131,10 +141,13 @@ class ScaleDialog : public Dialog
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entrySX)); }
         double getSY() const
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entrySY)); }
+        double getSZ() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entrySZ)); }
 
     private:
         GtkWidget *m_entrySX = nullptr,
-                  *m_entrySY = nullptr;
+                  *m_entrySY = nullptr,
+                  *m_entrySZ = nullptr;
 };
 
 class RotateDialog : public Dialog
@@ -142,12 +155,18 @@ class RotateDialog : public Dialog
     public:
         RotateDialog(GtkBuilder* builder);
 
-        double getAngulo() const
-            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryAngulo)); }
+        double getAnguloX() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryAngX)); }
+        double getAnguloY() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryAngY)); }
+        double getAnguloZ() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryAngZ)); }
         double getCX() const
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryCX)); }
         double getCY() const
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryCY)); }
+        double getCZ() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryCZ)); }
         rotateType getRotateType() const; // Retorna o tipo de rotacao escolhido pelo usuario
 
     private:
@@ -155,9 +174,9 @@ class RotateDialog : public Dialog
             { return gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)); }
 
     private:
-        GtkWidget *m_entryAngulo = nullptr, *m_entryCX = nullptr,
-                  *m_entryCY = nullptr, *m_objCenter = nullptr,
-                  *m_worldCenter = nullptr, *m_pntCenter = nullptr;
+        GtkWidget *m_entryAngX = nullptr, *m_entryAngY = nullptr, *m_entryAngZ = nullptr,
+            *m_entryCX = nullptr, *m_entryCY = nullptr, *m_entryCZ = nullptr,
+            *m_objCenter = nullptr, *m_worldCenter = nullptr, *m_pntCenter = nullptr;
 };
 
 #endif // DIALOGS_HPP

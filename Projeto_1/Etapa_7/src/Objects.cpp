@@ -3,37 +3,42 @@
 Coordinate& Coordinate::operator+=(double step){
     this->x += step;
     this->y += step;
+    this->z += step;
     return *this;
 }
 
 Coordinate& Coordinate::operator-=(double step){
     this->x -= step;
     this->y -= step;
+    this->z -= step;
     return *this;
 }
 
 Coordinate& Coordinate::operator+=(const Coordinate& c){
     this->x += c.x;
     this->y += c.y;
+    this->z += c.z;
     return *this;
 }
 
 Coordinate& Coordinate::operator-=(const Coordinate& c){
     this->x -= c.x;
     this->y -= c.y;
+    this->z -= c.z;
     return *this;
 }
 
 Coordinate operator-(const Coordinate& c1, const Coordinate& c2){
-    return Coordinate(c1.x - c2.x, c1.y - c2.y);
+    return Coordinate(c1.x - c2.x, c1.y - c2.y, c1.z - c2.z);
 }
 
 Coordinate& Coordinate::operator*=(const Transformation& t){
     const auto &m = t.getM();
-    double x = this->x, y = this->y, z = this->z;
-    this->x = x*m[0][0] + y*m[1][0] + z*m[2][0];
-    this->y = x*m[0][1] + y*m[1][1] + z*m[2][1];
-    this->z = x*m[0][2] + y*m[1][2] + z*m[2][2];
+    double x = this->x, y = this->y, z = this->z, w = this->w;
+    this->x = x*m[0][0] + y*m[1][0] + z*m[2][0] + w*m[3][0];
+    this->y = x*m[0][1] + y*m[1][1] + z*m[2][1] + w*m[3][1];
+    this->z = x*m[0][2] + y*m[1][2] + z*m[2][2] + w*m[3][2];
+    this->w = x*m[0][3] + y*m[1][3] + z*m[2][3] + w*m[3][3];
     return *this;
 }
 
@@ -44,10 +49,12 @@ Coordinate Object::center() const{
     for(auto &p : m_coords){
         c.x += p.x;
         c.y += p.y;
+        c.z += p.z;
     }
 
     c.x /= n;
     c.y /= n;
+    c.z /= n;
     return c;
 }
 
@@ -58,10 +65,12 @@ Coordinate Object::nCenter() const{
     for(auto &p : m_nCoords){
         c.x += p.x;
         c.y += p.y;
+        c.z += p.z;
     }
 
     c.x /= n;
     c.y /= n;
+    c.z /= n;
     return c;
 }
 
@@ -99,13 +108,15 @@ void BezierCurve::generateCurve(const Coordinates& cpCoords){
             double t2 = t * t;
             double t3 = t2 * t;
 
-            double x,y;
+            double x,y,z;
             x = (-t3 +3*t2 -3*t +1)*coords[i*3+0].x + (3*t3 -6*t2 +3*t)*coords[i*3+1].x +
                 (-3*t3 +3*t2)*coords[i*3+2].x + (t3)*coords[i*3+3].x;
             y = (-t3 +3*t2 -3*t +1)*coords[i*3+0].y + (3*t3 -6*t2 +3*t)*coords[i*3+1].y +
                 (-3*t3 +3*t2)*coords[i*3+2].y + (t3)*coords[i*3+3].y;
+            z = (-t3 +3*t2 -3*t +1)*coords[i*3+0].z + (3*t3 -6*t2 +3*t)*coords[i*3+1].z +
+                (-3*t3 +3*t2)*coords[i*3+2].z + (t3)*coords[i*3+3].z;
 
-            m_coords.emplace_back(x,y);
+            m_coords.emplace_back(x,y,z);
         }
     }
 }
@@ -150,10 +161,19 @@ void BSplineCurve::generateCurve(const Coordinates& cpCoords){
         double deltaY3 = ay*(6*t3);
         double deltaY2 = deltaY3 +by*(2*t2);
 
-        double vx = dx, vy = dy;
-        addCoordinate(vx, vy);
+        double az = -n16 * c1.z  +0.5 * c2.z -0.5 * c3.z +n16 * c4.z;
+        double bz =  0.5 * c1.z  -      c2.z +0.5 * c3.z;
+        double cz = -0.5 * c1.z              +0.5 * c3.z;
+        double dz =  n16 * c1.z  +n23 * c2.z +n16 * c3.z;
+
+        double deltaZ = az*t3 +bz*t2 +cz*t;
+        double deltaZ3 = az*(6*t3);
+        double deltaZ2 = deltaZ3 +bz*(2*t2);
+
+        double vx = dx, vy = dy, vz = dz;
+        addCoordinate(vx, vy, dz);
         for(float t = 0.0; t < 1.0; t += m_step){
-            double x = vx, y = vy;
+            double x = vx, y = vy, z = vz;
 
             x += deltaX;
             deltaX += deltaX2;
@@ -163,9 +183,14 @@ void BSplineCurve::generateCurve(const Coordinates& cpCoords){
             deltaY += deltaY2;
             deltaY2 += deltaY3;
 
-            addCoordinate(x,y);
+            z += deltaZ;
+            deltaZ += deltaZ2;
+            deltaZ2 += deltaZ3;
+
+            addCoordinate(x,y,z);
             vx = x;
             vy = y;
+            vz = z;
         }
     }
 }

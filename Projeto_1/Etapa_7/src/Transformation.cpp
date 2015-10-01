@@ -4,37 +4,69 @@ Transformation::Transformation(){
     for(int i=0; i<M_SIZE; i++)
         for(int j=0; j<M_SIZE; j++)
             m_matrix[i][j] = 0;
-    m_matrix[0][0] = m_matrix[1][1] = m_matrix[2][2] = 1;
+    m_matrix[0][0] = m_matrix[1][1] =
+    m_matrix[2][2] = m_matrix[3][3] = 1;
 }
 
-Transformation Transformation::newTranslation(double dx, double dy){
-    Matrix m = {{  {1,  0,  0},
-                   {0,  1,  0},
-                   {dx, dy, 1}  }};
+Transformation Transformation::newTranslation(double dx, double dy, double dz){
+    Matrix m = {{  {1,  0,  0,  0},
+                   {0,  1,  0,  0},
+                   {0,  0,  1,  0},
+                   {dx, dy, dz, 1}  }};
     return Transformation(m);
 }
 
-Transformation Transformation::newScaling(double sx, double sy){
-    Matrix m = {{  {sx,  0,  0},
-                   {0,  sy,  0},
-                   {0,   0,  1}  }};
+Transformation Transformation::newScaling(double sx, double sy, double sz){
+    Matrix m = {{  {sx,  0,  0,  0},
+                   {0,  sy,  0,  0},
+                   {0,   0,  sz, 0},
+                   {0,   0,  0,  1}  }};
     return Transformation(m);
 }
 
-Transformation Transformation::newScalingAroundObjCenter(double sx, double sy, const Coordinate& center){
-    return newTranslation(-center.x, -center.y) * newScaling(sx, sy) * newTranslation(center.x, center.y);
+Transformation Transformation::newScalingAroundObjCenter(double sx, double sy, double sz,
+                                                        const Coordinate& center){
+    return newTranslation(-center.x, -center.y, -center.z) *
+        newScaling(sx, sy, sz) *
+        newTranslation(center.x, center.y, center.z);
 }
 
-Transformation Transformation::newRotation(double graus){
-    double rad = toRadians(graus);
-    Matrix m = {{  { cos(rad), sin(rad), 0},
-                   {-sin(rad), cos(rad), 0},
-                   {        0,        0, 1}  }};
+Transformation Transformation::newRx(double angleX){
+    double rad = toRadians(angleX);
+    Matrix m = {{   {1, 0,         0,        0},
+                    {0, cos(rad),  sin(rad), 0},
+                    {0, -sin(rad), cos(rad), 0},
+                    {0, 0,         0,        1}    }};
     return Transformation(m);
 }
 
-Transformation Transformation::newRotationAroundPoint(double graus, const Coordinate& p){
-    return newTranslation(-p.x, -p.y) * newRotation(graus) * newTranslation(p.x, p.y);
+Transformation Transformation::newRy(double angleY){
+    double rad = toRadians(angleY);
+    Matrix m = {{   {cos(rad), 0, -sin(rad), 0},
+                    {0,        1, 0,         0},
+                    {sin(rad), 0, cos(rad),  0},
+                    {0,        0, 0,         1}    }};
+    return Transformation(m);
+}
+
+Transformation Transformation::newRz(double angleZ){
+    double rad = toRadians(angleZ);
+    Matrix m = {{   {cos(rad),  sin(rad), 0, 0},
+                    {-sin(rad), cos(rad), 0, 0},
+                    {0,         0,        1, 0},
+                    {0,         0,        0, 1}    }};
+    return Transformation(m);
+}
+
+Transformation Transformation::newRotation(double angleX, double angleY, double angleZ){
+    return newRx(angleX) * newRy(angleY) * newRz(angleZ);
+}
+
+Transformation Transformation::newRotationAroundPoint(double angleX, double angleY,
+                                                    double angleZ, const Coordinate& p){
+    return newTranslation(-p.x, -p.y, -p.z) *
+        newRotation(angleX, angleY, angleZ) *
+        newTranslation(p.x, p.y, p.z);
 }
 
 Transformation& Transformation::operator*=(const Transformation& t2){

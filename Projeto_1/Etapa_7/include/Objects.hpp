@@ -13,8 +13,8 @@ class Coordinate
 {
     public:
         Coordinate(){}
-        Coordinate(double cx, double cy) :
-            x(cx), y(cy), z(1){}
+        Coordinate(double cx, double cy, double cz = 0) :
+            x(cx), y(cy), z(cz), w(1){}
         virtual ~Coordinate(){};
 
         Coordinate& operator+=(double step);
@@ -23,15 +23,16 @@ class Coordinate
         Coordinate& operator-=(const Coordinate& c);
         Coordinate& operator*=(const Transformation& t);
         bool operator==(const Coordinate& c)
-            { return (this->x==c.x && this->y==c.y); }
+            { return (this->x==c.x && this->y==c.y &&
+                      this->z==c.z); }
 
-        double x = 0, y = 0, z = 1;
+        double x = 0, y = 0, z = 0, w = 1;
 };
 
 Coordinate operator-(const Coordinate& c1, const Coordinate& c2);
 
 typedef std::vector<Coordinate> Coordinates;
-enum class ObjType { OBJECT, POINT, LINE, POLYGON, BEZIER_CURVE, BSPLINE_CURVE };
+enum class ObjType { OBJECT, POINT, LINE, POLYGON, BEZIER_CURVE, BSPLINE_CURVE, OBJECT3D };
 
 class Object
 {
@@ -67,7 +68,8 @@ class Object
             { return this->getName() == other.getName(); }
         Object& operator*(){ return *this; }
 
-		virtual void addCoordinate(double x, double y) { m_coords.emplace_back(x,y); }
+		virtual void addCoordinate(double x, double y, double z)
+            { m_coords.emplace_back(x,y,z); }
 		void addCoordinate(const Coordinate& p) { m_coords.push_back(p); }
 
     protected:
@@ -88,8 +90,8 @@ class Point : public Object
             Object(name) {}
         Point(const std::string& name, const GdkRGBA& color) :
             Object(name,color) {}
-		Point(const std::string& name, const GdkRGBA& color, double x, double y) :
-            Object(name,color) { addCoordinate(x,y); }
+		Point(const std::string& name, const GdkRGBA& color, double x, double y, double z) :
+            Object(name,color) { addCoordinate(x,y,z); }
         Point(const std::string& name, const GdkRGBA& color, const Coordinate& p) :
             Object(name,color) { addCoordinate(p); }
 
@@ -187,6 +189,26 @@ class BSplineCurve : public Curve
 		virtual std::string getTypeName() const { return "B-Spline Curve"; }
 
 		void generateCurve(const Coordinates& cpCoords);
+};
+
+typedef std::vector<Polygon> FaceList;
+
+class Object3D : public Object
+{
+    public:
+        Object3D(const std::string& name) :
+            Object(name) {}
+        Object3D(const std::string& name, const GdkRGBA& color) :
+            Object(name,color) {}
+
+        virtual ObjType getType() const { return ObjType::OBJECT3D; }
+		virtual std::string getTypeName() const { return "3D Object"; }
+
+        FaceList& getFaceList()
+            { return m_faceList; }
+
+    protected:
+        FaceList m_faceList;
 };
 
 #endif // OBJECTS_H

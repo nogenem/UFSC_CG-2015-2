@@ -19,12 +19,14 @@ class Viewport
         virtual ~Viewport(){ delete m_border; }
 
         void transformAndClipObj(Object* obj);
-        void changeLineClipAlg(const LineClipAlgs alg){m_clipping.setLineClipAlg(alg); transformAndClipAllObjs();}
+        void changeLineClipAlg(const LineClipAlgs alg)
+            { m_clipping.setLineClipAlg(alg); transformAndClipAllObjs(); }
 
         void gotoObj(const std::string& objName);
         void zoomWindow(double step){m_window.zoom(step); transformAndClipAllObjs();}
-        void moveWindow(double x, double y){m_window.move(x,y); transformAndClipAllObjs();}
-        void rotateWindow(double graus){m_window.setAngulo(graus); transformAndClipAllObjs();}
+        void moveWindow(double x, double y, double z=0)
+            { m_window.move(x,y,z); transformAndClipAllObjs(); }
+        void rotateWindow(double graus){}//{m_window.setAngulo(graus); transformAndClipAllObjs();}
         void drawObjs(cairo_t* cr);
 
     private:

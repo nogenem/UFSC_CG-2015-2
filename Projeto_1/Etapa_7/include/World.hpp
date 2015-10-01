@@ -23,11 +23,12 @@ class World
         Object* getObj(const std::string& name);
         Elemento<Object*>* getFirstObject(){ return m_objs.getFirstElement(); }
 
-        Object* translateObj(const std::string& objName, double dx, double dy);
-        Object* scaleObj(const std::string& objName, double sx, double sy);
+        Object* translateObj(const std::string& objName, double dx, double dy, double dz);
+        Object* scaleObj(const std::string& objName, double sx, double sy, double sz);
         // p = ponto central para rodar;
-        Object* rotateObj(const std::string& objName, double angle, const Coordinate& p,
-                       rotateType type);
+        Object* rotateObj(const std::string& objName,
+                          double angleX, double angleY, double angleZ,
+                          const Coordinate& p, rotateType type);
 
     private:
         DisplayFile m_objs;
@@ -102,34 +103,37 @@ Object* World::getObj(const std::string& name){
     return m_objs.getObj(&tmp);
 }
 
-Object* World::translateObj(const std::string& objName, double dx, double dy){
+Object* World::translateObj(const std::string& objName, double dx, double dy, double dz){
     Object tmp(objName);
     Object *obj = m_objs.getObj(&tmp);
-    obj->transform(Transformation::newTranslation(dx,dy));
+    obj->transform(Transformation::newTranslation(dx,dy,dz));
     return obj;
 }
 
-Object* World::scaleObj(const std::string& objName, double sx, double sy){
+Object* World::scaleObj(const std::string& objName, double sx, double sy, double sz){
     Object tmp(objName);
     Object *obj = m_objs.getObj(&tmp);
-    obj->transform(Transformation::newScalingAroundObjCenter(sx,sy,obj->center()));
+    obj->transform(Transformation::newScalingAroundObjCenter(sx,sy,sz,obj->center()));
     return obj;
 }
 
-Object* World::rotateObj(const std::string& objName, double angle, const Coordinate& p,
-                       rotateType type){
+Object* World::rotateObj(const std::string& objName,
+                        double angleX, double angleY, double angleZ,
+                        const Coordinate& p, rotateType type){
     Object tmp(objName);
     Object *obj = m_objs.getObj(&tmp);
 
     switch(type){
     case rotateType::OBJECT:
-        obj->transform(Transformation::newRotationAroundPoint(angle, obj->center()));
+        obj->transform(Transformation::newRotationAroundPoint(angleX, angleY, angleZ,
+                                                              obj->center()));
         break;
     case rotateType::WORLD:
-        obj->transform(Transformation::newRotationAroundPoint(angle, Coordinate(0,0)));
+        obj->transform(Transformation::newRotationAroundPoint(angleX, angleY, angleZ,
+                                                            Coordinate(0,0,0)));
         break;
     case rotateType::POINT:
-        obj->transform(Transformation::newRotationAroundPoint(angle, p));
+        obj->transform(Transformation::newRotationAroundPoint(angleX, angleY, angleZ, p));
         break;
     }
     return obj;
