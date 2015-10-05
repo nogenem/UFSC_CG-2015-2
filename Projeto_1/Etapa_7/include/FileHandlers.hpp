@@ -82,13 +82,17 @@ class ObjReader : public ObjStream
 
     private:
         void loadObjs();
+        void setName(std::stringstream& line);
         void loadColorsFile(std::stringstream& line);
         void changeColor(std::stringstream& line);
 
         void addCoord(std::stringstream& line);
         void addPoint(std::stringstream& line);
         void addPoly(std::stringstream& line, bool filled = false);
+        void addFace(std::stringstream& line);
         void addCurve(std::stringstream& line);
+
+        void addObj3D();
 
         void loadCoordsIndexes(std::stringstream& line, Coordinates& objCoords);
 
@@ -107,6 +111,9 @@ class ObjReader : public ObjStream
 
         unsigned int m_degree = 3;//Curvas de Bezier sao de grau 3
         ObjType m_freeFormType = ObjType::OBJECT;
+
+        std::string m_faceName = "";
+        FaceList m_faces;
 };
 
 class ObjWriter : public ObjStream
@@ -117,6 +124,7 @@ class ObjWriter : public ObjStream
 
     private:
         void printObj(Object* obj);
+        void printObj3D(Object3D* obj);
 
     private:
         // Numero de coordenadas ja escritas
@@ -148,6 +156,15 @@ void ObjReader::destroyObjs(){
         delete o;
 }
 
+
+void ObjReader::addObj3D(){
+    std::string name = m_numSubObjs == 0 ? m_name :
+        m_name+"_sub"+std::to_string(m_numSubObjs);
+
+    m_objs.push_back(new Object3D(name, m_faces));
+    m_faces.clear();
+}
+
 void ObjReader::loadObjs(){
     std::string tmp, keyWord;
     while(std::getline(m_objsFile, tmp)){
@@ -158,19 +175,39 @@ void ObjReader::loadObjs(){
         if(keyWord == "#")              { /* Não faz nada... */ }
         else if(keyWord == "mtllib")    { loadColorsFile(line); }                    // mtllib filename
         else if(keyWord == "usemtl")    { if(m_usingColorsFile){changeColor(line);} }// usemtl material_name
-        else if(keyWord == "v")         { addCoord(line); }                          // v x y
-        else if(keyWord == "o")         { line >> m_name; m_numSubObjs = 0; }        // o obj_name
+        else if(keyWord == "v")         { addCoord(line); }                          // v x y z
+        else if(keyWord == "o")         { setName(line); }                           // o obj_name
         else if(keyWord == "w")         { /* TODO(?) */ }
         else if(keyWord == "p")         { addPoint(line); }                          // p v1 v2 v3 ...
         else if(keyWord == "l")         { addPoly(line, false); }                    // l v1 v2 v3 ...
-        else if(keyWord == "f")         { addPoly(line, true); }                     // f v1 v2 v3 ...
         else if(keyWord == "curv2")     { addCurve(line); }                          // curv2 v1 v2 v3 v4 ...
         else if(keyWord == "cstype")    { setFreeFormType(line); }                   // cstype type
         else if(keyWord == "deg")       { setDegree(line); }                         // deg degu
         else if(keyWord == "end")       { /* Não intendi o que os 'param' significam,
                                               então só estou lendo o 'end' e não estou
                                               fazendo nada...*/ }
+
+        else if(keyWord == "f")         { addFace(line); }                           // f v1/vt1/vn1 v2/vt2/vn2 ...
+
+        else if(keyWord == "g")         { /*line >> m_faceName;*/ }                      // g group_name
+        else if(keyWord == "vt")        { /* Não faz nada... */ }                    // vt u v w
+        else if(keyWord == "vn")        { /* Não faz nada... */ }                    // vn i j k
+        else if(keyWord == "vp")        { /* Não faz nada... */ }                    // vp u v w
     }
+    if(m_faces.size() != 0)
+        addObj3D();
+}
+
+void ObjReader::setName(std::stringstream& line){
+    // Caso o nome do objeto mude, deve-se checar
+    //  se ja foi carregado alguma Face. Caso tenha sido,
+    //  deve-se então criar o objeto 3D com as Faces
+    //  carregadas até agora
+    if(m_faces.size() != 0)
+        addObj3D();
+
+    line >> m_name;
+    m_numSubObjs = 0;
 }
 
 void ObjReader::loadColorsFile(std::stringstream& line){
@@ -186,12 +223,15 @@ void ObjReader::changeColor(std::stringstream& line){
 }
 
 void ObjReader::addCoord(std::stringstream& line){
-    double x,y;
-    line >> x >> y;
-    m_coords.emplace_back(x,y);
+    double x,y,z;
+    line >> x >> y >> z;
+    m_coords.emplace_back(x,y,z);
 }
 
 void ObjReader::addPoint(std::stringstream& line){
+    if(m_faces.size() != 0)
+        addObj3D();
+
     Coordinates objCoords;
     loadCoordsIndexes(line, objCoords);
 
@@ -208,6 +248,9 @@ void ObjReader::addPoint(std::stringstream& line){
 }
 
 void ObjReader::addPoly(std::stringstream& line, bool filled){
+    if(m_faces.size() != 0)
+        addObj3D();
+
     Coordinates objCoords;
     loadCoordsIndexes(line, objCoords);
 
@@ -221,12 +264,25 @@ void ObjReader::addPoly(std::stringstream& line, bool filled){
     m_numSubObjs++;
 }
 
+void ObjReader::addFace(std::stringstream& line){
+    Coordinates objCoords;
+    loadCoordsIndexes(line, objCoords);
+
+    /*std::string name = m_faceName != "" ? m_faceName :
+        "face"+std::to_string(m_faces.size()+1);*/
+    std::string name = "face"+std::to_string(m_faces.size()+1);
+    m_faces.emplace_back(name, objCoords);
+}
+
 void ObjReader::addCurve(std::stringstream& line){
     if(m_freeFormType == ObjType::OBJECT){
         destroyObjs();
         throw MyException("Tentativa de criar uma curva sem 'cstype' na linha: "+
                           line.str() +".\n");
     }
+
+    if(m_faces.size() != 0)
+        addObj3D();
 
     Coordinates objCoords;
     loadCoordsIndexes(line, objCoords);
@@ -242,11 +298,23 @@ void ObjReader::addCurve(std::stringstream& line){
 }
 
 void ObjReader::loadCoordsIndexes(std::stringstream& line, Coordinates& objCoords){
+    std::string pointString;
     int index = 0;
     int size = m_coords.size();
 
     while(true){
-        while(line >> index){
+        while(line >> pointString){
+            // Algoritmo vai pegar o vertice 'v' e vai
+            //  ignorar os outros [v/vt/vn]
+            std::stringstream point(pointString);
+            point >> index;
+
+            if(!point){// É obrigado a ter um vertice
+                destroyObjs();
+                throw MyException("Indice de vertice invalido na linha: "+ line.str() + ".\n");
+            }
+
+            // Processa o index do vertice
             if(index < 0)
                 index = size + index;
             else
@@ -314,7 +382,10 @@ void ObjWriter::writeObjs(World *world){
     int size = world->numObjs();
     for(int i = 0; i<size; i++){
         obj = world->getObj(i);
-        printObj(obj);
+        if(obj->getType() == ObjType::OBJECT3D)
+            printObj3D((Object3D*) obj);
+        else
+            printObj(obj);
     }
 }
 
@@ -325,7 +396,7 @@ void ObjWriter::printObj(Object* obj){
         coords = ((Curve*)obj)->getControlPoints();
 
     for(const auto &c : coords)
-        m_objsFile << "v " << c.x << " " << c.y << "\n";
+        m_objsFile << "v " << c.x << " " << c.y << " " << c.z << "\n";
 
     m_objsFile << "\no " << obj->getName() << "\n";
 
@@ -345,7 +416,7 @@ void ObjWriter::printObj(Object* obj){
         keyWord = "l";
         break;
     case ObjType::POLYGON:
-        keyWord = ((Polygon*)obj)->filled() ? "f" : "l";
+        keyWord = "l";
         break;
     case ObjType::BEZIER_CURVE:
         m_objsFile << "cstype bezier\n";
@@ -368,6 +439,29 @@ void ObjWriter::printObj(Object* obj){
     else
         m_objsFile << "\n" << std::endl;
     m_numVertex += size;
+}
+
+void ObjWriter::printObj3D(Object3D* obj){
+
+    for(auto face : obj->getFaceList()){
+        auto coords = face.getCoords();
+        for(const auto &c : coords)
+            m_objsFile << "v " << c.x << " " << c.y << " " << c.z << "\n";
+    }
+    m_objsFile << "\no " << obj->getName() << "\n";
+
+    unsigned int faceSize = 0;
+    for(auto face : obj->getFaceList()){
+        faceSize = face.getCoords().size();
+
+        //m_objsFile << "g " << face.getName() << "\n";
+        m_objsFile << "f";
+        for(unsigned int i = 0; i<faceSize; i++){
+            m_objsFile << " " << m_numVertex+(i+1);
+        }
+        m_objsFile << "\n";
+        m_numVertex += faceSize;
+    }
 }
 
 bool ColorReader::loadFile(const std::string& filename){

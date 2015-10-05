@@ -39,6 +39,12 @@ extern "C"{
     void add_poly_coord_event(GtkWidget *button, PolygonDialog* dialog){
         dialog->onClickEvent();
     }
+    void add_obj3d_event(GtkMenuItem *menuitem, MainWindow* window){
+        window->addObj3D(builder);
+    }
+    void add_face_event(GtkWidget *button, Object3dDialog* dialog){
+        dialog->onClickEvent(builder);
+    }
     void help_event(GtkMenuItem *menuitem, MainWindow* window){
         window->showHelpDialog();
     }

@@ -89,7 +89,7 @@ class LineDialog : public ObjDialog
 class PolygonDialog : public ObjDialog
 {
     public:
-        PolygonDialog(GtkBuilder* builder);
+        PolygonDialog(GtkBuilder* builder, bool isFace=false);
         ~PolygonDialog(){ destroy(); }
         void destroy();
 
@@ -107,6 +107,24 @@ class PolygonDialog : public ObjDialog
         GtkTreeModel *m_model = nullptr;
         GtkWidget *m_entryX = nullptr, *m_entryY = nullptr, *m_entryZ = nullptr,
                   *m_checkFilled = nullptr;
+};
+
+class Object3dDialog : public ObjDialog
+{
+    public:
+        Object3dDialog(GtkBuilder* builder);
+        ~Object3dDialog(){ destroy(); }
+        void destroy();
+
+        FaceList& getFaces(){ return m_faces; }
+
+        // Events
+        void onClickEvent(GtkBuilder* builder);//Adiciona face
+
+    protected:
+        GtkTreeModel *m_model = nullptr;
+
+        FaceList m_faces;
 };
 
 class CurveDialog : public PolygonDialog

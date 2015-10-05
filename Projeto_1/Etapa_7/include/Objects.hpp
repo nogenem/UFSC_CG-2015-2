@@ -122,6 +122,8 @@ class Polygon : public Object
             Object(name,color) {}
 		Polygon(const std::string& name, const GdkRGBA& color, const Coordinates& coords) :
             Object(name,color) { addCoordinate(coords); }
+        Polygon(const std::string& name, const Coordinates& coords) :
+            Object(name) { addCoordinate(coords); }
         Polygon(const std::string& name, const GdkRGBA& color, bool filled, const Coordinates& coords) :
             Object(name,color) { m_filled = filled; addCoordinate(coords); }
 
@@ -198,8 +200,9 @@ class Object3D : public Object
     public:
         Object3D(const std::string& name) :
             Object(name) {}
-        Object3D(const std::string& name, const GdkRGBA& color) :
-            Object(name,color) {}
+        Object3D(const std::string& name, const FaceList& faces) :
+            Object(name) { m_faceList.insert(m_faceList.begin(),
+                                             faces.begin(), faces.end()); }
 
         virtual ObjType getType() const { return ObjType::OBJECT3D; }
 		virtual std::string getTypeName() const { return "3D Object"; }
@@ -207,8 +210,20 @@ class Object3D : public Object
         FaceList& getFaceList()
             { return m_faceList; }
 
+        void insertFaces(const FaceList& faces)
+            { m_faceList.insert(m_faceList.end(),
+                                faces.begin(), faces.end()); }
+
     protected:
         FaceList m_faceList;
+
+    /**
+        projetar no plano ZY para pegar o angulo
+            -tira a cordenada x e ja tem a projeçao
+            -usar pitagoras pra determinar o angulo
+            -rotacionar em x
+        usar pitagoras denovo pra rotacionar em y
+    */
 };
 
 #endif // OBJECTS_H

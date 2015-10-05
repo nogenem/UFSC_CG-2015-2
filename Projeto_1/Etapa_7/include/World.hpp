@@ -15,6 +15,7 @@ class World
         Object* addPolygon(const std::string& name, const GdkRGBA& color, bool filled, const Coordinates& c);
         Object* addBezierCurve(const std::string& name, const GdkRGBA& color, const Coordinates& c);
         Object* addBSplineCurve(const std::string& name, const GdkRGBA& color, const Coordinates& c);
+        Object* addObj3D(const std::string& name, const FaceList& faces);
         void addObj(Object *obj){ validateName(obj->getName()); m_objs.addObj(obj); }
 
         void removeObj(const std::string& name);
@@ -66,6 +67,14 @@ Object* World::addPolygon(const std::string& name, const GdkRGBA& color,
     validateName(name);
 
     Polygon *obj = new Polygon(name, color, filled, c);
+    m_objs.addObj(obj);
+    return obj;
+}
+
+Object* World::addObj3D(const std::string& name, const FaceList& faces){
+    validateName(name);
+
+    Object3D *obj = new Object3D(name, faces);
     m_objs.addObj(obj);
     return obj;
 }

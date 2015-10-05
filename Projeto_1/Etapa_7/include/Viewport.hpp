@@ -1,6 +1,7 @@
 #ifndef VIEWPORT_HPP
 #define VIEWPORT_HPP
 
+#include <cmath>
 #include <ctime>
 #include "Window.hpp"
 #include "Objects.hpp"
@@ -30,6 +31,8 @@ class Viewport
         void drawObjs(cairo_t* cr);
 
     private:
+        Transformation parallelProjection(Object* obj);
+
         Coordinate transformCoordinate(const Coordinate& c) const;
         void transformCoordinates(const Coordinates& coords,
                                     Coordinates& output) const;
@@ -62,9 +65,31 @@ void Viewport::gotoObj(const std::string& objName){
     transformAndClipAllObjs();
 }
 
+Transformation Viewport::parallelProjection(Object* obj){
+    auto wc = m_window.center();
+    auto oc = obj->center();
+
+    Coordinate VRP(oc.x-wc.x, oc.y-wc.y, oc.z-wc.z);
+
+    double angleX = m_window.getAnguloX(); /*acos((VRP.x*oc.x + VRP.y*0)/
+        ( sqrt(VRP.x*VRP.x + VRP.y*VRP.y) * sqrt(oc.x*oc.x + 0))) * 180 / PI;*/
+
+    double angleY = m_window.getAnguloY(); /*acos((VRP.x*0 + VRP.y*oc.y)/
+        ( sqrt(VRP.x*VRP.x + VRP.y*VRP.y) * sqrt(0 + oc.y*oc.y))) * 180 / PI;*/
+
+    return Transformation::newTranslation(-wc.x, -wc.y, -wc.z) *
+        Transformation::newRx(-angleX) *
+        Transformation::newRy(-angleY);
+}
+
 void Viewport::transformAndClipObj(Object* obj){
     auto t = m_window.getT();
     obj->transformNormalized(t);
+
+    for(auto c : obj->getNCoords()){
+        std::printf("x: %.2f - y: %.2f - z: %.2f\n",
+                    c.x, c.y, c.z);
+    }
 
     if(!m_clipping.clip(obj))
         obj->getNCoords().clear();

@@ -30,6 +30,7 @@ class MainWindow
         void addPolygon(GtkBuilder* builder);
         void addBezierCurve(GtkBuilder* builder);
         void addBSplineCurve(GtkBuilder* builder);
+        void addObj3D(GtkBuilder* builder);
 
         void zoom(Buttons id);
         void move(Buttons id);
@@ -423,6 +424,31 @@ void MainWindow::addPolygon(GtkBuilder* builder){
             }
         }else
             finish = true;
+    }
+}
+
+void MainWindow::addObj3D(GtkBuilder* builder){
+    Object3dDialog dialog(GTK_BUILDER(builder));
+    bool finish = false;
+
+    while(!finish){
+        if(dialog.run() >= 0){//Nao intendo porque disso...
+            try{
+                Object* obj = _world->addObj3D(dialog.getName(), dialog.getFaces());
+
+                _viewport->transformAndClipObj(obj);
+                addObjOnListStore(dialog.getName(), "3D Object");
+
+                gtk_widget_queue_draw(_mainWindow);
+                log("Novo Objeto 3D adicionado.\n");
+                finish = true;
+            }catch(MyException& e){
+                log(e.what());
+                showErrorDialog(e.what());
+            }
+        }else{
+            finish = true;
+        }
     }
 }
 
