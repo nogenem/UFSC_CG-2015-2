@@ -44,6 +44,7 @@ class Viewport
         void drawLine(Object* obj);
         void drawPolygon(Object* obj);
         void drawCurve(Object* obj);
+        void drawObj3D(Object3D* obj);
 
         void prepareContext(const Object* obj);
 
@@ -86,11 +87,6 @@ void Viewport::transformAndClipObj(Object* obj){
     auto t = m_window.getT();
     obj->transformNormalized(t);
 
-    for(auto c : obj->getNCoords()){
-        std::printf("x: %.2f - y: %.2f - z: %.2f\n",
-                    c.x, c.y, c.z);
-    }
-
     if(!m_clipping.clip(obj))
         obj->getNCoords().clear();
 }
@@ -132,7 +128,8 @@ void Viewport::drawObjs(cairo_t* cr){
 }
 
 void Viewport::drawObj(Object* obj){
-    if(obj->getNCoordsSize() == 0) return;
+    if(obj->getType() != ObjType::OBJECT3D &&
+        obj->getNCoordsSize() == 0) return;
 
     switch(obj->getType()){
     case ObjType::OBJECT:
@@ -150,6 +147,8 @@ void Viewport::drawObj(Object* obj){
     case ObjType::BSPLINE_CURVE:
         drawCurve(obj);
         break;
+    case ObjType::OBJECT3D:
+        drawObj3D((Object3D*) obj);
     }
 }
 
@@ -206,6 +205,12 @@ void Viewport::drawPolygon(Object* obj){
         cairo_fill(m_cairo);
     }else
         cairo_stroke(m_cairo);
+}
+
+void Viewport::drawObj3D(Object3D* obj){
+    for(auto &face : obj->getFaceList())
+        if(face.getNCoordsSize() > 0)
+            drawPolygon(&face);
 }
 
 void Viewport::drawCurve(Object* obj){

@@ -61,8 +61,8 @@ class Object
 
         Coordinate center() const;
         Coordinate nCenter() const;
-        void transform(const Transformation& t);
-        void transformNormalized(const Transformation& t);
+        virtual void transform(const Transformation& t);
+        virtual void transformNormalized(const Transformation& t);
 
         bool operator==(const Object& other)
             { return this->getName() == other.getName(); }
@@ -206,6 +206,9 @@ class Object3D : public Object
 
         virtual ObjType getType() const { return ObjType::OBJECT3D; }
 		virtual std::string getTypeName() const { return "3D Object"; }
+
+        void transform(const Transformation& t);
+        void transformNormalized(const Transformation& t);
 
         FaceList& getFaceList()
             { return m_faceList; }

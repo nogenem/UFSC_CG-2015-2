@@ -87,6 +87,24 @@ void Object::transformNormalized(const Transformation& t){
         m_nCoords.push_back( (p *= t) );
 }
 
+void Object3D::transform(const Transformation& t){
+    for(auto face : m_faceList){
+        auto &coords = face.getCoords();
+        for(auto &p : coords)
+            p *= (t);
+    }
+}
+
+void Object3D::transformNormalized(const Transformation& t){
+    for(auto &face : m_faceList){
+        auto &coords = face.getNCoords();
+        if(coords.size() > 0)
+            coords.clear();
+        for(auto p : face.getCoords())
+            coords.push_back( (p *= t) );
+    }
+}
+
 void Object::setNCoord(const Coordinates& c){
     m_nCoords.clear();
     m_nCoords.insert(m_nCoords.end(), c.begin(), c.end());

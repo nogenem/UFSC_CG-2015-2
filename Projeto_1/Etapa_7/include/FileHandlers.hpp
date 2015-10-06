@@ -156,7 +156,6 @@ void ObjReader::destroyObjs(){
         delete o;
 }
 
-
 void ObjReader::addObj3D(){
     std::string name = m_numSubObjs == 0 ? m_name :
         m_name+"_sub"+std::to_string(m_numSubObjs);
@@ -194,6 +193,9 @@ void ObjReader::loadObjs(){
         else if(keyWord == "vn")        { /* Não faz nada... */ }                    // vn i j k
         else if(keyWord == "vp")        { /* Não faz nada... */ }                    // vp u v w
     }
+    // Se chegar ao final e tiver alguma
+    //  Face salva, ela pertence ao ultimo
+    //  objeto 3D
     if(m_faces.size() != 0)
         addObj3D();
 }
@@ -223,7 +225,7 @@ void ObjReader::changeColor(std::stringstream& line){
 }
 
 void ObjReader::addCoord(std::stringstream& line){
-    double x,y,z;
+    double x=0,y=0,z=0;
     line >> x >> y >> z;
     m_coords.emplace_back(x,y,z);
 }
@@ -422,10 +424,14 @@ void ObjWriter::printObj(Object* obj){
         m_objsFile << "cstype bezier\n";
         m_objsFile << "deg 3\n";
         keyWord = "curv2";
+        break;
     case ObjType::BSPLINE_CURVE:
         m_objsFile << "cstype bspline\n";
         m_objsFile << "deg 3\n";
         keyWord = "curv2";
+        break;
+    case ObjType::OBJECT3D:
+        break;//nunca vai acontecer
     }
 
     int size = coords.size();
@@ -489,7 +495,7 @@ void ColorReader::loadColors(){
 }
 
 void ColorReader::addColor(std::string name, std::stringstream& line){
-    double r,g,b;
+    double r=0,g=0,b=0;
     line >> r >> g >> b;
     m_colors[name] = GdkRGBA{r,g,b};
 }

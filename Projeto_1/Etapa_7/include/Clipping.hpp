@@ -74,6 +74,15 @@ bool Clipping::clip(Object* obj){
     case ObjType::BEZIER_CURVE:
     case ObjType::BSPLINE_CURVE:
         return clipCurve(obj);
+    case ObjType::OBJECT3D:
+        Object3D *obj3d = (Object3D*) obj;
+        bool draw = false;
+        for(auto &face : obj3d->getFaceList()){
+            bool tmp = clipPolygon(&face);
+            if(!tmp) face.getNCoords().clear();
+            draw |= tmp;
+        }
+        return draw;
     }
     return false;
 }
