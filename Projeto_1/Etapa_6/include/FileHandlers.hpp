@@ -351,10 +351,12 @@ void ObjWriter::printObj(Object* obj){
         m_objsFile << "cstype bezier\n";
         m_objsFile << "deg 3\n";
         keyWord = "curv2";
+		break;
     case ObjType::BSPLINE_CURVE:
         m_objsFile << "cstype bspline\n";
         m_objsFile << "deg 3\n";
         keyWord = "curv2";
+		break;
     }
 
     int size = coords.size();
