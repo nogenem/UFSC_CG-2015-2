@@ -100,7 +100,6 @@ class ObjReader : public ObjStream
         void destroyObjs();
 
         void setFreeFormType(std::stringstream& line);
-        void setDegree(std::stringstream& line);//Soh le mas nao faz nada...
 
     private:
         std::vector<Object*> m_objs;
@@ -109,7 +108,6 @@ class ObjReader : public ObjStream
         bool m_usingColorsFile = false;// Existe uma chamada 'mtllib' no .obj?
         int m_numSubObjs = 0; // Numero de objetos em seguida com o mesmo nome
 
-        unsigned int m_degree = 3;//Curvas de Bezier sao de grau 3
         ObjType m_freeFormType = ObjType::OBJECT;
 
         std::string m_faceName = "";
@@ -179,16 +177,15 @@ void ObjReader::loadObjs(){
         else if(keyWord == "w")         { /* TODO(?) */ }
         else if(keyWord == "p")         { addPoint(line); }                          // p v1 v2 v3 ...
         else if(keyWord == "l")         { addPoly(line, false); }                    // l v1 v2 v3 ...
-        else if(keyWord == "curv2")     { addCurve(line); }                          // curv2 v1 v2 v3 v4 ...
+        else if(keyWord == "f")         { addFace(line); }                           // f v1/vt1/vn1 v2/vt2/vn2 ...
+        else if(keyWord == "curv")      { addCurve(line); }                          // curv u1 u2 v1 v2 v3 ...
         else if(keyWord == "cstype")    { setFreeFormType(line); }                   // cstype type
-        else if(keyWord == "deg")       { setDegree(line); }                         // deg degu
+
         else if(keyWord == "end")       { /* Não intendi o que os 'param' significam,
                                               então só estou lendo o 'end' e não estou
                                               fazendo nada...*/ }
-
-        else if(keyWord == "f")         { addFace(line); }                           // f v1/vt1/vn1 v2/vt2/vn2 ...
-
-        else if(keyWord == "g")         { /*line >> m_faceName;*/ }                      // g group_name
+        else if(keyWord == "deg")       { /* Não faz nada... */ }                    // deg degu
+        else if(keyWord == "g")         { /* Não faz nada... */ }                    // g group_name
         else if(keyWord == "vt")        { /* Não faz nada... */ }                    // vt u v w
         else if(keyWord == "vn")        { /* Não faz nada... */ }                    // vn i j k
         else if(keyWord == "vp")        { /* Não faz nada... */ }                    // vp u v w
@@ -270,8 +267,6 @@ void ObjReader::addFace(std::stringstream& line){
     Coordinates objCoords;
     loadCoordsIndexes(line, objCoords);
 
-    /*std::string name = m_faceName != "" ? m_faceName :
-        "face"+std::to_string(m_faces.size()+1);*/
     std::string name = "face"+std::to_string(m_faces.size()+1);
     m_faces.emplace_back(name, objCoords);
 }
@@ -285,6 +280,10 @@ void ObjReader::addCurve(std::stringstream& line){
 
     if(m_faces.size() != 0)
         addObj3D();
+
+    double tmp=0;
+    line >> tmp;// Remove o u1 e u2 que não sei para que servem...
+    line >> tmp;
 
     Coordinates objCoords;
     loadCoordsIndexes(line, objCoords);
@@ -359,14 +358,6 @@ void ObjReader::setFreeFormType(std::stringstream& line){
     }
 }
 
-void ObjReader::setDegree(std::stringstream& line){
-    int degree;
-    line >> degree;
-
-    if(degree > 0)
-        m_degree = degree;
-}
-
 ObjWriter::ObjWriter(std::string& filename):
     ObjStream(filename) {
 
@@ -392,7 +383,7 @@ void ObjWriter::writeObjs(World *world){
 }
 
 void ObjWriter::printObj(Object* obj){
-    auto coords = obj->getCoords();
+    auto &coords = obj->getCoords();
 
     if(obj->getType() == ObjType::BEZIER_CURVE || obj->getType() == ObjType::BSPLINE_CURVE)
         coords = ((Curve*)obj)->getControlPoints();
@@ -423,12 +414,13 @@ void ObjWriter::printObj(Object* obj){
     case ObjType::BEZIER_CURVE:
         m_objsFile << "cstype bezier\n";
         m_objsFile << "deg 3\n";
-        keyWord = "curv2";
+        keyWord = "curv 0.0 0.0";//Não sei o que esses dois primeiros parametros
+                                 // significam então deixei 0 mesmo...
         break;
     case ObjType::BSPLINE_CURVE:
         m_objsFile << "cstype bspline\n";
         m_objsFile << "deg 3\n";
-        keyWord = "curv2";
+        keyWord = "curv 0.0 0.0";
         break;
     case ObjType::OBJECT3D:
         break;//nunca vai acontecer

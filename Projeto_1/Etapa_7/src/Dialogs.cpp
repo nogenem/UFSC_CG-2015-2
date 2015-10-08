@@ -171,7 +171,7 @@ RotateDialog::RotateDialog(GtkBuilder* builder){
     // (char*) usado para tirar warnings do compilador
     char* ids[] = {(char*)"dlog_rotate",(char*)"adj_x1",
         (char*)"adj_y1",(char*)"adj_z1",(char*)"adj_ang_x",
-        (char*)"adj_ang_y",(char*)"adj_ang_z",nullptr};
+        (char*)"adj_ang_y",(char*)"adj_ang_z",(char*)"adj_ang_a",nullptr};
 
     if(!gtk_builder_add_objects_from_file (builder, UI_FILE, ids, &error)){
         g_warning( "%s", error->message );
@@ -186,17 +186,15 @@ RotateDialog::RotateDialog(GtkBuilder* builder){
     m_entryAngX = GTK_WIDGET( gtk_builder_get_object( builder, "entry_ang_x" ) );
     m_entryAngY = GTK_WIDGET( gtk_builder_get_object( builder, "entry_ang_y" ) );
     m_entryAngZ = GTK_WIDGET( gtk_builder_get_object( builder, "entry_ang_z" ) );
+    m_entryAngA = GTK_WIDGET( gtk_builder_get_object( builder, "entry_ang_a" ) );
 
     m_objCenter = GTK_WIDGET( gtk_builder_get_object( builder, "tb_obj_center" ) );
-    m_worldCenter = GTK_WIDGET( gtk_builder_get_object( builder, "rb_world_center" ) );
     m_pntCenter = GTK_WIDGET( gtk_builder_get_object( builder, "rb_pnt_center" ) );
 }
 
 rotateType RotateDialog::getRotateType() const {
     if(isActive(m_objCenter))
         return rotateType::OBJECT;
-    else if(isActive(m_worldCenter))
-        return rotateType::WORLD;
     else
         return rotateType::POINT;
 }

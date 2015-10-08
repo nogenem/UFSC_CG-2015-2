@@ -1,5 +1,10 @@
 #include "Objects.hpp"
 
+std::ostream& operator<<(std::ostream& os, const Coordinate& c){
+    os << "x: " << c.x << " - y: " << c.y << " - z: " << c.z << std::endl;
+    return os;
+}
+
 Coordinate& Coordinate::operator+=(double step){
     this->x += step;
     this->y += step;
@@ -26,6 +31,10 @@ Coordinate& Coordinate::operator-=(const Coordinate& c){
     this->y -= c.y;
     this->z -= c.z;
     return *this;
+}
+
+Coordinate Coordinate::operator-() const{
+    return Coordinate(-this->x, -this->y, -this->z);
 }
 
 Coordinate operator-(const Coordinate& c1, const Coordinate& c2){
@@ -74,8 +83,45 @@ Coordinate Object::nCenter() const{
     return c;
 }
 
+Coordinate Object3D::center() const{
+    Coordinate c;
+    int n = 0;
+
+    for(auto face : m_faceList){
+        for(auto p : face.getCoords()){
+            c.x += p.x;
+            c.y += p.y;
+            c.z += p.z;
+        }
+        n += face.getCoords().size();
+    }
+
+    c.x /= n;
+    c.y /= n;
+    c.z /= n;
+    return c;
+}
+
+Coordinate Object3D::nCenter() const{
+    Coordinate c;
+    int n = 0;
+
+    for(auto face : m_faceList){
+        for(auto p : face.getNCoords()){
+            c.x += p.x;
+            c.y += p.y;
+            c.z += p.z;
+        }
+        n += face.getNCoords().size();
+    }
+
+    c.x /= n;
+    c.y /= n;
+    c.z /= n;
+    return c;
+}
+
 void Object::transform(const Transformation& t){
-    //std::cout << t << "\n";
     for(auto &p : m_coords)
         p *= (t);
 }
@@ -88,10 +134,9 @@ void Object::transformNormalized(const Transformation& t){
 }
 
 void Object3D::transform(const Transformation& t){
-    for(auto face : m_faceList){
-        auto &coords = face.getCoords();
-        for(auto &p : coords)
-            p *= (t);
+    for(auto &face : m_faceList){
+        for(auto &p : face.getCoords())
+            p *= t;
     }
 }
 

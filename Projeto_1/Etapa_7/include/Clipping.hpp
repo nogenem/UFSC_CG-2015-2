@@ -128,7 +128,7 @@ bool Clipping::CohenSutherlandLineClip(Coordinate& c1, Coordinate& c2){
         else if( (rc1 & rc2) != 0 )// Fora
             return false;
 
-        double x,y;
+        double x=0,y=0;
         int rc = rc1 ? rc1 : rc2;// (rc1 == 0) => Dentro
         double m = (c2.y-c1.y)/(c2.x-c1.x);
 
@@ -199,20 +199,15 @@ bool Clipping::LiangBaskyLineClip(Coordinate& c1, Coordinate& c2){
 }
 
 bool Clipping::SutherlandHodgmanPolygonClip(Object* p){
-    auto input = p->getNCoords();
+    auto &input = p->getNCoords();
     Coordinates tmp;
-    Coordinates output;
 
     clipLeft(input, tmp);
-    clipRight(tmp, output);
-    clipTop(output, tmp);
-    clipBottom(tmp, output);
+    clipRight(tmp, input);
+    clipTop(input, tmp);
+    clipBottom(tmp, input);
 
-    if(output.size() == 0)
-        return false;
-
-    p->setNCoord(output);
-    return true;
+    return (input.size() != 0);
 }
 
 void Clipping::clipLeft(Coordinates& input, Coordinates& output){

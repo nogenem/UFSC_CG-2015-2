@@ -14,6 +14,7 @@
 #define UI_FILE "window.glade"
 
 enum class Buttons { ZOOM_OUT, ZOOM_IN, UP, RIGHT, DOWN, LEFT, ROT_LEFT, ROT_RIGHT };
+enum class Axes { X, Y, Z };
 
 class MainWindow
 {
@@ -35,6 +36,8 @@ class MainWindow
         void zoom(Buttons id);
         void move(Buttons id);
         void rotateWindow(Buttons id);
+
+        void setAxis(Axes axis);
 
         void onDraw(cairo_t* cr);
         void showPopUp(GdkEvent *event);
@@ -60,7 +63,7 @@ class MainWindow
     private:
         GtkWidget *_mainWindow = nullptr, *_step = nullptr,
                   *_log = nullptr, *_popUp = nullptr,
-                  *_logScroll = nullptr;
+                  *_logScroll = nullptr, *m_axes;
 
         GtkWidget *_helpDialog = nullptr;
         GtkTreeModel* _mainModel = nullptr;
@@ -111,6 +114,9 @@ MainWindow::MainWindow(GtkBuilder* builder) {
 
     _helpDialog = GTK_WIDGET( gtk_builder_get_object( GTK_BUILDER(builder), "dlog_help" ) );
 
+    m_axes = GTK_WIDGET( gtk_builder_get_object( GTK_BUILDER(builder), "comboBox_axes" ) );
+    gtk_combo_box_set_active(GTK_COMBO_BOX(m_axes), 2);
+
     // Salva o id do botao para poder ser usado depois apenas 1 função
     // para manipula-los
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_zoom_out")),
@@ -136,6 +142,10 @@ MainWindow::MainWindow(GtkBuilder* builder) {
                        "ID", GINT_TO_POINTER(LineClipAlgs::LB));
 
     gtk_widget_show( _mainWindow );
+}
+
+void MainWindow::setAxis(Axes axis){
+    gtk_combo_box_set_active(GTK_COMBO_BOX(m_axes), (int)axis);
 }
 
 void MainWindow::changeLineClipAlg(LineClipAlgs alg){
@@ -333,12 +343,16 @@ void MainWindow::move(Buttons id){
 
 void MainWindow::rotateWindow(Buttons id){
     double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(_step));
+    char *tmpAxis = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(m_axes));
+    std::string axis(tmpAxis);
+    delete tmpAxis;
+
     switch(id){
     case Buttons::ROT_LEFT:
-        _viewport->rotateWindow(value);
+        _viewport->rotateWindow(value, axis);
         break;
     case Buttons::ROT_RIGHT:
-        _viewport->rotateWindow(-value);
+        _viewport->rotateWindow(-value, axis);
         break;
     default:
         break;
@@ -580,7 +594,7 @@ void MainWindow::rotateSelectedObj(GtkBuilder* builder){
                 Coordinate c(dialog.getCX(), dialog.getCY(), dialog.getCZ());
                 Object* obj = _world->rotateObj(name, dialog.getAnguloX(),
                                             dialog.getAnguloY(), dialog.getAnguloZ(),
-                                            c, dialog.getRotateType());
+                                            dialog.getAnguloA(), c, dialog.getRotateType());
                 _viewport->transformAndClipObj(obj);
 
                 gtk_widget_queue_draw(_mainWindow);

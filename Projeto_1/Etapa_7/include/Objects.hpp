@@ -22,13 +22,14 @@ class Coordinate
         Coordinate& operator+=(const Coordinate& c);
         Coordinate& operator-=(const Coordinate& c);
         Coordinate& operator*=(const Transformation& t);
+        Coordinate operator-() const;
         bool operator==(const Coordinate& c)
             { return (this->x==c.x && this->y==c.y &&
                       this->z==c.z); }
 
         double x = 0, y = 0, z = 0, w = 1;
 };
-
+std::ostream& operator<<(std::ostream& os, const Coordinate& c);
 Coordinate operator-(const Coordinate& c1, const Coordinate& c2);
 
 typedef std::vector<Coordinate> Coordinates;
@@ -59,8 +60,8 @@ class Object
 		void setNCoord(const Coordinates& c);
 		int getNCoordsSize() const { return m_nCoords.size(); }
 
-        Coordinate center() const;
-        Coordinate nCenter() const;
+        virtual Coordinate center() const;
+        virtual Coordinate nCenter() const;
         virtual void transform(const Transformation& t);
         virtual void transformNormalized(const Transformation& t);
 
@@ -201,14 +202,16 @@ class Object3D : public Object
         Object3D(const std::string& name) :
             Object(name) {}
         Object3D(const std::string& name, const FaceList& faces) :
-            Object(name) { m_faceList.insert(m_faceList.begin(),
-                                             faces.begin(), faces.end()); }
+            Object(name) { m_faceList = std::move(faces); }
 
         virtual ObjType getType() const { return ObjType::OBJECT3D; }
 		virtual std::string getTypeName() const { return "3D Object"; }
 
         void transform(const Transformation& t);
         void transformNormalized(const Transformation& t);
+
+        Coordinate center() const;
+        Coordinate nCenter() const;
 
         FaceList& getFaceList()
             { return m_faceList; }

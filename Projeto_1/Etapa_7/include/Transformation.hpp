@@ -16,7 +16,7 @@ class Transformation
 {
     public:
         Transformation(const Matrix m):
-            m_matrix(m) {}
+            m_matrix(std::move(m)) {}
         Transformation();
         virtual ~Transformation() {}
 
@@ -27,12 +27,15 @@ class Transformation
 
         static Transformation newTranslation(double dx, double dy, double dz);
 
-        static Transformation newRx(double angleX);
-        static Transformation newRy(double angleY);
-        static Transformation newRz(double angleZ);
+        static Transformation newRx(double angleX, bool isRad=false);
+        static Transformation newRy(double angleY, bool isRad=false);
+        static Transformation newRz(double angleZ, bool isRad=false);
+        // Rotação sobre eixo arbitrario
+        static Transformation newRa(double angleA, const Coordinate& p);
+
         static Transformation newRotation(double angleX, double angleY, double angleZ);
-		static Transformation newRotationAroundPoint(double angleX, double angleY,
-                                               double angleZ, const Coordinate& p);
+		static Transformation newFullRotation(double angleX, double angleY,
+                                    double angleZ, double angleA, const Coordinate& p);
 
         static Transformation newScaling(double sx, double sy, double sz);
 		static Transformation newScalingAroundObjCenter(double sx, double sy, double sz,

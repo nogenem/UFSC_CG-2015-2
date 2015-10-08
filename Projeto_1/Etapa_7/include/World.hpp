@@ -29,7 +29,7 @@ class World
         // p = ponto central para rodar;
         Object* rotateObj(const std::string& objName,
                           double angleX, double angleY, double angleZ,
-                          const Coordinate& p, rotateType type);
+                          double angleA, const Coordinate& p, rotateType type);
 
     private:
         DisplayFile m_objs;
@@ -128,21 +128,21 @@ Object* World::scaleObj(const std::string& objName, double sx, double sy, double
 
 Object* World::rotateObj(const std::string& objName,
                         double angleX, double angleY, double angleZ,
-                        const Coordinate& p, rotateType type){
+                        double angleA, const Coordinate& p, rotateType type){
     Object tmp(objName);
     Object *obj = m_objs.getObj(&tmp);
 
+    if(angleA == 0){
+        obj->transform(Transformation::newRotation(angleX,angleY,angleZ));
+        return obj;
+    }
+
     switch(type){
     case rotateType::OBJECT:
-        obj->transform(Transformation::newRotationAroundPoint(angleX, angleY, angleZ,
-                                                              obj->center()));
-        break;
-    case rotateType::WORLD:
-        obj->transform(Transformation::newRotationAroundPoint(angleX, angleY, angleZ,
-                                                            Coordinate(0,0,0)));
+        obj->transform(Transformation::newFullRotation(angleX,angleY,angleZ,angleA,obj->center()));
         break;
     case rotateType::POINT:
-        obj->transform(Transformation::newRotationAroundPoint(angleX, angleY, angleZ, p));
+        obj->transform(Transformation::newFullRotation(angleX,angleY,angleZ,angleA,p));
         break;
     }
     return obj;

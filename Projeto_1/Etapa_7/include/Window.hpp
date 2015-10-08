@@ -5,14 +5,13 @@
 #include "MyException.hpp"
 
 // Valores minimo e maximo que a window pode assumir
-#define MIN_SIZE 1
+#define MIN_SIZE 0.001
 #define MAX_SIZE 5000
 
 class Window
 {
     public:
         Window(double vWidth, double vHeight):
-            m_center( (vWidth/2)*0.95,(vHeight/2)*0.95 ),
             m_width( (vWidth/2) ), m_height( (vHeight/2) ) {}
         virtual ~Window() {}
 
@@ -48,16 +47,17 @@ class Window
 void Window::updateTransformation(){
     m_t = Transformation();
     m_t *= Transformation::newTranslation(-m_center.x, -m_center.y, -m_center.z);
-    m_t *= Transformation::newRotation(-m_angleX, -m_angleY, -m_angleZ);// ta certo?
-    m_t *= Transformation::newScaling(1.0/m_width, 1.0/m_height, 2.0/(m_width + m_height));
+    m_t *= Transformation::newRotation(-m_angleX, -m_angleY, -m_angleZ);
+    m_t *= Transformation::newScaling(1.0/m_width, 1.0/m_height, 2.0/(m_width + m_height));//2.0/(m_width + m_height)
 }
 
 void Window::zoom(double step){
-    //step /= 2;
+
+    step = getWidth()*(step/100);
 
     if( (getWidth()+step <= MIN_SIZE || getHeight()+step <= MIN_SIZE) && step < 0 )
         throw MyException("Zoom maximo alcancado.\n");
-    else if( (getWidth()+step >= MAX_SIZE || getHeight()+step >= MAX_SIZE) && step > 0)
+    else if( (getWidth()+step >= MAX_SIZE || getHeight()+step >= MAX_SIZE) && step > 0 )
         throw MyException("Zoom minimo alcancado.\n");
 
     m_width += step;

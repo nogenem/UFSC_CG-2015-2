@@ -8,7 +8,7 @@
 
 #define UI_FILE "window.glade"
 
-enum class rotateType { OBJECT, WORLD, POINT };
+enum class rotateType { OBJECT, POINT };
 
 class Dialog
 {
@@ -179,6 +179,8 @@ class RotateDialog : public Dialog
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryAngY)); }
         double getAnguloZ() const
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryAngZ)); }
+        double getAnguloA() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryAngA)); }
         double getCX() const
             { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryCX)); }
         double getCY() const
@@ -194,7 +196,7 @@ class RotateDialog : public Dialog
     private:
         GtkWidget *m_entryAngX = nullptr, *m_entryAngY = nullptr, *m_entryAngZ = nullptr,
             *m_entryCX = nullptr, *m_entryCY = nullptr, *m_entryCZ = nullptr,
-            *m_objCenter = nullptr, *m_worldCenter = nullptr, *m_pntCenter = nullptr;
+            *m_objCenter = nullptr, *m_pntCenter = nullptr, *m_entryAngA = nullptr;
 };
 
 #endif // DIALOGS_HPP

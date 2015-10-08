@@ -101,6 +101,18 @@ extern "C"{
         case GDK_KEY_KP_Subtract:
             window->zoom(Buttons::ZOOM_OUT);
             return true;
+        case GDK_KEY_x:
+        case GDK_KEY_X:
+            window->setAxis(Axes::X);
+            return true;
+        case GDK_KEY_y:
+        case GDK_KEY_Y:
+            window->setAxis(Axes::Y);
+            return true;
+        case GDK_KEY_z:
+        case GDK_KEY_Z:
+            window->setAxis(Axes::Z);
+            return true;
         default:
             return false;
         }

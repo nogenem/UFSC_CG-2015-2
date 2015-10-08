@@ -27,12 +27,10 @@ class Viewport
         void zoomWindow(double step){m_window.zoom(step); transformAndClipAllObjs();}
         void moveWindow(double x, double y, double z=0)
             { m_window.move(x,y,z); transformAndClipAllObjs(); }
-        void rotateWindow(double graus){}//{m_window.setAngulo(graus); transformAndClipAllObjs();}
+        void rotateWindow(double graus, const std::string& axis);
         void drawObjs(cairo_t* cr);
 
     private:
-        Transformation parallelProjection(Object* obj);
-
         Coordinate transformCoordinate(const Coordinate& c) const;
         void transformCoordinates(const Coordinates& coords,
                                     Coordinates& output) const;
@@ -59,28 +57,22 @@ class Viewport
         Clipping m_clipping;
 };
 
+void Viewport::rotateWindow(double graus, const std::string& axis){
+    if(axis=="x")
+        m_window.setAnguloX(graus);
+    else if(axis=="y")
+        m_window.setAnguloY(graus);
+    else if(axis=="z")
+        m_window.setAnguloZ(graus);
+
+    transformAndClipAllObjs();
+}
+
 void Viewport::gotoObj(const std::string& objName){
     Object *obj = m_world->getObj(objName);
     Coordinate c = obj->center();
     m_window.moveTo(c);
     transformAndClipAllObjs();
-}
-
-Transformation Viewport::parallelProjection(Object* obj){
-    auto wc = m_window.center();
-    auto oc = obj->center();
-
-    Coordinate VRP(oc.x-wc.x, oc.y-wc.y, oc.z-wc.z);
-
-    double angleX = m_window.getAnguloX(); /*acos((VRP.x*oc.x + VRP.y*0)/
-        ( sqrt(VRP.x*VRP.x + VRP.y*VRP.y) * sqrt(oc.x*oc.x + 0))) * 180 / PI;*/
-
-    double angleY = m_window.getAnguloY(); /*acos((VRP.x*0 + VRP.y*oc.y)/
-        ( sqrt(VRP.x*VRP.x + VRP.y*VRP.y) * sqrt(0 + oc.y*oc.y))) * 180 / PI;*/
-
-    return Transformation::newTranslation(-wc.x, -wc.y, -wc.z) *
-        Transformation::newRx(-angleX) *
-        Transformation::newRy(-angleY);
 }
 
 void Viewport::transformAndClipObj(Object* obj){
