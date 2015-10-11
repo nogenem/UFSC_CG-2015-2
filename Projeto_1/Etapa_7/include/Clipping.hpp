@@ -79,7 +79,7 @@ bool Clipping::clip(Object* obj){
         bool draw = false;
         for(auto &face : obj3d->getFaceList()){
             bool tmp = clipPolygon(&face);
-            if(!tmp) face.getNCoords().clear();
+            if(!tmp){ face.getNCoords().clear(); }
             draw |= tmp;
         }
         return draw;
