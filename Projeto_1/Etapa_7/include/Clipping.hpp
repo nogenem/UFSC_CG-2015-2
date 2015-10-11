@@ -204,8 +204,8 @@ bool Clipping::SutherlandHodgmanPolygonClip(Object* p){
 
     clipLeft(input, tmp);
     clipRight(tmp, input);
-    clipTop(input, tmp);
-    clipBottom(tmp, input);
+    clipBottom(input, tmp);
+    clipTop(tmp, input);
 
     return (input.size() != 0);
 }
@@ -223,19 +223,25 @@ void Clipping::clipLeft(Coordinates& input, Coordinates& output){
         Coordinate c1 = input[i+1];
 
         //Caso 1: out -> out
-        if(c0.x < clipX && c1.x < clipX){}
+        if(c0.x < clipX && c1.x < clipX){
+            continue;
+        }
 
         //Caso 2: in -> in
-        if(c0.x >= clipX && c1.x >= clipX)
+        if(c0.x >= clipX && c1.x >= clipX){
             output.push_back(c1);
+            continue;
+        }
 
         double x = clipX;
         double m = (c1.y-c0.y)/(c1.x-c0.x);
         double y = m * (x-c0.x) + c0.y;
 
         //Caso 3: in -> out
-        if(c0.x >= clipX && c1.x < clipX)
+        if(c0.x >= clipX && c1.x < clipX){
             output.emplace_back(x,y);
+            continue;
+        }
 
         //Caso 4: out -> in
         if(c0.x < clipX && c1.x >= clipX){
@@ -258,22 +264,28 @@ void Clipping::clipRight(Coordinates& input, Coordinates& output){
         Coordinate c1 = input[i+1];
 
         //Caso 1: out -> out
-        if(c0.x >= clipX && c1.x >= clipX){}
+        if(c0.x > clipX && c1.x > clipX){
+            continue;
+        }
 
         //Caso 2: in -> in
-        if(c0.x < clipX && c1.x < clipX)
+        if(c0.x <= clipX && c1.x <= clipX){
             output.push_back(c1);
+            continue;
+        }
 
         double x = clipX;
         double m = (c1.y-c0.y)/(c1.x-c0.x);
         double y = m * (x-c0.x) + c0.y;
 
         //Caso 3: in -> out
-        if(c0.x < clipX && c1.x >= clipX)
+        if(c0.x <= clipX && c1.x > clipX){
             output.emplace_back(x,y);
+            continue;
+        }
 
         //Caso 4: out -> in
-        if(c0.x >= clipX && c1.x < clipX){
+        if(c0.x > clipX && c1.x <= clipX){
             output.emplace_back(x,y);
             output.push_back(c1);
         }
@@ -293,19 +305,25 @@ void Clipping::clipTop(Coordinates& input, Coordinates& output){
         Coordinate c1 = input[i+1];
 
         //Caso 1: out -> out
-        if(c0.y > clipY && c1.y > clipY){}
+        if(c0.y > clipY && c1.y > clipY){
+            continue;
+        }
 
         //Caso 2: in -> in
-        if(c0.y <= clipY && c1.y <= clipY)
+        if(c0.y <= clipY && c1.y <= clipY){
             output.push_back(c1);
+            continue;
+        }
 
         double y = clipY;
         double m = (c1.x-c0.x)/(c1.y-c0.y);
         double x = m * (y-c0.y) + c0.x;
 
         //Caso 3: in -> out
-        if(c0.y <= clipY && c1.y > clipY)
+        if(c0.y <= clipY && c1.y > clipY){
             output.emplace_back(x,y);
+            continue;
+        }
 
         //Caso 4: out -> in
         if(c0.y > clipY && c1.y <= clipY){
@@ -328,19 +346,25 @@ void Clipping::clipBottom(Coordinates& input, Coordinates& output){
         Coordinate c1 = input[i+1];
 
         //Caso 1: out -> out
-        if(c0.y < clipY && c1.y < clipY){}
+        if(c0.y < clipY && c1.y < clipY){
+            continue;
+        }
 
         //Caso 2: in -> in
-        if(c0.y >= clipY && c1.y >= clipY)
+        if(c0.y >= clipY && c1.y >= clipY){
             output.push_back(c1);
+            continue;
+        }
 
         double y = clipY;
         double m = (c1.x-c0.x)/(c1.y-c0.y);
         double x = m * (y-c0.y) + c0.x;
 
         //Caso 3: in -> out
-        if(c0.y >= clipY && c1.y < clipY)
+        if(c0.y >= clipY && c1.y < clipY){
             output.emplace_back(x,y);
+            continue;
+        }
 
         //Caso 4: out -> in
         if(c0.y < clipY && c1.y >= clipY){

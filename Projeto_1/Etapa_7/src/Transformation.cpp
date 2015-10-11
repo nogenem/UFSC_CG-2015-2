@@ -59,6 +59,7 @@ Transformation Transformation::newRz(double angleZ, bool isRad){
 }
 
 Transformation Transformation::newRa(double angleA, const Coordinate& p){
+    // Poupar algum processamento...
     if(angleA == 0 || (p.x == 0 && p.y == 0 && p.z == 0))
         return Transformation();
 

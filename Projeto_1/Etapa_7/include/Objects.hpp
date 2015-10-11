@@ -222,14 +222,6 @@ class Object3D : public Object
 
     protected:
         FaceList m_faceList;
-
-    /**
-        projetar no plano ZY para pegar o angulo
-            -tira a cordenada x e ja tem a projeçao
-            -usar pitagoras pra determinar o angulo
-            -rotacionar em x
-        usar pitagoras denovo pra rotacionar em y
-    */
 };
 
 #endif // OBJECTS_H

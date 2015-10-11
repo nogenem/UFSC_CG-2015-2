@@ -116,12 +116,15 @@ PolygonDialog::PolygonDialog(GtkBuilder* builder, bool isFace){
     GtkTreeView* tree = GTK_TREE_VIEW( gtk_builder_get_object( GTK_BUILDER(builder), "poly_treeview" ) );
     m_model = gtk_tree_view_get_model(tree);
 
+    // Agora com o 3D os poligonos não podem mais ser
+    //  preenchidos...
+    gtk_widget_hide(m_checkFilled);
+
     // Por enquanto faces não precisam de nome e
     //  não podem estar preenchidas
     if(isFace){
         GtkWidget* box = GTK_WIDGET( gtk_builder_get_object( builder, "poly_box_name" ) );
         gtk_widget_hide(box);
-        gtk_widget_hide(m_checkFilled);
     }
 
     gtk_builder_connect_signals(builder, this);
