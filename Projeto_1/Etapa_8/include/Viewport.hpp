@@ -30,6 +30,8 @@ class Viewport
         void rotateWindow(double graus, const std::string& axis);
         void drawObjs(cairo_t* cr);
 
+        void setProjection(Projection p);
+
     private:
         Coordinate transformCoordinate(const Coordinate& c) const;
         void transformCoordinates(const Coordinates& coords,
@@ -68,6 +70,11 @@ void Viewport::rotateWindow(double graus, const std::string& axis){
     transformAndClipAllObjs();
 }
 
+void Viewport::setProjection(Projection p){
+    m_window.setProjection(p);
+    transformAndClipAllObjs();
+}
+
 void Viewport::gotoObj(const std::string& objName){
     Object *obj = m_world->getObj(objName);
     Coordinate c = obj->center();
@@ -78,6 +85,8 @@ void Viewport::gotoObj(const std::string& objName){
 void Viewport::transformAndClipObj(Object* obj){
     auto t = m_window.getT();
     obj->transformNormalized(t);
+    /*if(m_window.getD() != 0)
+        obj->applyPerspective(m_window.getD());*/
 
     if(!m_clipping.clip(obj))
         obj->getNCoords().clear();

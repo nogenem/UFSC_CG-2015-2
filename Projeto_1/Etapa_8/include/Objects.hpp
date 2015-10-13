@@ -65,6 +65,8 @@ class Object
         virtual void transform(const Transformation& t);
         virtual void transformNormalized(const Transformation& t);
 
+        virtual void applyPerspective(double d);
+
         bool operator==(const Object& other)
             { return this->getName() == other.getName(); }
         Object& operator*(){ return *this; }
@@ -209,6 +211,8 @@ class Object3D : public Object
 
         void transform(const Transformation& t);
         void transformNormalized(const Transformation& t);
+
+        void applyPerspective(double d);
 
         Coordinate center() const;
         Coordinate nCenter() const;

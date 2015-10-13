@@ -150,6 +150,22 @@ void Object3D::transformNormalized(const Transformation& t){
     }
 }
 
+void Object::applyPerspective(double d){
+    for(auto &p : m_nCoords){
+        p.x = d * p.x / p.z;
+        p.y = d * p.y / p.z;
+    }
+}
+
+void Object3D::applyPerspective(double d){
+    for(auto &face : m_faceList){
+        for(auto &p : face.getNCoords()){
+            p.x = d * p.x / p.z;
+            p.y = d * p.y / p.z;
+        }
+    }
+}
+
 void Object::setNCoord(const Coordinates& c){
     m_nCoords.clear();
     m_nCoords.insert(m_nCoords.end(), c.begin(), c.end());

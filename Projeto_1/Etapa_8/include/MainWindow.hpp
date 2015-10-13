@@ -13,8 +13,8 @@
 
 #define UI_FILE "window.glade"
 
-enum class Buttons { ZOOM_OUT, ZOOM_IN, UP, RIGHT, DOWN, LEFT, ROT_LEFT, ROT_RIGHT };
-enum class Axes { X, Y, Z };
+enum class Button { ZOOM_OUT, ZOOM_IN, UP, RIGHT, DOWN, LEFT, ROT_LEFT, ROT_RIGHT };
+enum class Axis { X, Y, Z };
 
 class MainWindow
 {
@@ -33,11 +33,11 @@ class MainWindow
         void addBSplineCurve(GtkBuilder* builder);
         void addObj3D(GtkBuilder* builder);
 
-        void zoom(Buttons id);
-        void move(Buttons id);
-        void rotateWindow(Buttons id);
+        void zoom(Button id);
+        void move(Button id);
+        void rotateWindow(Button id);
 
-        void setAxis(Axes axis);
+        void setAxis(Axis axis);
 
         void onDraw(cairo_t* cr);
         void showPopUp(GdkEvent *event);
@@ -48,6 +48,7 @@ class MainWindow
         void rotateSelectedObj(GtkBuilder* builder);
         void showHelpDialog();
         void changeLineClipAlg(LineClipAlgs alg);
+        void changeProjection(Projection p);
 
     private:
         // Seta o parametro 'name' e 'inter' para
@@ -120,36 +121,46 @@ MainWindow::MainWindow(GtkBuilder* builder) {
     // Salva o id do botao para poder ser usado depois apenas 1 função
     // para manipula-los
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_zoom_out")),
-                       "ID", GINT_TO_POINTER(Buttons::ZOOM_OUT));
+                       "ID", GINT_TO_POINTER(Button::ZOOM_OUT));
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_zoom_in")),
-                       "ID", GINT_TO_POINTER(Buttons::ZOOM_IN));
+                       "ID", GINT_TO_POINTER(Button::ZOOM_IN));
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_up")),
-                       "ID", GINT_TO_POINTER(Buttons::UP));
+                       "ID", GINT_TO_POINTER(Button::UP));
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_right")),
-                       "ID", GINT_TO_POINTER(Buttons::RIGHT));
+                       "ID", GINT_TO_POINTER(Button::RIGHT));
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_down")),
-                       "ID", GINT_TO_POINTER(Buttons::DOWN));
+                       "ID", GINT_TO_POINTER(Button::DOWN));
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_left")),
-                       "ID", GINT_TO_POINTER(Buttons::LEFT));
+                       "ID", GINT_TO_POINTER(Button::LEFT));
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_rot_left")),
-                       "ID", GINT_TO_POINTER(Buttons::ROT_LEFT));
+                       "ID", GINT_TO_POINTER(Button::ROT_LEFT));
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "btn_rot_right")),
-                       "ID", GINT_TO_POINTER(Buttons::ROT_RIGHT));
+                       "ID", GINT_TO_POINTER(Button::ROT_RIGHT));
 
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "rb_CS_alg")),
                        "ID", GINT_TO_POINTER(LineClipAlgs::CS));
     g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "rb_LB_alg")),
                        "ID", GINT_TO_POINTER(LineClipAlgs::LB));
 
+    g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "rb_parallel")),
+                       "ID", GINT_TO_POINTER(Projection::PARALLEL));
+    g_object_set_data(G_OBJECT(gtk_builder_get_object(GTK_BUILDER(builder), "rb_perspective")),
+                       "ID", GINT_TO_POINTER(Projection::PERSPECTIVE));
+
     gtk_widget_show( m_mainWindow );
 }
 
-void MainWindow::setAxis(Axes axis){
+void MainWindow::setAxis(Axis axis){
     gtk_combo_box_set_active(GTK_COMBO_BOX(m_axes), (int)axis);
 }
 
 void MainWindow::changeLineClipAlg(LineClipAlgs alg){
     m_viewport->changeLineClipAlg(alg);
+    gtk_widget_queue_draw(m_mainWindow);
+}
+
+void MainWindow::changeProjection(Projection p){
+    m_viewport->setProjection(p);
     gtk_widget_queue_draw(m_mainWindow);
 }
 
@@ -301,14 +312,14 @@ void MainWindow::removeSelectedObj(){
     }
 }
 
-void MainWindow::zoom(Buttons id){
+void MainWindow::zoom(Button id){
     double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_step));
     try{
         switch(id){
-        case Buttons::ZOOM_OUT:
+        case Button::ZOOM_OUT:
             m_viewport->zoomWindow(value);
             break;
-        case Buttons::ZOOM_IN:
+        case Button::ZOOM_IN:
             m_viewport->zoomWindow(-value);
             break;
         default:
@@ -320,19 +331,19 @@ void MainWindow::zoom(Buttons id){
     }
 }
 
-void MainWindow::move(Buttons id){
+void MainWindow::move(Button id){
     double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_step));
     switch(id){
-    case Buttons::UP:
+    case Button::UP:
         m_viewport->moveWindow(0,value);
         break;
-    case Buttons::RIGHT:
+    case Button::RIGHT:
         m_viewport->moveWindow(value,0);
         break;
-    case Buttons::DOWN:
+    case Button::DOWN:
         m_viewport->moveWindow(0,-value);
         break;
-    case Buttons::LEFT:
+    case Button::LEFT:
         m_viewport->moveWindow(-value,0);
         break;
     default:
@@ -341,17 +352,17 @@ void MainWindow::move(Buttons id){
     gtk_widget_queue_draw(m_mainWindow);
 }
 
-void MainWindow::rotateWindow(Buttons id){
+void MainWindow::rotateWindow(Button id){
     double value = gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_step));
     char *tmpAxis = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(m_axes));
     std::string axis(tmpAxis);
     delete tmpAxis;
 
     switch(id){
-    case Buttons::ROT_LEFT:
+    case Button::ROT_LEFT:
         m_viewport->rotateWindow(value, axis);
         break;
-    case Buttons::ROT_RIGHT:
+    case Button::ROT_RIGHT:
         m_viewport->rotateWindow(-value, axis);
         break;
     default:

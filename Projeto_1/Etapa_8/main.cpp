@@ -12,6 +12,12 @@ extern "C"{
 
         window->changeLineClipAlg(alg);
     }
+    void change_proj_event(GtkToggleButton *button, MainWindow* window){
+        int btnId = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "ID"));
+        Projection p = (Projection) btnId;
+
+        window->changeProjection(p);
+    }
     void color_choose_event(GtkColorButton *button, ObjDialog* dialog){
         dialog->onColorChangeEvent(button);
     }
@@ -54,21 +60,21 @@ extern "C"{
     }
     void main_btns_event(GtkWidget *button, MainWindow* window){
         int btnId = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "ID"));
-        Buttons b = (Buttons)btnId;
+        Button b = (Button)btnId;
 
         switch(b){
-        case Buttons::ZOOM_OUT:
-        case Buttons::ZOOM_IN:
+        case Button::ZOOM_OUT:
+        case Button::ZOOM_IN:
             window->zoom(b);
             break;
-        case Buttons::UP:
-        case Buttons::RIGHT:
-        case Buttons::DOWN:
-        case Buttons::LEFT:
+        case Button::UP:
+        case Button::RIGHT:
+        case Button::DOWN:
+        case Button::LEFT:
             window->move(b);
             break;
-        case Buttons::ROT_LEFT:
-        case Buttons::ROT_RIGHT:
+        case Button::ROT_LEFT:
+        case Button::ROT_RIGHT:
             window->rotateWindow(b);
             break;
         }
@@ -76,42 +82,42 @@ extern "C"{
     bool main_key_press_event(GtkWidget *widget, GdkEventKey *event, MainWindow *window){
         switch(event->keyval){
         case GDK_KEY_Up:
-            window->move(Buttons::UP);
+            window->move(Button::UP);
             return true;
         case GDK_KEY_Right:
             if (event->state & GDK_CONTROL_MASK)
-                window->rotateWindow(Buttons::ROT_RIGHT);
+                window->rotateWindow(Button::ROT_RIGHT);
             else
-                window->move(Buttons::RIGHT);
+                window->move(Button::RIGHT);
             return true;
         case GDK_KEY_Down:
-            window->move(Buttons::DOWN);
+            window->move(Button::DOWN);
             return true;
         case GDK_KEY_Left:
             if (event->state & GDK_CONTROL_MASK)
-                window->rotateWindow(Buttons::ROT_LEFT);
+                window->rotateWindow(Button::ROT_LEFT);
             else
-                window->move(Buttons::LEFT);
+                window->move(Button::LEFT);
             return true;
         case GDK_KEY_plus:
         case GDK_KEY_KP_Add:
-            window->zoom(Buttons::ZOOM_IN);
+            window->zoom(Button::ZOOM_IN);
             return true;
         case GDK_KEY_minus:
         case GDK_KEY_KP_Subtract:
-            window->zoom(Buttons::ZOOM_OUT);
+            window->zoom(Button::ZOOM_OUT);
             return true;
         case GDK_KEY_x:
         case GDK_KEY_X:
-            window->setAxis(Axes::X);
+            window->setAxis(Axis::X);
             return true;
         case GDK_KEY_y:
         case GDK_KEY_Y:
-            window->setAxis(Axes::Y);
+            window->setAxis(Axis::Y);
             return true;
         case GDK_KEY_z:
         case GDK_KEY_Z:
-            window->setAxis(Axes::Z);
+            window->setAxis(Axis::Z);
             return true;
         default:
             return false;

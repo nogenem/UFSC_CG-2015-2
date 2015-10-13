@@ -33,6 +33,8 @@ class Transformation
         // Rotação sobre eixo arbitrario
         static Transformation newRa(double angleA, const Coordinate& p);
 
+        static Transformation newPerspective(double d);
+
         static Transformation newRotation(double angleX, double angleY, double angleZ);
 		static Transformation newFullRotation(double angleX, double angleY,
                                     double angleZ, double angleA, const Coordinate& p);
