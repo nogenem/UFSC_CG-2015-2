@@ -58,18 +58,19 @@ Transformation Transformation::newRz(double angleZ, bool isRad){
     return Transformation(m);
 }
 
+//https://www.youtube.com/watch?v=gRVxv8kWl0Q
 Transformation Transformation::newRa(double angleA, const Coordinate& p){
     // Poupar algum processamento...
     if(angleA == 0 || (p.x == 0 && p.y == 0 && p.z == 0))
         return Transformation();
 
     double d = sqrt(p.y*p.y + p.z*p.z);
-    double alfa = acos(p.z/d);
-    double beta = acos(d);
+    double beta = atan(p.x/p.z);
+    double alfa = atan(p.y/d);
 
-    return Transformation::newTranslation(-p.x, -p.y, -p.z) * Transformation::newRx(alfa,true) *
-        Transformation::newRy(beta,true) * Transformation::newRz(angleA) *
-        Transformation::newRy(-beta,true) * Transformation::newRx(-alfa,true) *
+    return Transformation::newTranslation(-p.x, -p.y, -p.z) * Transformation::newRy(-beta,true) *
+        Transformation::newRx(alfa,true) * Transformation::newRz(angleA) *
+        Transformation::newRx(-alfa,true) * Transformation::newRy(beta,true) *
         Transformation::newTranslation(p.x, p.y, p.z);
 }
 

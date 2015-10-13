@@ -308,6 +308,10 @@ void ObjReader::loadCoordsIndexes(std::stringstream& line, Coordinates& objCoord
             // Algoritmo vai pegar o vertice 'v' e vai
             //  ignorar os outros [v/vt/vn]
             std::stringstream point(pointString);
+
+            if(point.str() == "\\")
+                continue;
+
             point >> index;
 
             if(!point){// É obrigado a ter um vertice
