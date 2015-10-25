@@ -65,9 +65,11 @@ void Window::zoom(double step){
 }
 
 void Window::move(double x, double y, double z){
-    m_center.x += x;
-    m_center.y += y;
-    m_center.z += z;
+    Coordinate c(x,y,z);
+    c *= Transformation::newRotation(m_angleX, m_angleY, m_angleZ);
+    m_center.x += c.x;
+    m_center.y += c.y;
+    m_center.z += c.z;
 }
 
 void Window::moveTo(Coordinate center){
