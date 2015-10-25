@@ -63,7 +63,7 @@ class Object
         virtual Coordinate center() const;
         virtual Coordinate nCenter() const;
         virtual void transform(const Transformation& t);
-        virtual void transformNormalized(const Transformation& t);
+        virtual void transformNormalized(const Transformation& t, bool clear=true);
 
         virtual void applyPerspective(double d);
 
@@ -210,7 +210,7 @@ class Object3D : public Object
 		virtual std::string getTypeName() const { return "3D Object"; }
 
         void transform(const Transformation& t);
-        void transformNormalized(const Transformation& t);
+        void transformNormalized(const Transformation& t, bool clear=true);
 
         void applyPerspective(double d);
 

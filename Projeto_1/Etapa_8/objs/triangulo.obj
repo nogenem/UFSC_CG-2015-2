@@ -1,0 +1,12 @@
+mtllib triangulo.mtl
+
+v 0 0 0
+v 25 50 0
+v 50 0 0
+v 0 0 0
+v 25 50 25
+v 50 0 0
+
+o triangulo
+f 1 2 3
+f 4 5 6

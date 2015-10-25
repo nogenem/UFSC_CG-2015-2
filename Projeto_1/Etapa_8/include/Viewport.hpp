@@ -85,8 +85,12 @@ void Viewport::gotoObj(const std::string& objName){
 void Viewport::transformAndClipObj(Object* obj){
     auto t = m_window.getT();
     obj->transformNormalized(t);
-    /*if(m_window.getD() != 0)
-        obj->applyPerspective(m_window.getD());*/
+    if(m_window.getD() != 0)
+        obj->applyPerspective(m_window.getD());
+    obj->transformNormalized(Transformation::newScaling(1.0/m_window.getWidth(),
+                                                        1.0/m_window.getHeight(),
+                                                        2.0/(m_window.getWidth() + m_window.getHeight())),false);
+    //2.0/(m_window.getWidth() + m_window.getHeight())
 
     if(!m_clipping.clip(obj))
         obj->getNCoords().clear();

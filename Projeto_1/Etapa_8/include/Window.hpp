@@ -55,15 +55,17 @@ class Window
 
 void Window::setProjection(Projection p){
     m_proj = p;
-    m_d = (p==Projection::PARALLEL) ? 0 : 3;
+    m_d = (p==Projection::PARALLEL) ? 0 : 2;
 }
 
 void Window::updateTransformation(){
-    m_t = Transformation::newTranslation(-m_center.x, -m_center.y, -m_center.z+m_d);
+    m_t = Transformation();
+    m_t *= Transformation::newTranslation(-m_center.x, -m_center.y, -m_center.z+m_d);
     m_t *= Transformation::newRotation(-m_angleX, -m_angleY, -m_angleZ);
-    if(m_proj == Projection::PERSPECTIVE)
-        m_t *= Transformation::newPerspective(m_d);
-    m_t *= Transformation::newScaling(1.0/m_width, 1.0/m_height, 2.0/(m_width + m_height));
+    /*if(m_proj == Projection::PERSPECTIVE)
+        m_t *= Transformation::newPerspective(m_d);*/
+    //m_t *= Transformation::newScaling(1.0/m_width, 1.0/m_height, 2.0/(m_width + m_height));
+    //2.0/(m_width + m_height)
 }
 
 void Window::zoom(double step){

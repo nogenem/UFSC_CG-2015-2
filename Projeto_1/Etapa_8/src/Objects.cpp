@@ -126,11 +126,16 @@ void Object::transform(const Transformation& t){
         p *= (t);
 }
 
-void Object::transformNormalized(const Transformation& t){
-    if(m_nCoords.size() > 0)
-        m_nCoords.clear();
-    for(auto p : m_coords)
-        m_nCoords.push_back( (p *= t) );
+void Object::transformNormalized(const Transformation& t, bool clear){
+    if(clear){
+        if(m_nCoords.size() > 0)
+            m_nCoords.clear();
+        for(auto p : m_coords)
+            m_nCoords.push_back( (p *= t) );
+    }else{
+        for(auto& p : m_nCoords)
+            p *= t;
+    }
 }
 
 void Object3D::transform(const Transformation& t){
@@ -140,30 +145,22 @@ void Object3D::transform(const Transformation& t){
     }
 }
 
-void Object3D::transformNormalized(const Transformation& t){
-    for(auto &face : m_faceList){
-        auto &coords = face.getNCoords();
-        if(coords.size() > 0)
-            coords.clear();
-        for(auto p : face.getCoords())
-            coords.push_back( (p *= t) );
-    }
+void Object3D::transformNormalized(const Transformation& t, bool clear){
+    for(auto &face : m_faceList)
+        face.transformNormalized(t, clear);
 }
 
 void Object::applyPerspective(double d){
     for(auto &p : m_nCoords){
-        p.x = d * p.x / p.z;
-        p.y = d * p.y / p.z;
+        //double tmp = p.z/d;
+        p.x = d * p.x / (p.z);
+        p.y = d * p.y / (p.z);
     }
 }
 
 void Object3D::applyPerspective(double d){
-    for(auto &face : m_faceList){
-        for(auto &p : face.getNCoords()){
-            p.x = d * p.x / p.z;
-            p.y = d * p.y / p.z;
-        }
-    }
+    for(auto &face : m_faceList)
+        face.applyPerspective(d);
 }
 
 void Object::setNCoord(const Coordinates& c){
