@@ -16,6 +16,8 @@ class World
         Object* addBezierCurve(const std::string& name, const GdkRGBA& color, const Coordinates& c);
         Object* addBSplineCurve(const std::string& name, const GdkRGBA& color, const Coordinates& c);
         Object* addObj3D(const std::string& name, const FaceList& faces);
+        Object* addSurface(const std::string& name, const GdkRGBA& color, ObjType type,
+                           int maxLines, int maxCols, const Coordinates& c);
         void addObj(Object *obj){ validateName(obj->getName()); m_objs.addObj(obj); }
 
         void removeObj(const std::string& name);
@@ -75,6 +77,24 @@ Object* World::addObj3D(const std::string& name, const FaceList& faces){
     validateName(name);
 
     Object3D *obj = new Object3D(name, faces);
+    m_objs.addObj(obj);
+    return obj;
+}
+
+Object* World::addSurface(const std::string& name, const GdkRGBA& color,
+                          ObjType type, int maxLines, int maxCols,
+                          const Coordinates& c){
+    validateName(name);
+
+    if(c.size() < 16)
+        throw MyException("Superficies devem ter no minimo 16 coordenadas.");
+
+    Surface *obj = nullptr;
+    if(type == ObjType::BEZIER_SURFACE)
+        obj = new BezierSurface(name, color, maxLines, maxCols, c);
+    else if(type == ObjType::BSPLINE_SURFACE)
+        obj = new BSplineSurface(name, color, maxLines, maxCols, c);
+
     m_objs.addObj(obj);
     return obj;
 }

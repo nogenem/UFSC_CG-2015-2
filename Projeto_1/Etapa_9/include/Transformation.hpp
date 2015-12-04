@@ -8,20 +8,25 @@
 #define PI 3.1415926535897932384626433832795
 
 #define M_SIZE 4
-typedef std::array<std::array<double, M_SIZE>, M_SIZE> Matrix;
+
+template<class type, int n, int m>
+using Matrix = std::array<std::array<type, m>, n>;
+
+// Transformation Matrix
+typedef Matrix<double, M_SIZE, M_SIZE> tMatrix4x4;
 
 class Coordinate;
 
 class Transformation
 {
     public:
-        Transformation(const Matrix m):
+        Transformation(const tMatrix4x4 m):
             m_matrix(std::move(m)) {}
         Transformation();
         virtual ~Transformation() {}
 
-        const Matrix& getM() const {return m_matrix;}
-        Matrix& getM() {return m_matrix;}
+        const tMatrix4x4& getM() const {return m_matrix;}
+        tMatrix4x4& getM() {return m_matrix;}
 
 		Transformation& operator*=(const Transformation& t2);
 
@@ -44,7 +49,7 @@ class Transformation
 		static double toRadians(double degrees) { return (PI/180) * degrees; }
 
     private:
-        Matrix m_matrix;
+        tMatrix4x4 m_matrix;
 };
 
 Transformation operator*(Transformation t1, const Transformation& t2);

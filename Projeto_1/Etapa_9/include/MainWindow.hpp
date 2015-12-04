@@ -32,6 +32,7 @@ class MainWindow
         void addBezierCurve(GtkBuilder* builder);
         void addBSplineCurve(GtkBuilder* builder);
         void addObj3D(GtkBuilder* builder);
+        void addSurface(GtkBuilder* builder);
 
         void zoom(Buttons id);
         void move(Buttons id);
@@ -463,6 +464,32 @@ void MainWindow::addObj3D(GtkBuilder* builder){
         }else{
             finish = true;
         }
+    }
+}
+
+void MainWindow::addSurface(GtkBuilder* builder){
+    SurfaceDialog dialog(GTK_BUILDER(builder));
+    bool finish = false;
+
+    while(!finish){
+        if(dialog.run() == 1){
+            try{
+                auto& c = dialog.getCoords();
+                Object* obj = m_world->addSurface(dialog.getName(), dialog.getColor(),
+                                                  dialog.getSurfaceType(), dialog.getMaxLines(),
+                                                  dialog.getMaxCols(), c);
+                m_viewport->transformAndClipObj(obj);
+                addObjOnListStore(dialog.getName(), obj->getTypeName().c_str());
+
+                gtk_widget_queue_draw(m_mainWindow);
+                log("Novo poligono adicionado.\n");
+                finish = true;
+            }catch(MyException& e){
+                log(e.what());
+                showErrorDialog(e.what());
+            }
+        }else
+            finish = true;
     }
 }
 

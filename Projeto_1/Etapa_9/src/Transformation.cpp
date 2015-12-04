@@ -9,18 +9,18 @@ Transformation::Transformation(){
 }
 
 Transformation Transformation::newTranslation(double dx, double dy, double dz){
-    Matrix m = {{  {1,  0,  0,  0},
-                   {0,  1,  0,  0},
-                   {0,  0,  1,  0},
-                   {dx, dy, dz, 1}  }};
+    tMatrix4x4 m = {{  {1,  0,  0,  0},
+                      {0,  1,  0,  0},
+                      {0,  0,  1,  0},
+                      {dx, dy, dz, 1}  }};
     return Transformation(m);
 }
 
 Transformation Transformation::newScaling(double sx, double sy, double sz){
-    Matrix m = {{  {sx,  0,  0,  0},
-                   {0,  sy,  0,  0},
-                   {0,   0,  sz, 0},
-                   {0,   0,  0,  1}  }};
+    tMatrix4x4 m = {{  {sx,  0,  0,  0},
+                      {0,  sy,  0,  0},
+                      {0,   0,  sz, 0},
+                      {0,   0,  0,  1}  }};
     return Transformation(m);
 }
 
@@ -33,28 +33,28 @@ Transformation Transformation::newScalingAroundObjCenter(double sx, double sy, d
 
 Transformation Transformation::newRx(double angleX, bool isRad){
     double rad = isRad ? angleX : toRadians(angleX);
-    Matrix m = {{   {1, 0,         0,        0},
-                    {0, cos(rad),  sin(rad), 0},
-                    {0, -sin(rad), cos(rad), 0},
-                    {0, 0,         0,        1}    }};
+    tMatrix4x4 m = {{   {1, 0,         0,        0},
+                       {0, cos(rad),  sin(rad), 0},
+                       {0, -sin(rad), cos(rad), 0},
+                       {0, 0,         0,        1}    }};
     return Transformation(m);
 }
 
 Transformation Transformation::newRy(double angleY, bool isRad){
     double rad = isRad ? angleY : toRadians(angleY);
-    Matrix m = {{   {cos(rad), 0, -sin(rad), 0},
-                    {0,        1, 0,         0},
-                    {sin(rad), 0, cos(rad),  0},
-                    {0,        0, 0,         1}    }};
+    tMatrix4x4 m = {{   {cos(rad), 0, -sin(rad), 0},
+                       {0,        1, 0,         0},
+                       {sin(rad), 0, cos(rad),  0},
+                       {0,        0, 0,         1}    }};
     return Transformation(m);
 }
 
 Transformation Transformation::newRz(double angleZ, bool isRad){
     double rad = isRad ? angleZ : toRadians(angleZ);
-    Matrix m = {{   {cos(rad),  sin(rad), 0, 0},
-                    {-sin(rad), cos(rad), 0, 0},
-                    {0,         0,        1, 0},
-                    {0,         0,        0, 1}    }};
+    tMatrix4x4 m = {{   {cos(rad),  sin(rad), 0, 0},
+                       {-sin(rad), cos(rad), 0, 0},
+                       {0,         0,        1, 0},
+                       {0,         0,        0, 1}    }};
     return Transformation(m);
 }
 

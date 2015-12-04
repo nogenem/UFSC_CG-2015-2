@@ -10,8 +10,8 @@
 
 /*
     Possiveis Diretivas:
-        v, o, p, l, f, curv2,
-        cstype, deg, end
+        v, o, p, l, f, curv, surf,
+        bsp, bzp, cstype, deg, end
         usemtl, newmtl, Kd
 
     Obs:
@@ -67,7 +67,7 @@ class ObjStream
         ObjStream(std::string& filename);
 
     protected:
-        std::string m_name;// Nome do arquivo, sem a extensao
+        std::string m_name;// Nome do arquivo, sem a extensão
         std::string m_path;// Path para o arquivo
         std::fstream m_objsFile;
         std::fstream m_colorsFile;
@@ -91,6 +91,7 @@ class ObjReader : public ObjStream
         void addPoly(std::stringstream& line, bool filled = false);
         void addFace(std::stringstream& line);
         void addCurve(std::stringstream& line);
+        void addSurface(std::stringstream& line, ObjType type);
 
         void addObj3D();
 
@@ -123,6 +124,8 @@ class ObjWriter : public ObjStream
     private:
         void printObj(Object* obj);
         void printObj3D(Object3D* obj);
+        void printSurface(BezierSurface* obj);
+        void printSurface(BSplineSurface* obj);
 
     private:
         // Numero de coordenadas ja escritas
@@ -170,25 +173,30 @@ void ObjReader::loadObjs(){
         line >> keyWord;
 
         if(keyWord == "#")              { /* Não faz nada... */ }
-        else if(keyWord == "mtllib")    { loadColorsFile(line); }                    // mtllib filename
-        else if(keyWord == "usemtl")    { if(m_usingColorsFile){changeColor(line);} }// usemtl material_name
-        else if(keyWord == "v")         { addCoord(line); }                          // v x y z
-        else if(keyWord == "o")         { setName(line); }                           // o obj_name
+        else if(keyWord == "mtllib")    { loadColorsFile(line); }                       // mtllib filename
+        else if(keyWord == "usemtl")    { if(m_usingColorsFile){changeColor(line);} }   // usemtl material_name
+        else if(keyWord == "v")         { addCoord(line); }                             // v x y z
+        else if(keyWord == "o")         { setName(line); }                              // o obj_name
         else if(keyWord == "w")         { /* TODO(?) */ }
-        else if(keyWord == "p")         { addPoint(line); }                          // p v1 v2 v3 ...
-        else if(keyWord == "l")         { addPoly(line, false); }                    // l v1 v2 v3 ...
-        else if(keyWord == "f")         { addFace(line); }                           // f v1/vt1/vn1 v2/vt2/vn2 ...
-        else if(keyWord == "curv")      { addCurve(line); }                          // curv u1 u2 v1 v2 v3 ...
-        else if(keyWord == "cstype")    { setFreeFormType(line); }                   // cstype type
+        else if(keyWord == "p")         { addPoint(line); }                             // p v1 v2 v3 ...
+        else if(keyWord == "l")         { addPoly(line, false); }                       // l v1 v2 v3 ...
+        else if(keyWord == "f")         { addFace(line); }                              // f v1/vt1/vn1 v2/vt2/vn2 ...
+        else if(keyWord == "curv")      { addCurve(line); }                             // curv u1 u2 v1 v2 v3 ...
+
+        else if(keyWord == "surf")      { addSurface(line,ObjType::OBJECT); }           // surf  s0  s1  t0  t1  v1/vt1/vn1   v2/vt2/vn2 . . .
+        else if(keyWord == "bzp")       { addSurface(line,ObjType::BEZIER_SURFACE); }   // bzp v1 v2 . . . v16 //bezier
+        else if(keyWord == "bsp")       { addSurface(line,ObjType::BSPLINE_SURFACE); }  // bsp v1 v2 . . . v16 //bspline
+
+        else if(keyWord == "cstype")    { setFreeFormType(line); }                      // cstype type
 
         else if(keyWord == "end")       { /* Não intendi o que os 'param' significam,
                                               então só estou lendo o 'end' e não estou
                                               fazendo nada...*/ }
-        else if(keyWord == "deg")       { /* Não faz nada... */ }                    // deg degu
-        else if(keyWord == "g")         { /* Não faz nada... */ }                    // g group_name
-        else if(keyWord == "vt")        { /* Não faz nada... */ }                    // vt u v w
-        else if(keyWord == "vn")        { /* Não faz nada... */ }                    // vn i j k
-        else if(keyWord == "vp")        { /* Não faz nada... */ }                    // vp u v w
+        else if(keyWord == "deg")       { /* Não faz nada... */ }                       // deg degu
+        else if(keyWord == "g")         { /* Não faz nada... */ }                       // g group_name
+        else if(keyWord == "vt")        { /* Não faz nada... */ }                       // vt u v w
+        else if(keyWord == "vn")        { /* Não faz nada... */ }                       // vn i j k
+        else if(keyWord == "vp")        { /* Não faz nada... */ }                       // vp u v w
     }
     // Se chegar ao final e tiver alguma
     //  Face salva, ela pertence ao ultimo
@@ -291,10 +299,58 @@ void ObjReader::addCurve(std::stringstream& line){
     std::string name = m_numSubObjs == 0 ? m_name :
         m_name+"_sub"+std::to_string(m_numSubObjs);
 
-    if(m_freeFormType == ObjType::BEZIER_CURVE)
+    if(m_freeFormType == ObjType::BEZIER_CURVE){
+        if(objCoords.size() < 4 || (objCoords.size()-4)%3 != 0)
+            throw MyException("Uma curva de Bezier deve ter 4, 7, 10, 13... coordenadas.");
+
         m_objs.push_back(new BezierCurve(name, m_color, objCoords));
-    else if(m_freeFormType == ObjType::BSPLINE_CURVE)
+    }else if(m_freeFormType == ObjType::BSPLINE_CURVE){
+        if(objCoords.size() < 4)
+            throw MyException("Uma curva B-Spline deve ter no minimo 4 coordenadas.");
+
         m_objs.push_back(new BSplineCurve(name, m_color, objCoords));
+    }
+    m_numSubObjs++;
+}
+
+void ObjReader::addSurface(std::stringstream& line, ObjType type){
+    if(type == ObjType::OBJECT){//parametro 'surf'
+        if(m_freeFormType == ObjType::OBJECT){
+            destroyObjs();
+            throw MyException("Tentativa de criar uma superficie sem 'cstype' na linha: "+
+                              line.str() +".\n");
+        }
+
+        double tmp=0;
+        line >> tmp;// Remove o s1,s2,t1,t2...
+        line >> tmp;
+        line >> tmp;
+        line >> tmp;
+    }
+
+    Coordinates objCoords;
+    loadCoordsIndexes(line, objCoords);
+
+    std::string name = m_numSubObjs == 0 ? m_name :
+        m_name+"_sub"+std::to_string(m_numSubObjs);
+
+    if(objCoords.size() < 16){
+        destroyObjs();
+        throw MyException("Superficies devem ter 16 coordenadas.");
+    }else if(objCoords.size() > 16){
+        destroyObjs();
+        throw MyException(
+            "Para formar mais do que uma superficie, declare as superficies compartilhando os vertices em comum.");
+    }
+
+    if(type == ObjType::BEZIER_SURFACE ||
+       (type == ObjType::OBJECT && m_freeFormType == ObjType::BEZIER_CURVE)){
+        m_objs.push_back(new BezierSurface(name, m_color, objCoords));
+    }else if(type == ObjType::BSPLINE_SURFACE ||
+       (type == ObjType::OBJECT && m_freeFormType == ObjType::BSPLINE_CURVE)){
+        m_objs.push_back(new BSplineSurface(name, m_color, objCoords));
+    }
+
     m_numSubObjs++;
 }
 
@@ -381,6 +437,10 @@ void ObjWriter::writeObjs(World *world){
         obj = world->getObj(i);
         if(obj->getType() == ObjType::OBJECT3D)
             printObj3D((Object3D*) obj);
+        else if(obj->getType() == ObjType::BEZIER_SURFACE)
+            printSurface((BezierSurface*) obj);
+        else if(obj->getType() == ObjType::BSPLINE_SURFACE)
+            printSurface((BSplineSurface*) obj);
         else
             printObj(obj);
     }
@@ -398,7 +458,6 @@ void ObjWriter::printObj(Object* obj){
     m_objsFile << "\no " << obj->getName() << "\n";
 
     const std::string colorName = m_cWriter.getColorName(obj->getColor());
-
     if(colorName != "none")
         m_objsFile << "usemtl " << colorName << "\n";
 
@@ -427,6 +486,8 @@ void ObjWriter::printObj(Object* obj){
         keyWord = "curv 0.0 0.0";
         break;
     case ObjType::OBJECT3D:
+    case ObjType::BEZIER_SURFACE:
+    case ObjType::BSPLINE_SURFACE:
         break;//nunca vai acontecer
     }
 
@@ -456,7 +517,10 @@ void ObjWriter::printObj3D(Object3D* obj){
     for(auto face : obj->getFaceList()){
         faceSize = face.getCoords().size();
 
-        //m_objsFile << "g " << face.getName() << "\n";
+        const std::string colorName = m_cWriter.getColorName(face.getColor());
+        if(colorName != "none")
+            m_objsFile << "usemtl " << colorName << "\n";
+
         m_objsFile << "f";
         for(unsigned int i = 0; i<faceSize; i++){
             m_objsFile << " " << m_numVertex+(i+1);
@@ -464,6 +528,72 @@ void ObjWriter::printObj3D(Object3D* obj){
         m_objsFile << "\n";
         m_numVertex += faceSize;
     }
+}
+
+void ObjWriter::printSurface(BezierSurface* obj){
+    for(const auto& c : obj->getControlPoints()){
+        m_objsFile << "v " << c.x << " " << c.y << " " << c.z << "\n";
+    }
+
+    m_objsFile << "\no " << obj->getName() << "\n";
+
+    const std::string colorName = m_cWriter.getColorName(obj->getColor());
+    if(colorName != "none")
+        m_objsFile << "usemtl " << colorName << "\n";
+
+    m_objsFile << "cstype bezier\n";
+    m_objsFile << "deg 3 3\n";
+
+    int maxLines = obj->getMaxLines(),
+        maxCols = obj->getMaxCols();
+    int tmp3xMaxLines = 3*maxLines,
+        tmp3xMaxCols = 3*maxCols;
+    for(int nLine = 0; (maxLines != 4 && nLine <= tmp3xMaxLines) ||
+            (nLine < tmp3xMaxLines); nLine += tmp3xMaxCols){
+        for(int nCol = 0; nCol < maxCols-1; nCol += 3){
+            m_objsFile << "surf 0.0 1.0 0.0 1.0";
+            for(int i = 0; i < 4; i++){
+                m_objsFile << " " << m_numVertex+(i*maxCols)  +nLine+nCol+1;
+                m_objsFile << " " << m_numVertex+(i*maxCols)+1+nLine+nCol+1;
+                m_objsFile << " " << m_numVertex+(i*maxCols)+2+nLine+nCol+1;
+                m_objsFile << " " << m_numVertex+(i*maxCols)+3+nLine+nCol+1;
+            }
+            m_objsFile << "\nend\n\n";
+        }
+    }
+    m_numVertex += maxLines*maxCols;
+}
+
+void ObjWriter::printSurface(BSplineSurface* obj){
+    for(const auto& c : obj->getControlPoints()){
+        m_objsFile << "v " << c.x << " " << c.y << " " << c.z << "\n";
+    }
+
+    m_objsFile << "\no " << obj->getName() << "\n";
+
+    const std::string colorName = m_cWriter.getColorName(obj->getColor());
+    if(colorName != "none")
+        m_objsFile << "usemtl " << colorName << "\n";
+
+    m_objsFile << "cstype bspline\n";
+    m_objsFile << "deg 3 3\n";
+
+    int maxLines = obj->getMaxLines(),
+        maxCols = obj->getMaxCols();
+    for(int nLine = 0; (maxLines != 4 && nLine <= maxLines) ||
+                (nLine < maxLines); nLine += maxCols){
+        for(int nCol = 0; nCol <= maxCols-4; nCol += 1){
+            m_objsFile << "surf 0.0 1.0 0.0 1.0";
+            for(int i = 0; i < 4; i++){
+                m_objsFile << " " << m_numVertex+(i*maxCols)  +nLine+nCol+1;
+                m_objsFile << " " << m_numVertex+(i*maxCols)+1+nLine+nCol+1;
+                m_objsFile << " " << m_numVertex+(i*maxCols)+2+nLine+nCol+1;
+                m_objsFile << " " << m_numVertex+(i*maxCols)+3+nLine+nCol+1;
+            }
+            m_objsFile << "\nend\n\n";
+        }
+    }
+    m_numVertex += maxLines*maxCols;
 }
 
 bool ColorReader::loadFile(const std::string& filename){

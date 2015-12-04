@@ -43,6 +43,7 @@ class Viewport
         void drawPolygon(Object* obj);
         void drawCurve(Object* obj);
         void drawObj3D(Object3D* obj);
+        void drawSurface(Surface* obj);
 
         void prepareContext(const Object* obj);
 
@@ -121,7 +122,10 @@ void Viewport::drawObjs(cairo_t* cr){
 
 void Viewport::drawObj(Object* obj){
     if(obj->getType() != ObjType::OBJECT3D &&
-        obj->getNCoordsSize() == 0) return;
+        obj->getType() != ObjType::BEZIER_SURFACE &&
+            obj->getType() != ObjType::BSPLINE_SURFACE &&
+                obj->getNCoordsSize() == 0)
+        return;
 
     switch(obj->getType()){
     case ObjType::OBJECT:
@@ -141,6 +145,11 @@ void Viewport::drawObj(Object* obj){
         break;
     case ObjType::OBJECT3D:
         drawObj3D((Object3D*) obj);
+        break;
+    case ObjType::BEZIER_SURFACE:
+    case ObjType::BSPLINE_SURFACE:
+        drawSurface((Surface*) obj);
+        break;
     }
 }
 
@@ -203,6 +212,12 @@ void Viewport::drawObj3D(Object3D* obj){
     for(auto &face : obj->getFaceList())
         if(face.getNCoordsSize() > 0)
             drawPolygon(&face);
+}
+
+void Viewport::drawSurface(Surface* obj){
+    for(auto &curve : obj->getCurveList())
+        if(curve.getNCoordsSize() > 0)
+            drawCurve(&curve);
 }
 
 void Viewport::drawCurve(Object* obj){

@@ -74,7 +74,7 @@ bool Clipping::clip(Object* obj){
     case ObjType::BEZIER_CURVE:
     case ObjType::BSPLINE_CURVE:
         return clipCurve(obj);
-    case ObjType::OBJECT3D:
+    case ObjType::OBJECT3D:{
         Object3D *obj3d = (Object3D*) obj;
         bool draw = false;
         for(auto &face : obj3d->getFaceList()){
@@ -83,7 +83,17 @@ bool Clipping::clip(Object* obj){
             draw |= tmp;
         }
         return draw;
-    }
+    }case ObjType::BEZIER_SURFACE:
+    case ObjType::BSPLINE_SURFACE:{
+        Surface *surf = (Surface*) obj;
+        bool draw = false;
+        for(auto &curve : surf->getCurveList()){
+            bool tmp = clipCurve(&curve);
+            if(!tmp){ curve.getNCoords().clear(); }
+            draw |= tmp;
+        }
+        return draw;
+    }}
     return false;
 }
 

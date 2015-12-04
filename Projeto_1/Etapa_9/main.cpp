@@ -6,6 +6,21 @@ GtkBuilder* builder = NULL;
 
 /* Callbacks */
 extern "C"{
+    void add_surface_event(GtkMenuItem *menuitem, MainWindow* window){
+        window->addSurface(builder);
+    }
+    void add_surface_coord_event(GtkWidget *button, SurfaceDialog* dialog){
+        dialog->addCoordEvent();
+    }
+    void add_grid_surface_event(GtkWidget *button, SurfaceDialog* dialog){
+        dialog->addSurfaceEvent();
+    }
+    void change_surface_type_event(GtkToggleButton *button, SurfaceDialog* dialog){
+        int btnId = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "ID"));
+        ObjType type = (ObjType) btnId;
+
+        dialog->setSurfaceType(type);
+    }
     void change_alg_event(GtkToggleButton *button, MainWindow* window){
         int btnId = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(button), "ID"));
         LineClipAlgs alg = (LineClipAlgs) btnId;
@@ -173,6 +188,23 @@ int main(int argc, char ** argv)
     builder = gtk_builder_new();
     MainWindow* window = new MainWindow(GTK_BUILDER(builder));
     gtk_builder_connect_signals( GTK_BUILDER(builder), window );
+
+    /* ============== CSS ============== */
+    GtkCssProvider *provider;
+    GdkDisplay *display;
+    GdkScreen *screen;
+
+    provider = gtk_css_provider_new ();
+    display = gdk_display_get_default ();
+    screen = gdk_display_get_default_screen (display);
+
+    gtk_style_context_add_provider_for_screen (screen,
+                                             GTK_STYLE_PROVIDER(provider),
+                                             GTK_STYLE_PROVIDER_PRIORITY_USER);
+
+    gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(provider), "style.css", NULL);
+    g_object_unref (provider);
+    /* ============== /// ============== */
 
     /* Start main loop */
     gtk_main();

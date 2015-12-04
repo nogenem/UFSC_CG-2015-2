@@ -26,9 +26,9 @@ class Window
         double getAnguloY(){ return m_angleY; }
         double getAnguloZ(){ return m_angleZ; }
 
-        void setAnguloX(double graus){ m_angleX += graus; }
-        void setAnguloY(double graus){ m_angleY += graus; }
-        void setAnguloZ(double graus){ m_angleZ += graus; }
+        void setAnguloX(double graus);
+        void setAnguloY(double graus);
+        void setAnguloZ(double graus);
 
         void zoom(double step);
         void move(double x, double y, double z=0);
@@ -64,9 +64,23 @@ void Window::zoom(double step){
     m_height += step;
 }
 
+void Window::setAnguloX(double graus){
+    m_angleX += graus;
+    //m_center *= Transformation::newRx(graus);
+}
+void Window::setAnguloY(double graus){
+    m_angleY += graus;
+    //m_center *= Transformation::newRy(graus);
+}
+void Window::setAnguloZ(double graus){
+    m_angleZ += graus;
+    //m_center *= Transformation::newRz(graus);
+}
+
 void Window::move(double x, double y, double z){
     Coordinate c(x,y,z);
     c *= Transformation::newRotation(m_angleX, m_angleY, m_angleZ);
+
     m_center.x += c.x;
     m_center.y += c.y;
     m_center.z += c.z;

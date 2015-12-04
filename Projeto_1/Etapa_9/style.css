@@ -1,0 +1,5 @@
+GtkGrid > GtkLabel {
+	border-style: solid;
+    border-color: #95958A;
+    border-width: 1px;
+}

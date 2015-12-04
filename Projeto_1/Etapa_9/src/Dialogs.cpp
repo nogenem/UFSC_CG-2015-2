@@ -1,4 +1,5 @@
 #include "Dialogs.hpp"
+#include <sstream>
 
 FileDialog::FileDialog(GtkBuilder* builder, bool toSave){
     GError* error = nullptr;
@@ -120,12 +121,66 @@ PolygonDialog::PolygonDialog(GtkBuilder* builder, bool isFace){
     //  preenchidos...
     gtk_widget_hide(m_checkFilled);
 
-    // Por enquanto faces não precisam de nome e
-    //  não podem estar preenchidas
-    if(isFace){
-        GtkWidget* box = GTK_WIDGET( gtk_builder_get_object( builder, "poly_box_name" ) );
-        gtk_widget_hide(box);
+    gtk_builder_connect_signals(builder, this);
+}
+
+CurveDialog::CurveDialog(GtkBuilder* builder):
+    PolygonDialog(builder) {
+
+    gtk_widget_hide(GTK_WIDGET(m_checkFilled));
+    gtk_window_set_title(GTK_WINDOW(m_dialog), "Adicione uma curva");
+}
+
+Object3dDialog::Object3dDialog(GtkBuilder* builder){
+    GError* error = nullptr;
+    // (char*) usado para tirar warnings do compilador
+    char* ids[] = {(char*)"obj3d_list_store",(char*)"dlog_add_obj3d",nullptr};
+
+    if(!gtk_builder_add_objects_from_file(builder, UI_FILE, ids, &error)){
+        g_warning( "%s", error->message );
+        g_free( error );
+        return;
     }
+
+    m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_add_obj3d" ) );
+    m_entryName = GTK_WIDGET( gtk_builder_get_object( builder, "obj3d_name" ) );
+
+    GtkTreeView* tree = GTK_TREE_VIEW( gtk_builder_get_object( GTK_BUILDER(builder), "obj3d_treeview" ) );
+    m_model = gtk_tree_view_get_model(tree);
+
+    gtk_builder_connect_signals(builder, this);
+}
+
+SurfaceDialog::SurfaceDialog(GtkBuilder* builder){
+    GError* error = nullptr;
+    // (char*) usado para tirar warnings do compilador
+    char* ids[] = {(char*)"surface_comboBox",(char*)"adj_x1",(char*)"adj_y1",
+        (char*)"adj_z1",(char*)"dlog_add_surface",nullptr};
+
+    if(!gtk_builder_add_objects_from_file(builder, UI_FILE, ids, &error)){
+        g_warning( "%s", error->message );
+        g_free( error );
+        return;
+    }
+
+    m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_add_surface" ) );
+    m_entryName = GTK_WIDGET( gtk_builder_get_object( builder, "surface_name" ) );
+    m_entryX = GTK_WIDGET( gtk_builder_get_object( builder, "surface_x" ) );
+    m_entryY = GTK_WIDGET( gtk_builder_get_object( builder, "surface_y" ) );
+    m_entryZ = GTK_WIDGET( gtk_builder_get_object( builder, "surface_z" ) );
+    m_grid = GTK_WIDGET( gtk_builder_get_object( builder, "surface_grid" ) );
+
+    m_comboBox = GTK_WIDGET( gtk_builder_get_object( builder, "cb_surface_side" ) );
+    gtk_combo_box_set_active(GTK_COMBO_BOX(m_comboBox), 0);
+    m_btnAddSurface = GTK_WIDGET( gtk_builder_get_object( builder, "btn_add_surface" ) );
+
+    GObject* tmpBezier = G_OBJECT(gtk_builder_get_object( builder, "rb_bezier_surface" ));
+    m_rbBezier = GTK_WIDGET( tmpBezier );
+    g_object_set_data(tmpBezier, "ID", GINT_TO_POINTER(ObjType::BEZIER_SURFACE));
+
+    GObject* tmpBSpline = G_OBJECT(gtk_builder_get_object( builder, "rb_bspline_surface" ));
+    m_rbBSpline = GTK_WIDGET( tmpBSpline );
+    g_object_set_data(tmpBSpline, "ID", GINT_TO_POINTER(ObjType::BSPLINE_SURFACE));
 
     gtk_builder_connect_signals(builder, this);
 }
@@ -224,26 +279,6 @@ void PolygonDialog::onClickEvent(){
     gtk_widget_grab_focus(m_entryX);
 }
 
-Object3dDialog::Object3dDialog(GtkBuilder* builder){
-    GError* error = nullptr;
-    // (char*) usado para tirar warnings do compilador
-    char* ids[] = {(char*)"obj3d_list_store",(char*)"dlog_add_obj3d",nullptr};
-
-    if(!gtk_builder_add_objects_from_file(builder, UI_FILE, ids, &error)){
-        g_warning( "%s", error->message );
-        g_free( error );
-        return;
-    }
-
-    m_dialog = GTK_WIDGET( gtk_builder_get_object( builder, "dlog_add_obj3d" ) );
-    m_entryName = GTK_WIDGET( gtk_builder_get_object( builder, "obj3d_name" ) );
-
-    GtkTreeView* tree = GTK_TREE_VIEW( gtk_builder_get_object( GTK_BUILDER(builder), "obj3d_treeview" ) );
-    m_model = gtk_tree_view_get_model(tree);
-
-    gtk_builder_connect_signals(builder, this);
-}
-
 void Object3dDialog::onClickEvent(GtkBuilder* builder){
     GtkListStore *liststore = GTK_LIST_STORE(m_model);
     GtkTreeIter iter;
@@ -256,13 +291,89 @@ void Object3dDialog::onClickEvent(GtkBuilder* builder){
     Coordinates c;
     dlogPoly.getCoords(c);
 
-    std::string name = "face"+std::to_string(m_faces.size()+1);
-    m_faces.emplace_back(name, c);
+    std::string name = dlogPoly.getName();
+    if(name == "")
+        name = "face"+std::to_string(m_faces.size()+1);
+
+    m_faces.emplace_back(name, dlogPoly.getColor(), c);
 
     // Cria uma nova linha na ListStore e
     // seta com o nome da face criada
     gtk_list_store_append(liststore, &iter);
     gtk_list_store_set(liststore, &iter, 0, name.c_str(), -1);
+}
+
+void SurfaceDialog::addCoordEvent(){
+    // desabilitar os botoes
+    gtk_widget_set_sensitive(GTK_WIDGET(m_rbBezier), false);
+    gtk_widget_set_sensitive(GTK_WIDGET(m_rbBSpline), false);
+    gtk_widget_set_sensitive(GTK_WIDGET(m_comboBox), false);
+    gtk_widget_set_sensitive(GTK_WIDGET(m_btnAddSurface), false);
+
+    // terminou de preencher a 'matriz'
+    if(m_i == m_max_i)
+        return;
+
+    // monta a coordenada
+    std::stringstream fmt;
+    fmt << "(" << getX() << ", " << getY() << ", " << getZ() << ")";
+
+    std::string coord = fmt.str();
+
+    // salva a coord
+    m_coords.emplace_back(getX(), getY(), getZ());
+
+    // seta o texto da label na posição 'i' e 'j'
+    GtkLabel* label = GTK_LABEL(gtk_grid_get_child_at(GTK_GRID(m_grid), m_j++, m_i));
+    gtk_label_set_text(label, coord.c_str());
+
+    // verifica se chego na ultima coluna
+    if(m_j == m_max_j){
+        m_j = 0;
+        m_i++;
+    }
+}
+
+void SurfaceDialog::addSurfaceEvent(){
+    gtk_widget_set_sensitive(GTK_WIDGET(m_rbBezier), false);
+    gtk_widget_set_sensitive(GTK_WIDGET(m_rbBSpline), false);
+
+    int num = 0;
+    if(m_type == ObjType::BEZIER_SURFACE){
+        num = 3;
+    }else if(m_type == ObjType::BSPLINE_SURFACE){
+        num = 1;
+    }
+
+    char *tmpSide = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(m_comboBox));
+    std::string side(tmpSide);
+    delete tmpSide;
+
+    if(side == "Ao lado"){
+        for(int col = 0; col < num; col++){
+            gtk_grid_insert_column(GTK_GRID(m_grid), m_max_j);
+
+            for(int line = 0; line < m_max_i; line++){
+                gtk_grid_attach (GTK_GRID(m_grid),
+                     gtk_label_new(NULL),
+                     m_max_j, line, 1, 1);
+                gtk_widget_show(gtk_grid_get_child_at(GTK_GRID(m_grid), m_max_j, line));
+            }
+            ++m_max_j;
+        }
+    }else if(side == "Abaixo"){
+        for(int line = 0; line < num; line++){
+            gtk_grid_insert_row(GTK_GRID(m_grid), m_max_i);
+
+            for(int col = 0; col < m_max_j; col++){
+                gtk_grid_attach (GTK_GRID(m_grid),
+                     gtk_label_new(NULL),
+                     col, m_max_i, 1, 1);
+                gtk_widget_show(gtk_grid_get_child_at(GTK_GRID(m_grid), col, m_max_i));
+            }
+            ++m_max_i;
+        }
+    }
 }
 
 void PolygonDialog::onEditCelEvent(GtkCellRendererText *cell,
@@ -297,9 +408,17 @@ void PolygonDialog::getCoords(Coordinates& coords) const {
     }
 }
 
-CurveDialog::CurveDialog(GtkBuilder* builder):
-    PolygonDialog(builder) {
+void SurfaceDialog::setSurfaceType(ObjType type){
+    if(type != ObjType::BEZIER_SURFACE &&
+       type != ObjType::BSPLINE_SURFACE)
+        return;
 
-    gtk_widget_hide(GTK_WIDGET(m_checkFilled));
-    gtk_window_set_title(GTK_WINDOW(m_dialog), "Adicione uma curva");
+    m_type = type;
+}
+
+const Coordinates& SurfaceDialog::getCoords() const{
+    int size = m_coords.size();
+    if(size < (m_max_i*m_max_j))
+        throw MyException("Preencha todas as coordenadas.");
+    return m_coords;
 }

@@ -33,7 +33,9 @@ std::ostream& operator<<(std::ostream& os, const Coordinate& c);
 Coordinate operator-(const Coordinate& c1, const Coordinate& c2);
 
 typedef std::vector<Coordinate> Coordinates;
-enum class ObjType { OBJECT, POINT, LINE, POLYGON, BEZIER_CURVE, BSPLINE_CURVE, OBJECT3D };
+
+enum class ObjType { OBJECT, POINT, LINE, POLYGON, BEZIER_CURVE,
+    BSPLINE_CURVE, OBJECT3D, BEZIER_SURFACE, BSPLINE_SURFACE};
 
 class Object
 {
@@ -222,6 +224,96 @@ class Object3D : public Object
 
     protected:
         FaceList m_faceList;
+};
+
+typedef std::vector<Curve> CurveList;
+
+class Surface : public Object
+{
+    public:
+        Surface(const std::string& name) :
+            Object(name) {}
+        Surface(const std::string& name, const GdkRGBA& color) :
+            Object(name,color) {}
+        Surface(const std::string& name, const GdkRGBA& color, int maxLines, int maxCols) :
+            Object(name,color) { m_maxLines = maxLines; m_maxCols = maxCols; }
+		Surface(const std::string& name, const GdkRGBA& color, const Coordinates& coords) :
+            Object(name,color) { }
+
+        virtual void generateSurface(const Coordinates& cpCoords){};
+        Coordinates& getControlPoints(){ return m_controlPoints; }
+
+        void transform(const Transformation& t);
+        void transformNormalized(const Transformation& t);
+
+        Coordinate center() const;
+        Coordinate nCenter() const;
+
+        int getMaxLines(){ return m_maxLines; }
+        int getMaxCols(){ return m_maxCols; }
+        CurveList& getCurveList()
+            { return m_curveList; }
+
+    protected:
+        void setControlPoints(const Coordinates& coords)
+                { m_controlPoints.insert(m_controlPoints.end(), coords.begin(), coords.end()); }
+
+    protected:
+            //Guarda os pontos de controle da surface
+            // para serem usados na hora de salvar a surface no .obj
+            Coordinates m_controlPoints;
+            float m_step = 0.02; //Passo usado na bleding function
+
+            int m_maxLines = 4, m_maxCols = 4;
+            CurveList m_curveList;
+};
+
+//http://www.cad.zju.edu.cn/home/zhx/GM/005/00-bcs2.pdf
+class BezierSurface : public Surface
+{
+    public:
+        BezierSurface(const std::string& name) :
+            Surface(name) {}
+        BezierSurface(const std::string& name, const GdkRGBA& color) :
+            Surface(name,color) {}
+		BezierSurface(const std::string& name, const GdkRGBA& color,
+                int maxLines, int maxCols, const Coordinates& coords) :
+            Surface(name,color,maxLines,maxCols) { generateSurface(coords); }
+        BezierSurface(const std::string& name, const GdkRGBA& color, const Coordinates& coords) :
+            Surface(name,color) { generateSurface(coords); }
+
+        virtual ObjType getType() const { return ObjType::BEZIER_SURFACE; }
+		virtual std::string getTypeName() const { return "Bezier Surface"; }
+
+		void generateSurface(const Coordinates& cpCoords);
+        Coordinate blendingFunction(float s, double s2, double s3,
+                                    float t, double t2, double t3,
+                                    int nLine, int nCol,
+                                    const Coordinates& coords);
+};
+
+class BSplineSurface : public Surface
+{
+    public:
+        BSplineSurface(const std::string& name) :
+            Surface(name) {}
+        BSplineSurface(const std::string& name, const GdkRGBA& color) :
+            Surface(name,color) {}
+        BSplineSurface(const std::string& name, const GdkRGBA& color,
+                       int maxLines, int maxCols, const Coordinates& coords) :
+            Surface(name,color,maxLines,maxCols) { generateSurface(coords); }
+		BSplineSurface(const std::string& name, const GdkRGBA& color, const Coordinates& coords) :
+            Surface(name,color) { generateSurface(coords); }
+
+        virtual ObjType getType() const { return ObjType::BSPLINE_SURFACE; }
+		virtual std::string getTypeName() const { return "B-Spline Surface"; }
+
+		void generateSurface(const Coordinates& cpCoords);
+		Coordinate blendingFunction(float s, double s2, double s3,
+                                    float t, double t2, double t3,
+                                    double n16, double n23,
+                                    int nLine, int nCol,
+                                    const Coordinates& coords);
 };
 
 #endif // OBJECTS_H

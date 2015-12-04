@@ -109,6 +109,13 @@ class PolygonDialog : public ObjDialog
                   *m_checkFilled = nullptr;
 };
 
+class CurveDialog : public PolygonDialog
+{
+    public:
+        CurveDialog(GtkBuilder* builder);
+        ~CurveDialog(){ destroy(); }
+};
+
 class Object3dDialog : public ObjDialog
 {
     public:
@@ -127,11 +134,41 @@ class Object3dDialog : public ObjDialog
         FaceList m_faces;
 };
 
-class CurveDialog : public PolygonDialog
+class SurfaceDialog : public ObjDialog
 {
     public:
-        CurveDialog(GtkBuilder* builder);
-        ~CurveDialog(){ destroy(); }
+        SurfaceDialog(GtkBuilder* builder);
+        ~SurfaceDialog(){ destroy(); }
+
+        double getX() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryX)); }
+        double getY() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryY)); }
+        double getZ() const
+            { return gtk_spin_button_get_value(GTK_SPIN_BUTTON(m_entryZ)); }
+
+        ObjType getSurfaceType(){ return m_type; }
+        int getMaxLines(){ return m_max_i; }
+        int getMaxCols(){ return m_max_j; }
+
+        void setSurfaceType(ObjType type);
+
+        // FAZER PROTEÇÃO
+        const Coordinates& getCoords() const;
+
+        // Events
+        void addCoordEvent();//Adiciona coordenada
+        void addSurfaceEvent();//Adiciona mais linhas/colunas a 'matriz'
+
+    protected:
+        GtkWidget *m_entryX = nullptr, *m_entryY = nullptr, *m_entryZ = nullptr,
+                *m_comboBox = nullptr, *m_grid = nullptr;
+        GtkWidget *m_btnAddSurface, *m_rbBezier, *m_rbBSpline;
+
+        ObjType m_type = ObjType::BEZIER_SURFACE;
+
+        int m_i = 0, m_j = 0, m_max_i = 4, m_max_j = 4;
+        Coordinates m_coords;
 };
 
 class TranslateDialog : public Dialog
