@@ -1,0 +1,13 @@
+﻿-Teclas:
+	[q | Q | ESC]				-Fecha o programa
+	[+]							-Mais zoom
+	[-]							-Menos zoom
+	[r | R]						-Reseta o boneco para o centro do chão
+	[1]							-Muda a movimentação para 'andando'
+	[2]							-Muda a movimentação para 'correndo'
+	[3]							-Usa a função de 'displacement' do fdp '3d_case_study_using_opengl'
+	[4]							-Usa a matriz de 'displacement' criada por mim [gambiarra]
+	[F1]						-Muda a window para fullscreen
+	[F2]						-Muda a window para o tamanho 800x480
+	[F3]						-Posiciona a câmera em uma 'visão geral'
+	[F4]						-Posiciona a câmera em uma 'visão do chão'
