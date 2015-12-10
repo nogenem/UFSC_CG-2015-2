@@ -1,0 +1,18 @@
+newmtl Color0
+Kd 0.305882 0.603922 0.0235294
+
+newmtl Color1
+Kd 0.560784 0.34902 0.00784314
+
+newmtl Color2
+Kd 0.360784 0.207843 0.4
+
+newmtl Color3
+Kd 0 0 0
+
+newmtl Color4
+Kd 0.807843 0.360784 0
+
+newmtl Color5
+Kd 0.333333 0.341176 0.32549
+
